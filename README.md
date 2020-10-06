@@ -1,5 +1,6 @@
 # Uts-kningKv-FlaggGenerering
 
+<<<<<<< HEAD
 
 
 
@@ -23,3 +24,6 @@ select * from röd
 
 
 
+=======
+Tsql to prepare gis-inventory for the local company.
+>>>>>>> External/master
