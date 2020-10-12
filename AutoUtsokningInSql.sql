@@ -205,6 +205,7 @@ select * from #röd where left(fastighet, len('Halla')) = 'Halla';
 select * from #röd where left(fastighet, len('Klinte')) = 'Klinte';
 select * from #röd where left(fastighet, len('Roma')) = 'Roma';
 
+taxekod:
 end try begin catch select 1 end catch;
 
 
