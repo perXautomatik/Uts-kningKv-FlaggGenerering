@@ -15,8 +15,10 @@ else
         if not (exists(select 1 from #SockenYtor))
             begin
                 drop table #SockenYtor; goto SockenYtor
-            end    end
-INSERT INTO @statusTable select 'preloading#SockenYtor',CURRENT_TIMESTAMP,@@ROWCOUNT
+            end
+        end
+
+INSERT INTO @statusTable select 'preloading#SockenYtor',CURRENT_TIMESTAMP,count(*) from #SockenYtor
  ;
 IF OBJECT_ID(N'tempdb..#ByggnadPåFastighetISocken') IS NULL
     goto ByggnadPåFastighetISocken;
@@ -28,7 +30,7 @@ else
             end
 end
 
-INSERT INTO @statusTable select 'preloading#ByggnadPåFastighetISocken',CURRENT_TIMESTAMP,@@ROWCOUNT
+INSERT INTO @statusTable select 'preloading#ByggnadPåFastighetISocken',CURRENT_TIMESTAMP,count(*) from #ByggnadPåFastighetISocken
     ;
 IF OBJECT_ID(N'tempdb..#Socken_tillstånd') IS NULL
     goto Socken_tillstånd
@@ -38,7 +40,7 @@ else
             drop table #Socken_tillstånd; goto Socken_tillstånd
         end
 
-INSERT INTO @statusTable select 'preloading#Socken_tillstånd',CURRENT_TIMESTAMP,@@ROWCOUNT
+INSERT INTO @statusTable select 'preloading#Socken_tillstånd',CURRENT_TIMESTAMP,count(*) from #Socken_tillstånd
 ;
 
 IF OBJECT_ID(N'tempdb..#egetOmhändertagande') IS NULL
@@ -48,7 +50,7 @@ else
         begin
             drop table #egetOmhändertagande; goto egetOmhändertagande;
         end
-INSERT INTO @statusTable select 'preloading#egetOmhändertagande',CURRENT_TIMESTAMP,@@ROWCOUNT
+INSERT INTO @statusTable select 'preloading#egetOmhändertagande',CURRENT_TIMESTAMP,count(*) from #egetOmhändertagande
 ;
 IF OBJECT_ID('tempdb..#spillvaten') IS NULL
     goto spillvaten
@@ -57,7 +59,7 @@ else
         begin
             drop table #spillvaten; goto spillvaten;
         end
-INSERT INTO @statusTable select 'preloading#spillvaten',CURRENT_TIMESTAMP,@@ROWCOUNT
+INSERT INTO @statusTable select 'preloading#spillvaten',CURRENT_TIMESTAMP,count(*) from #spillvaten
 ;
 IF OBJECT_ID('tempdb..#slam') IS NULL
     goto taxekod
@@ -66,7 +68,7 @@ else
         begin
             drop table #slam; goto taxekod;
         end
-INSERT INTO @statusTable select 'preloading#slam',CURRENT_TIMESTAMP,@@ROWCOUNT
+INSERT INTO @statusTable select 'preloading#slam',CURRENT_TIMESTAMP,count(*) from #slam
         ;
 IF OBJECT_ID(N'tempdb..#röd') IS NULL
     goto röd
@@ -75,7 +77,7 @@ else
         begin
             drop table #röd; goto röd;
         end;
-    INSERT INTO @statusTable select 'preloading#röd',CURRENT_TIMESTAMP,@@ROWCOUNT
+    INSERT INTO @statusTable select 'preloading#röd',CURRENT_TIMESTAMP,count(*) from #röd
 goto repport
 
 if (select 1) IS NULL
@@ -88,8 +90,7 @@ Drop table #egetOmhändertagande
 Drop table #spillvaten
 Drop table #slam
 Drop table #röd
-        INSERT INTO @statusTable
-        select '#Rebuilding',CURRENT_TIMESTAMP,@@ROWCOUNT END TRY BEGIN CATCH SELECT 1 END CATCH else INSERT INTO @statusTable select 'preloading#DidNotDiscard',CURRENT_TIMESTAMP,@@ROWCOUNT
+        INSERT INTO @statusTable select '#Rebuilding',CURRENT_TIMESTAMP,@@ROWCOUNT END TRY BEGIN CATCH SELECT 1 END CATCH else INSERT INTO @statusTable select 'preloading#DidNotDiscard',CURRENT_TIMESTAMP,@@ROWCOUNT
 Print '#Rebuilding' + CURRENT_TIMESTAMP + ' RowNR:' + @@ROWCOUNT;
 ;
 
@@ -170,10 +171,8 @@ röd:
             ,egetOmhandertagande as (select  fastighet,egetOmhändertangandeInfo,LocaltOmH from #egetOmhändertagande )
             ,anlaggningar as (select diarienummer,Fastighet,Fastighet_tillstand,Beslut_datum,utförddatum,Anteckning,(case when not( isnull(Beslut_datum, DATETIME2FROMPARTS(1988, 1, 1, 1, 1, 1, 1, 1)) > (select DATETIME2FROMPARTS(2003, 1, 1, 1, 1, 1, 1, 1) datum) and isnull(utförddatum, DATETIME2FROMPARTS(1988, 1, 1, 1, 1, 1, 1, 1)) > (select DATETIME2FROMPARTS(2003, 1, 1, 1, 1, 1, 1, 1) datum)) then N'röd' else N'grön' end) fstatus,anlaggningspunkt from #Socken_tillstånd)
             , attUtsokaFran as (select *, row_number() over (partition by q.fastighet order by q.Anteckning desc ) flaggnr from (select anlaggningar.diarienummer,(case when anlaggningar.anlaggningspunkt is not null then anlaggningar.fstatus else '?' end) fstatus, socknarOfInteresse.socken,socknarOfInteresse.fastighet,Byggnadstyp,Fastighet_tillstand,Beslut_datum,utförddatum,Anteckning,(case when anlaggningar.anlaggningspunkt is not null then anlaggningar.anlaggningspunkt else ByggShape end) flagga from socknarOfInteresse left outer join byggnader on socknarOfInteresse.fastighet = byggnader.fastighet left outer join anlaggningar on socknarOfInteresse.fastighet = anlaggningar.fastighet) q  where q.flagga is not null)
-            ,gul as (select null "fstat" ) -- from fastighets_Anslutningar_Gemensamhetanläggningar)
-
-            select socken,fastighet,Fastighet_tillstand,Byggnadstyp,Beslut_datum,utförddatum,Anteckning,VaPlan,egetOmhändertangandeInfo,slam,flaggnr,flagga, (case when fstatus = N'röd' then (case when (vaPlan is null and egetOmhändertangandeInfo is null) then N'röd' else (case when VaPlan is not null then 'KomV?' else (case when null is not null then 'gem' else '?' end) end) end) else fstatus end ) Fstatus
-            into #röd from (select attUtsokaFran.socken,
+            ,gul as (select null "fstat" ), -- from fastighets_Anslutningar_Gemensamhetanläggningar)
+       q as (select attUtsokaFran.socken,
                                    attUtsokaFran.fastighet,
                                                            attUtsokaFran.Fastighet_tillstand,attUtsokaFran.Diarienummer,
                                                            attUtsokaFran.Byggnadstyp,
@@ -193,25 +192,27 @@ röd:
                                                            flaggnr,
                                                            flagga.STPointN(1) flagga
 
-                            from attUtsokaFran) q
+                            from attUtsokaFran)
+        ,röd as ( select socken,fastighet,Fastighet_tillstand,Byggnadstyp,Beslut_datum,utförddatum,Anteckning,VaPlan,egetOmhändertangandeInfo,slam,flaggnr,flagga, (case when fstatus = N'röd' then (case when (vaPlan is null and egetOmhändertangandeInfo is null) then N'röd' else (case when VaPlan is not null then 'KomV?' else (case when null is not null then 'gem' else '?' end) end) end) else fstatus end ) Fstatus from q)
+
+            insert into #röd select * from röd
 
             INSERT INTO @statusTable select N'rebuilt#Röd',CURRENT_TIMESTAMP,@@ROWCOUNT
 
 Print 'rebuilt#Röd' + CURRENT_TIMESTAMP + ' RowNR:' + @@ROWCOUNT;
 
-
 repport:
 
---select * from #röd where left(fastighet, len(N'Björke')) = N'Björke';
---select * from #röd where left(fastighet, len('Dalhem')) = 'Dalhem';
---select * from #röd where left(fastighet, len(N'Fröjel')) = N'Fröjel';
---select * from #röd where left(fastighet, len('Ganthem')) = 'Ganthem';
---select * from #röd where left(fastighet, len('Halla')) = 'Halla';
---select * from #röd where left(fastighet, len('Klinte')) = 'Klinte';
---select * from #röd where left(fastighet, len('Roma')) = 'Roma';
+select * from #röd where Socken = N'Björke';
+select * from #röd where Socken = 'Dalhem';
+select * from #röd where Socken = N'Fröjel';
+select * from #röd where Socken = 'Ganthem';
+select * from #röd where Socken = 'Halla';
+select * from #röd where Socken = 'Klinte';
+select * from #röd where Socken = 'Roma';
 select * from @statusTable
 
-select * from (select socken,fastighet,(case when fstatus = '?' then 'röd' else fstatus end) "Status",Fastighet_tillstand,Byggnadstyp,Beslut_datum,utförddatum,Anteckning,VaPlan,egetOmhändertangandeInfo,slam,flaggnr from #röd) as r2 order by socken,Status,fastighet
+
 
 taxekod:
 end try begin catch select * from @statusTable end catch
