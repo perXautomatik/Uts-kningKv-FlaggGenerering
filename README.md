@@ -2,13 +2,12 @@
 
 <<<<<<< HEAD
 
-
-
 todo:
-select *
 
-ifall ansökan på ärende på fastigheten, skriv diarenummer
 
+fastighets_Anslutningar_Gemensamhetanläggningar (gemNamn)
+
+select * from grön
 anteckning + anmärkning
 
 fastighets_Anslutningar_Gemensamhetanläggningar (gemNamn)
@@ -21,7 +20,7 @@ select * from grön
 union all
 
 select * from röd
-
+Tsql to prepare gis-inventory for the local company.
 
 
 =======

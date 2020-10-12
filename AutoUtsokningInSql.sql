@@ -189,7 +189,7 @@ select * from #röd where left(fastighet, len('Dalhem')) = 'Dalhem';
 select * from #röd where left(fastighet, len('Fröjel')) = 'Fröjel';
 select * from #röd where left(fastighet, len('Ganthem')) = 'Ganthem';
 select * from #röd where left(fastighet, len('Halla')) = 'Halla';
-select * from #röd where left(fastighet, len('Halla')) = 'Halla';
+select * from #röd where left(fastighet, len('klinte')) = 'klinte';
 select * from #röd where left(fastighet, len('Roma')) = 'Roma';
 
 
