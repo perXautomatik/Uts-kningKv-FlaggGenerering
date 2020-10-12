@@ -100,13 +100,13 @@ Socken_tillstånd:
        Norra_p as (select Diarienummer, z q, Beslut_datum, Utford_datum, Anteckning, AllaAvlopp.anlShape, FAStighet from aNo AllaAvlopp inner join(select FiltreradeFast.*from #sockenYtor FiltreradeFast inner join (select socken from aNo group by socken) q on socken = sockenX) FFast on AllaAvlopp.socken = ffast.SockenX and AllaAvlopp.anlShape.STIntersects(FFast.Shape) = 1),
        Mellersta_p as (select Diarienummer, z q, Beslut_datum, Utford_datum, Anteckning, AllaAvlopp.anlShape, FAStighet from aMo AllaAvlopp inner join(select FiltreradeFast.*from #sockenYtor FiltreradeFast inner join (select socken from aMo group by socken) q on socken = sockenX) FFast on AllaAvlopp.socken = ffast.SockenX and AllaAvlopp.anlShape.STIntersects(FFast.Shape) = 1)
 
-          select FAStighet,
-                 Diarienummer,
-                 q            "Fastighet_tillstand",
-                 Beslut_datum,
-                 Utford_datum "utförddatum",
-                 Anteckning,
-                 anlShape     AnlaggningsPunkt
+      select FAStighet,
+             Diarienummer,
+             q            "Fastighet_tillstand",
+             Beslut_datum,
+             Utford_datum "utförddatum",
+             Anteckning,
+             anlShape     AnlaggningsPunkt
           into #Socken_tillstånd
           from (select * from sodra_p union all select * from norra_p union all select * from mellersta_p) z
 
@@ -114,7 +114,7 @@ Print 'rebuilt#Socken_tillstånd' + CURRENT_TIMESTAMP + ' RowNR:' + @@ROWCOUNT; 
 
 egetOmhändertagande:
      with
-          LOKALT_SLAM_P as ( select Diarienr,Fastighet_,Fastighe00,Eget_omhän,Lokalt_omh,Anteckning,Beslutsdat, shape from sde_miljo_halsoskydd.gng.MoH_Slam_Lokalt_p_evw)
+        LOKALT_SLAM_P as ( select Diarienr,Fastighet_,Fastighe00,Eget_omhän,Lokalt_omh,Anteckning,Beslutsdat, shape from sde_miljo_halsoskydd.gng.MoH_Slam_Lokalt_p_evw)
         ,Med_fastighet as (select * from (select *,concat(nullif(LOKALT_SLAM_P.Lokalt_omh,''),' ',nullif(LOKALT_SLAM_P.Fastighet_,''),' ',nullif(LOKALT_SLAM_P.Fastighe00,'')) fas from sde_miljo_halsoskydd.gng.MoH_Slam_Lokalt_p_evw LOKALT_SLAM_P) q where fas is not null and charindex(':',fas) > 0),
         utan_fastighet as (select OBJECTID,Fastighet_,Fastighets,Eget_omhän,Lokalt_omh,Fastighe00,Beslutsdat,Diarienr,Anteckning,utan_fastighet.Shape,GDB_GEOMATTR_DATA,SDE_STATE_ID,FAStighet from (select *from sde_miljo_halsoskydd.gng.MoH_Slam_Lokalt_p_evw LOKALT_SLAM_P where charindex(':', concat(nullif(LOKALT_SLAM_P.Lokalt_omh, ''), ' ', nullif(LOKALT_SLAM_P.Fastighet_, ''), ' ', nullif(LOKALT_SLAM_P.Fastighe00, ''))) = 0) utan_fastighet inner join #SockenYtor sYt on sYt.shape.STIntersects(utan_fastighet.Shape) = 1)
 
@@ -151,18 +151,17 @@ Print 'rebuilt#spillvaten'  + CURRENT_TIMESTAMP + ' RowNR:' + @@ROWCOUNT;goto Ta
 röd:
     with     slamm as (select strFastBeteckningHel,strDelprodukt,z2 = STUFF((SELECT distinct ','+ concat( nullif(x.strTaxebenamning,''), nullif(concat(' Avbrutet:', FORMAT(nullif(x.q2z, smalldatetimefromparts(1900, 01, 01, 00, 00)),'yyyy-MM-dd')), ' Avbrutet:'))FROM #slam x  where q.strFastBeteckningHel = x.strFastBeteckningHel  FOR XML PATH ('')), 1, 1, '')FROM #slam q group by strFastBeteckningHel,strDelprodukt)
              ,slam as (select strFastBeteckningHel,datStoppdatum =STUFF((SELECT distinct ','+nullif(strDelprodukt+'|','|')+z2 FROM slamm x  where q.strFastBeteckningHel = x.strFastBeteckningHel  FOR XML PATH ('')), 1, 1, '')from slamm q group by strFastBeteckningHel)
-             , socknarOfInteresse as (select distinct fastighet from #SockenYtor )
+             , socknarOfInteresse as (select distinct sockenX socken, fastighet from #SockenYtor )
            ,byggnader as (select Fastighetsbeteckning fastighet, Byggnadstyp,ByggShape from #ByggnadPåFastighetISocken)
             ,vaPlan as (select fastighet,typ  from #spillvaten)
             ,egetOmhandertagande as (select  fastighet,egetOmhändertangandeInfo,LocaltOmH from #egetOmhändertagande )
             ,anlaggningar as (select diarienummer,Fastighet,Fastighet_tillstand,Beslut_datum,utförddatum,Anteckning,(case when not( isnull(Beslut_datum, DATETIME2FROMPARTS(1988, 1, 1, 1, 1, 1, 1, 1)) > (select DATETIME2FROMPARTS(2003, 1, 1, 1, 1, 1, 1, 1) datum) and isnull(utförddatum, DATETIME2FROMPARTS(1988, 1, 1, 1, 1, 1, 1, 1)) > (select DATETIME2FROMPARTS(2003, 1, 1, 1, 1, 1, 1, 1) datum)) then N'röd' else N'grön' end) fstatus,anlaggningspunkt from #Socken_tillstånd)
-            , attUtsokaFran as (select *, row_number() over (partition by q.fastighet order by q.Anteckning desc ) flaggnr from (select anlaggningar.diarienummer,(case when anlaggningar.anlaggningspunkt is not null then anlaggningar.fstatus else '?' end) fstatus,socknarOfInteresse.fastighet,Byggnadstyp,Fastighet_tillstand,Beslut_datum,utförddatum,Anteckning,(case when anlaggningar.anlaggningspunkt is not null then anlaggningar.anlaggningspunkt else ByggShape end) flagga from socknarOfInteresse left outer join byggnader on socknarOfInteresse.fastighet = byggnader.fastighet left outer join anlaggningar on socknarOfInteresse.fastighet = anlaggningar.fastighet) q  where q.flagga is not null)
+            , attUtsokaFran as (select *, row_number() over (partition by q.fastighet order by q.Anteckning desc ) flaggnr from (select anlaggningar.diarienummer,(case when anlaggningar.anlaggningspunkt is not null then anlaggningar.fstatus else '?' end) fstatus, socknarOfInteresse.socken,socknarOfInteresse.fastighet,Byggnadstyp,Fastighet_tillstand,Beslut_datum,utförddatum,Anteckning,(case when anlaggningar.anlaggningspunkt is not null then anlaggningar.anlaggningspunkt else ByggShape end) flagga from socknarOfInteresse left outer join byggnader on socknarOfInteresse.fastighet = byggnader.fastighet left outer join anlaggningar on socknarOfInteresse.fastighet = anlaggningar.fastighet) q  where q.flagga is not null)
             ,gul as (select null "fstat" ) -- from fastighets_Anslutningar_Gemensamhetanläggningar)
 
-            select fastighet,Fastighet_tillstand,Byggnadstyp,Beslut_datum,utförddatum,Anteckning,VaPlan,egetOmhändertangandeInfo,slam,flaggnr,flagga,
-              (case when fstatus = N'röd'
-                  then (case when (vaPlan is null and egetOmhändertangandeInfo is null) then N'röd' else (case when VaPlan is not null then 'KomV?' else (case when null is not null then 'gem' else '?' end) end) end) else fstatus end ) Fstatus
-            into #röd from (select                         attUtsokaFran.fastighet,
+            select socken,fastighet,Fastighet_tillstand,Byggnadstyp,Beslut_datum,utförddatum,Anteckning,VaPlan,egetOmhändertangandeInfo,slam,flaggnr,flagga, (case when fstatus = N'röd' then (case when (vaPlan is null and egetOmhändertangandeInfo is null) then N'röd' else (case when VaPlan is not null then 'KomV?' else (case when null is not null then 'gem' else '?' end) end) end) else fstatus end ) Fstatus
+            into #röd from (select attUtsokaFran.socken,
+                                   attUtsokaFran.fastighet,
                                                            attUtsokaFran.Fastighet_tillstand,attUtsokaFran.Diarienummer,
                                                            attUtsokaFran.Byggnadstyp,
                                                            FORMAT(nullif(attUtsokaFran.Beslut_datum, smalldatetimefromparts(1900, 01, 01, 00, 00)),'yyyy-MM-dd') Beslut_datum,
@@ -187,13 +186,14 @@ Print 'rebuilt#Röd' + CURRENT_TIMESTAMP + ' RowNR:' + @@ROWCOUNT;
 
 repport:
 
-select * from #röd where left(fastighet, len(N'Björke')) = N'Björke';
-select * from #röd where left(fastighet, len('Dalhem')) = 'Dalhem';
-select * from #röd where left(fastighet, len(N'Fröjel')) = N'Fröjel';
-select * from #röd where left(fastighet, len('Ganthem')) = 'Ganthem';
-select * from #röd where left(fastighet, len('Halla')) = 'Halla';
-select * from #röd where left(fastighet, len('Klinte')) = 'Klinte';
-select * from #röd where left(fastighet, len('Roma')) = 'Roma';
+--select * from #röd where left(fastighet, len(N'Björke')) = N'Björke';
+--select * from #röd where left(fastighet, len('Dalhem')) = 'Dalhem';
+--select * from #röd where left(fastighet, len(N'Fröjel')) = N'Fröjel';
+--select * from #röd where left(fastighet, len('Ganthem')) = 'Ganthem';
+--select * from #röd where left(fastighet, len('Halla')) = 'Halla';
+--select * from #röd where left(fastighet, len('Klinte')) = 'Klinte';
+--select * from #röd where left(fastighet, len('Roma')) = 'Roma';
+select * from (select socken,fastighet,(case when fstatus = '?' then 'röd' else fstatus end) "Status",Fastighet_tillstand,Byggnadstyp,Beslut_datum,utförddatum,Anteckning,VaPlan,egetOmhändertangandeInfo,slam,flaggnr from #röd) as r2 order by socken,Status,fastighet
 
 taxekod:
 --end try begin catch select 1 end catch;
