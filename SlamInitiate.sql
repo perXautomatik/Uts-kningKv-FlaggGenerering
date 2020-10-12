@@ -2,7 +2,7 @@ IF OBJECT_ID('tempdb..#slam') IS NULL
     begin
 taxekod:
 create table #slam (
-q2z datetime, strDelprodukt nvarchar(max), strTaxebenamning nvarchar(max), strFastBeteckningHel nvarchar(max), decAnlXKoordinat float, decAnlYkoordinat float)
+q2z smalldatetime, strDelprodukt nvarchar(100), strTaxebenamning nvarchar(100), strFastBeteckningHel nvarchar(100), decAnlXKoordinat float, decAnlYkoordinat float)
 
             INSERT INTO #slam (q2z, strDelprodukt, strTaxebenamning, strFastBeteckningHel, decAnlXKoordinat, decAnlYkoordinat) VALUES ('1900-01-01 00:00:00', null, 'Ej beboelig', 'BARA HALLGÅRDS 1:16', 6385067.00000000000000000000, 141640.00000000000000000000);
             INSERT INTO #slam (q2z, strDelprodukt, strTaxebenamning, strFastBeteckningHel, decAnlXKoordinat, decAnlYkoordinat) VALUES ('1900-01-01 00:00:00', null, 'Ej beboelig', 'BARA ÖDEKYRKA 1:1', 6385032.00000000000000000000, 141730.00000000000000000000);

@@ -1,6 +1,6 @@
 /*Insert Databases names into SQL Temp Table*/
 
-Begin Try
+--Begin Try
 -- dropTabels?
 TableInitiate:
 
@@ -76,35 +76,29 @@ Print '#Rebuilding' + CURRENT_TIMESTAMP + ' RowNR:' + @@ROWCOUNT;
 ;
 
 SockenYtor:
-    with socknarOfIntresse as (SELECT value "socken"
-                               from STRING_SPLIT(N'Björke,Dalhem,Fröjel,Ganthem,Halla,Klinte,Roma', ','))
-
-    SELECT concat(Trakt, ' ', Blockenhet) FAStighet, OBJECTID, Fnr_FDS, Shape INTO #SockenYtor
-    from sde_gsd.gng.AY_0980 x
-             inner join socknarOfIntresse on left(x.TRAKT, len(socknarOfIntresse.socken)) = socknarOfIntresse.socken;Print 'preloading#SockenYtor' + CURRENT_TIMESTAMP + ' RowNR:' + @@ROWCOUNT;goto TableInitiate;
-
-ByggnadPåFastighetISocken:
+    with socknarOfIntresse as (Select N'Björke' "socken"  Union Select 'Dalhem' as alias2 Union Select N'Fröjel' as alias234567 Union Select 'Ganthem' as alias23 Union Select 'Halla' as alias234 Union Select 'Klinte' as alias2345 Union Select 'Roma' as alias23456)
+    SELECT socken SockenX,concat(Trakt,' ',Blockenhet) FAStighet, Shape INTO #SockenYtor
+    from [sde_gsd].[gng].AY_0980 x inner join socknarOfIntresse on left(x.TRAKT, len(socknarOfIntresse.socken)) = socknarOfIntresse.socken
+;Print 'preloading#SockenYtor' + CURRENT_TIMESTAMP + ' RowNR:' + @@ROWCOUNT;goto TableInitiate;
 
        --ByggBeslut as (select Ärendenummer,                         Byggnadstyp,                    Fastighetsbeteckning,  concat(Inkommande_datum,Registereringsdatum,År,Beslutsdatum,Status,Planbedömning,Beslutsnivå,Ärendetyp) rest,   GDB_GEOMATTR_DATA,  Shape, OBJECTID  from sde_bygglov.gng.BYGGLOVSPUNKTER union all select concat(DIARIENR,ANSÖKAN),   ÄNDAMÅL,                     Beteckning,               concat(DATUM,BESLUT,ANTAL,concat(URSPRUNG,id, Kod),AVSER,ANVÄNDNING),                                   GDB_GEOMATTR_DATA,  Shape, OBJECTID  from sde_bygglov.gng.BYGGLOVREG_ALDRE_P union all select concat(DIARIENR,ANSÖKAN),   concat(BYGGNADSTY,ÄNDAMÅL),     AVSER,                 concat(DATUM,BESLUT,År,ANTAL,ANMÄRKNIN,ANM,ANSÖKAN_A),                                            GDB_GEOMATTR_DATA,  Shape, OBJECTID  from sde_bygglov.gng.BYGGLOVSREG_2007_2019_P union all select DIARIENR,                   BYGGNADSTY,                     ANSÖKAN_AV,            concat(ANM,BESLUT),                                                                      GDB_GEOMATTR_DATA,  Shape, OBJECTID  from sde_bygglov.gng.BYGGLOVSREGISTRERING_CA_1999_2007_P),
-
-    with
-      socknarOfIntresse as (select socken SockenX,concat(Trakt,' ',Blockenhet) FAStighet, Shape  from sde_gsd.gng.AY_0980 x inner join (SELECT value "socken" from STRING_SPLIT(N'Björke,Dalhem,Fröjel,Ganthem,Halla,Klinte,Roma', ',')) as socknarOfIntresse on x.TRAKT like socknarOfIntresse.socken + '%')
-
+ByggnadPåFastighetISocken:
     select Fastighetsbeteckning, Byggnadstyp,shape ByggShape
 into #ByggnadPåFastighetISocken
       from (
                select *, row_number() over (partition by Fastighetsbeteckning order by Byggnadstyp ) orderz
                from ( Select Byggnadstyp,socknarOfIntresse.fastighet Fastighetsbeteckning,byggnad_yta.SHAPE
-                from (select andamal_1T Byggnadstyp,Shape from sde_gsd.gng.BY_0980) byggnad_yta inner join socknarOfIntresse on byggnad_yta.Shape.STWithin(socknarOfIntresse.shape) = 1) q
+                from (select andamal_1T Byggnadstyp,Shape from sde_gsd.gng.BY_0980) byggnad_yta inner join #SockenYtor socknarOfIntresse on byggnad_yta.Shape.STWithin(socknarOfIntresse.shape) = 1) q
            ) z where orderz = 1;Print N'rebuilt#ByggnadPåFastighetISocken' + CURRENT_TIMESTAMP + ' RowNR:' + @@ROWCOUNT;goto TableInitiate;
 
 Socken_tillstånd:
-      with FiltreradeFast as (select socken SockenX, concat(Trakt, ' ', Blockenhet) FAStighet, Shape from sde_gsd.gng.AY_0980 x inner join (SELECT value "socken" from STRING_SPLIT(N'Björke,Dalhem,Fröjel,Ganthem,Halla,Klinte,Roma', ',')) as socknarOfIntresse on x.TRAKT like socknarOfIntresse.socken + '%'),aso as (select left(Fastighet_tillstand, case when charindex(' ', Fastighet_tillstand) = 0 then len(Fastighet_tillstand) + 1 else charindex(' ', Fastighet_tillstand) end - 1) socken,Diarienummer,Fastighet_tillstand                                                             z,Beslut_datum,Utford_datum,Anteckning,Shape                                                                           anlShape from sde_miljo_halsoskydd.gng.ENSKILT_AVLOPP_sodra_P),
+      with
+       aso as (select left(Fastighet_tillstand, case when charindex(' ', Fastighet_tillstand) = 0 then len(Fastighet_tillstand) + 1 else charindex(' ', Fastighet_tillstand) end - 1) socken,Diarienummer,Fastighet_tillstand                                                             z,Beslut_datum,Utford_datum,Anteckning,Shape                                                                           anlShape from sde_miljo_halsoskydd.gng.ENSKILT_AVLOPP_sodra_P),
        aNo as (select left(Fastighet_tillstand, case when charindex(' ', Fastighet_tillstand) = 0 then len(Fastighet_tillstand) + 1 else charindex(' ', Fastighet_tillstand) end - 1) socken,Diarienummer,Fastighet_tillstand                                                             z,Beslut_datum,Utford_datum,Anteckning,Shape                                                                           anlShape from sde_miljo_halsoskydd.gng.ENSKILT_AVLOPP_Norra_P),
        aMo as (select left(Fastighet_tilstand, case when charindex(' ', Fastighet_tilstand) = 0 then len(Fastighet_tilstand) + 1 else charindex(' ', Fastighet_tilstand) end - 1) socken,Diarienummer,Fastighet_tilstand                                                            z,Beslut_datum,Utford_datum,Anteckning,Shape                                                                         anlShape from sde_miljo_halsoskydd.gng.ENSKILT_AVLOPP_MELLERSTA_P),
-       sodra_p as (select Diarienummer, z q, Beslut_datum, Utford_datum, Anteckning, AllaAvlopp.anlShape, FAStighet from aSo AllaAvlopp inner join(select FiltreradeFast.*from FiltreradeFast inner join (select socken from aso group by socken) q on socken = sockenX) FFast on AllaAvlopp.socken = ffast.SockenX and AllaAvlopp.anlShape.STIntersects(FFast.Shape) = 1),
-       Norra_p as (select Diarienummer, z q, Beslut_datum, Utford_datum, Anteckning, AllaAvlopp.anlShape, FAStighet from aNo AllaAvlopp inner join(select FiltreradeFast.*from FiltreradeFast inner join (select socken from aNo group by socken) q on socken = sockenX) FFast on AllaAvlopp.socken = ffast.SockenX and AllaAvlopp.anlShape.STIntersects(FFast.Shape) = 1),
-       Mellersta_p as (select Diarienummer, z q, Beslut_datum, Utford_datum, Anteckning, AllaAvlopp.anlShape, FAStighet from aMo AllaAvlopp inner join(select FiltreradeFast.*from FiltreradeFast inner join (select socken from aMo group by socken) q on socken = sockenX) FFast on AllaAvlopp.socken = ffast.SockenX and AllaAvlopp.anlShape.STIntersects(FFast.Shape) = 1)
+       sodra_p as (select Diarienummer, z q, Beslut_datum, Utford_datum, Anteckning, AllaAvlopp.anlShape, FAStighet from aSo AllaAvlopp inner join(select FiltreradeFast.*from #sockenYtor FiltreradeFast inner join (select socken from aso group by socken) q on socken = sockenX) FFast on AllaAvlopp.socken = ffast.SockenX and AllaAvlopp.anlShape.STIntersects(FFast.Shape) = 1),
+       Norra_p as (select Diarienummer, z q, Beslut_datum, Utford_datum, Anteckning, AllaAvlopp.anlShape, FAStighet from aNo AllaAvlopp inner join(select FiltreradeFast.*from #sockenYtor FiltreradeFast inner join (select socken from aNo group by socken) q on socken = sockenX) FFast on AllaAvlopp.socken = ffast.SockenX and AllaAvlopp.anlShape.STIntersects(FFast.Shape) = 1),
+       Mellersta_p as (select Diarienummer, z q, Beslut_datum, Utford_datum, Anteckning, AllaAvlopp.anlShape, FAStighet from aMo AllaAvlopp inner join(select FiltreradeFast.*from #sockenYtor FiltreradeFast inner join (select socken from aMo group by socken) q on socken = sockenX) FFast on AllaAvlopp.socken = ffast.SockenX and AllaAvlopp.anlShape.STIntersects(FFast.Shape) = 1)
 
           select FAStighet,
                  Diarienummer,
@@ -120,13 +114,12 @@ Print 'rebuilt#Socken_tillstånd' + CURRENT_TIMESTAMP + ' RowNR:' + @@ROWCOUNT; 
 
 egetOmhändertagande:
      with
-          sYt as (select socken SockenX,concat(Trakt,' ',Blockenhet) FAStighet, Shape  from sde_gsd.gng.AY_0980 x inner join (SELECT value "socken" from STRING_SPLIT(N'Björke,Dalhem,Fröjel,Ganthem,Halla,Klinte,Roma', ',')) as socknarOfIntresse on x.TRAKT like socknarOfIntresse.socken + '%')
-          ,LOKALT_SLAM_P as ( select Diarienr,Fastighet_,Fastighe00,Eget_omhän,Lokalt_omh,Anteckning,Beslutsdat, shape from sde_miljo_halsoskydd.gng.MoH_Slam_Lokalt_p_evw)
-            ,Med_fastighet as (select * from (select *,concat(nullif(LOKALT_SLAM_P.Lokalt_omh,''),' ',nullif(LOKALT_SLAM_P.Fastighet_,''),' ',nullif(LOKALT_SLAM_P.Fastighe00,'')) fas from sde_miljo_halsoskydd.gng.MoH_Slam_Lokalt_p_evw LOKALT_SLAM_P) q where fas is not null and charindex(':',fas) > 0),
-        utan_fastighet as (select OBJECTID,Fastighet_,Fastighets,Eget_omhän,Lokalt_omh,Fastighe00,Beslutsdat,Diarienr,Anteckning,utan_fastighet.Shape,GDB_GEOMATTR_DATA,SDE_STATE_ID,FAStighet from (select *from sde_miljo_halsoskydd.gng.MoH_Slam_Lokalt_p_evw LOKALT_SLAM_P where charindex(':', concat(nullif(LOKALT_SLAM_P.Lokalt_omh, ''), ' ', nullif(LOKALT_SLAM_P.Fastighet_, ''), ' ', nullif(LOKALT_SLAM_P.Fastighe00, ''))) = 0) utan_fastighet inner join sYt on sYt.shape.STIntersects(utan_fastighet.Shape) = 1)
+          LOKALT_SLAM_P as ( select Diarienr,Fastighet_,Fastighe00,Eget_omhän,Lokalt_omh,Anteckning,Beslutsdat, shape from sde_miljo_halsoskydd.gng.MoH_Slam_Lokalt_p_evw)
+        ,Med_fastighet as (select * from (select *,concat(nullif(LOKALT_SLAM_P.Lokalt_omh,''),' ',nullif(LOKALT_SLAM_P.Fastighet_,''),' ',nullif(LOKALT_SLAM_P.Fastighe00,'')) fas from sde_miljo_halsoskydd.gng.MoH_Slam_Lokalt_p_evw LOKALT_SLAM_P) q where fas is not null and charindex(':',fas) > 0),
+        utan_fastighet as (select OBJECTID,Fastighet_,Fastighets,Eget_omhän,Lokalt_omh,Fastighe00,Beslutsdat,Diarienr,Anteckning,utan_fastighet.Shape,GDB_GEOMATTR_DATA,SDE_STATE_ID,FAStighet from (select *from sde_miljo_halsoskydd.gng.MoH_Slam_Lokalt_p_evw LOKALT_SLAM_P where charindex(':', concat(nullif(LOKALT_SLAM_P.Lokalt_omh, ''), ' ', nullif(LOKALT_SLAM_P.Fastighet_, ''), ' ', nullif(LOKALT_SLAM_P.Fastighe00, ''))) = 0) utan_fastighet inner join #SockenYtor sYt on sYt.shape.STIntersects(utan_fastighet.Shape) = 1)
 
         select fastighet,concat(nullif(Diarienr+'-','-'), nullif(Fastighe00+'-',' -'), nullif(Fastighet_+'-',' -'), nullif(Eget_omhän+'-',' -'), nullif(Lokalt_omh+'-',' -'), nullif(Anteckning+'-',' -'),FORMAT(Beslutsdat,'yyyy-MM-dd')) egetOmhändertangandeInfo,Shape  LocaltOmH into #egetOmhändertagande from
-              (select OBJECTID,Fastighet_,Fastighets,Eget_omhän,Lokalt_omh,Fastighe00,Beslutsdat,Diarienr,Anteckning,Med_fastighet.Shape,GDB_GEOMATTR_DATA,SDE_STATE_ID,FAStighet from sYt left outer join Med_fastighet
+              (select OBJECTID,Fastighet_,Fastighets,Eget_omhän,Lokalt_omh,Fastighe00,Beslutsdat,Diarienr,Anteckning,Med_fastighet.Shape,GDB_GEOMATTR_DATA,SDE_STATE_ID,FAStighet from #SockenYtor sYt left outer join Med_fastighet
                   on fas like '%' + sYt.Fastighet + '%' where fas is not null
               union all
               select * from utan_fastighet) as [sYMfuf*]
@@ -135,7 +128,6 @@ Print 'rebuilt#egetOmhändertagande' + CURRENT_TIMESTAMP + ' RowNR:' + @@ROWCOUN
 spillvaten:
     with
         Va_planomraden_171016_evw as   (select shape,dp_i_omr,planprog,planansokn from sde_pipe.gng.Va_planomraden_171016_evw)
-        ,sYt as (select socken SockenX,concat(Trakt,' ',Blockenhet) FAStighet, Shape  from sde_gsd.gng.AY_0980 x inner join (SELECT value "socken" from STRING_SPLIT(N'Björke,Dalhem,Fröjel,Ganthem,Halla,Klinte,Roma', ',')) as socknarOfIntresse on x.TRAKT like socknarOfIntresse.socken + '%')
          ,q as (
             select shape, concat(typkod,':',status,'(spill)') typ from sde_pipe.gng.VO_Spillvatten_evw VO_Spillvatten_evw union all
             select shape, concat('AVTALSABONNENT [Tabell_ObjID: ',OBJECTID,']') as c
@@ -152,13 +144,11 @@ spillvaten:
             Va_planomraden_171016_evw
          )
   select sYt.fastighet, q.typ  into #spillvaten
-  from sYt
+  from #SockenYtor sYt
            inner join q on sYt.shape.STIntersects(q.Shape) = 1
 Print 'rebuilt#spillvaten'  + CURRENT_TIMESTAMP + ' RowNR:' + @@ROWCOUNT;goto TableInitiate;
 
 röd:
-    declare @internalStatus table(one NVARCHAR(max),start datetime);
-    ;
     with     slamm as (select strFastBeteckningHel,strDelprodukt,z2 = STUFF((SELECT distinct ','+ concat( nullif(x.strTaxebenamning,''), nullif(concat(' Avbrutet:', FORMAT(nullif(x.q2z, smalldatetimefromparts(1900, 01, 01, 00, 00)),'yyyy-MM-dd')), ' Avbrutet:'))FROM #slam x  where q.strFastBeteckningHel = x.strFastBeteckningHel  FOR XML PATH ('')), 1, 1, '')FROM #slam q group by strFastBeteckningHel,strDelprodukt)
              ,slam as (select strFastBeteckningHel,datStoppdatum =STUFF((SELECT distinct ','+nullif(strDelprodukt+'|','|')+z2 FROM slamm x  where q.strFastBeteckningHel = x.strFastBeteckningHel  FOR XML PATH ('')), 1, 1, '')from slamm q group by strFastBeteckningHel)
              , socknarOfInteresse as (select distinct fastighet from #SockenYtor )
@@ -206,7 +196,7 @@ select * from #röd where left(fastighet, len('Klinte')) = 'Klinte';
 select * from #röd where left(fastighet, len('Roma')) = 'Roma';
 
 taxekod:
-end try begin catch select 1 end catch;
+--end try begin catch select 1 end catch;
 
 
 
