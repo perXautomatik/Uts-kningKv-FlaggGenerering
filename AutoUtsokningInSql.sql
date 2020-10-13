@@ -126,8 +126,7 @@ slam as (select strFastBeteckningHel,datStoppdatum =STUFF((SELECT distinct ','+n
             ,egetOmhandertagande as (select  fastighet,egetOmhändertangandeInfo,LocaltOmH from #egetOmhändertagande )
             ,anlaggningar as (select diarienummer,Fastighet,Fastighet_tillstand,Beslut_datum,utförddatum,Anteckning,(case when not (Beslut_datum > DATETIME2FROMPARTS(2003, 1, 1, 1, 1, 1, 1, 1) and utförddatum > DATETIME2FROMPARTS(2003, 1, 1, 1, 1, 1, 1, 1)) then N'röd' else N'grön' end) fstatus,anlaggningspunkt from #Socken_tillstånd)
             , attUtsokaFran as (select *, row_number() over (partition by q.fastighet order by q.Anteckning desc ) flaggnr from (select anlaggningar.diarienummer,(case when anlaggningar.anlaggningspunkt is not null then anlaggningar.fstatus else '?' end) fstatus, socknarOfInteresse.socken,socknarOfInteresse.fastighet,Byggnadstyp,Fastighet_tillstand,Beslut_datum,utförddatum,Anteckning,(case when anlaggningar.anlaggningspunkt is not null then anlaggningar.anlaggningspunkt else ByggShape end) flagga from socknarOfInteresse left outer join byggnader on socknarOfInteresse.fastighet = byggnader.fastighet left outer join anlaggningar on socknarOfInteresse.fastighet = anlaggningar.fastighet) q  where q.flagga is not null)
-            ,gul as (select null "fstat" ), -- from fastighets_Anslutningar_Gemensamhetanläggningar)
-       q as (select attUtsokaFran.socken,
+            ,q as (select attUtsokaFran.socken,
                                 attUtsokaFran.fastighet,
                                attUtsokaFran.Fastighet_tillstand,attUtsokaFran.Diarienummer,
                                attUtsokaFran.Byggnadstyp,
@@ -148,28 +147,262 @@ slam as (select strFastBeteckningHel,datStoppdatum =STUFF((SELECT distinct ','+n
                                flagga.STPointN(1) flagga
                             from attUtsokaFran)
         ,röd as ( select socken,fastighet,Fastighet_tillstand,Byggnadstyp,Beslut_datum,utförddatum,Anteckning,VaPlan,egetOmhändertangandeInfo,slam,flaggnr,flagga, (case when fstatus = N'röd' then (case when (vaPlan is null and egetOmhändertangandeInfo is null) then N'röd' else (case when VaPlan is not null then 'KomV?' else (case when null is not null then 'gem' else '?' end) end) end) else fstatus end ) Fstatus from q)
-select * into #röd from röd INSERT INTO @statusTable select N'rebuilt#Röd',CURRENT_TIMESTAMP,@@ROWCOUNT
+select socken,
+       fastighet,
+       Fastighet_tillstand,
+       Byggnadstyp,
+       Beslut_datum,
+       utförddatum,
+       Anteckning,
+       VaPlan,
+       egetOmhändertangandeInfo,
+       slam,
+       flaggnr,
+       flagga,
+       Fstatus
+into #röd from röd INSERT INTO @statusTable select N'rebuilt#Röd',CURRENT_TIMESTAMP,@@ROWCOUNT
 --Print 'rebuilt#Röd' + CURRENT_TIMESTAMP + ' RowNR:' + @@ROWCOUNT;
 
 repport:
     --begin try
-
-select * from #röd where Socken = N'Björke';
-select * from #röd where Socken = 'Dalhem';
-select * from #röd where Socken = N'Fröjel';
-select * from #röd where Socken = 'Ganthem';
-select * from #röd where Socken = 'Halla';
-select * from #röd where Socken = 'Klinte';
-select * from #röd where Socken = 'Roma';
-taxekod:
-
-
 select * from @statusTable
 end try begin catch
     insert into @statusTable select ERROR_MESSAGE(),CURRENT_TIMESTAMP,@@ROWCOUNT
     select * from @statusTable end catch
 --
---end try begin catch select 1 end catch
+taxekod:
+
+--Kopierade tabellföreteckning från gng.FLAGGSKIKTET_P
+create table gng.Inventering_Bjorke
+(
+    OBJECTID            int not null
+        constraint invBj_pk
+            primary key,
+    FASTIGHET           nvarchar(150),
+    Fastighet_tillstand nvarchar(150),
+    Arendenummer        nvarchar(50),
+    Beslut_datum        datetime2,
+    Status              nvarchar(50),
+    Utskick_datum       datetime2,
+    Anteckning          nvarchar(254),
+    Utforddatum         datetime2,
+    Slamhamtning        nvarchar(100),
+    Antal_byggnader     numeric(38, 8),
+    alltidsant          int,
+    Shape               geometry,
+    GDB_GEOMATTR_DATA   varbinary(max),
+    skapad_datum        datetime2,
+    andrad_datum        datetime2
+)
+go
+
+create index invBj_idx
+    on gng.Inventering_Bjorke (Shape)
+go
+
+BEGIN TRANSACTION
+insert into gng.Inventering_Bjorke (OBJECTID,                                           FASTIGHET,Fastighet_tillstand,  Beslut_datum,   Status,     Anteckning,                                                                                                                                                                 Utforddatum,                Slamhamtning,                Antal_byggnader,    alltidsant,  Shape,  skapad_datum,   andrad_datum)
+select                             (row_number() over (order by fastighet,flaggnr)),    fastighet,Fastighet_tillstand,  Beslut_datum,   Fstatus,    concat(Byggnadstyp,' ',Anteckning,' ',nullif(concat('vaPlan: ',VaPlan,' '),'vaPlan:  '),nullif(concat('egetOmh: ',egetOmhändertangandeInfo,' '),'egetOmh:  ')),             utförddatum,                slam,                        flaggnr,            1,           flagga, CURRENT_TIMESTAMP,CURRENT_TIMESTAMP
+from #röd where Socken = N'Björke';
+ROLLBACK TRANSACTION
+
+
+create table gng.Inventering_Dalhem
+(
+    OBJECTID            int not null
+        constraint invDahl_pk
+            primary key,
+    FASTIGHET           nvarchar(150),
+    Fastighet_tillstand nvarchar(150),
+    Arendenummer        nvarchar(50),
+    Beslut_datum        datetime2,
+    Status              nvarchar(50),
+    Utskick_datum       datetime2,
+    Anteckning          nvarchar(254),
+    Utforddatum         datetime2,
+    Slamhamtning        nvarchar(100),
+    Antal_byggnader     numeric(38, 8),
+    alltidsant          int,
+    Shape               geometry,
+    GDB_GEOMATTR_DATA   varbinary(max),
+    skapad_datum        datetime2,
+    andrad_datum        datetime2
+)
+go
+
+create index invDahl_idx
+    on gng.Inventering_Dalhem (Shape)
+go
+BEGIN TRANSACTION
+insert into gng.Inventering_Dalhem (OBJECTID,                                           FASTIGHET,Fastighet_tillstand,  Beslut_datum,   Status,     Anteckning,                                                                                                                                                                 Utforddatum,                Slamhamtning,                Antal_byggnader,    alltidsant,  Shape,  skapad_datum,   andrad_datum)
+select                             (row_number() over (order by fastighet,flaggnr)),    fastighet,Fastighet_tillstand,  Beslut_datum,   Fstatus,    concat(Byggnadstyp,' ',Anteckning,' ',nullif(concat('vaPlan: ',VaPlan,' '),'vaPlan:  '),nullif(concat('egetOmh: ',egetOmhändertangandeInfo,' '),'egetOmh:  ')),             utförddatum,                slam,                        flaggnr,            1,           flagga, CURRENT_TIMESTAMP,CURRENT_TIMESTAMP
+from #röd where Socken = 'Dalhem';
+ROLLBACK TRANSACTION
+
+create table gng.Inventering_frojel
+(
+    OBJECTID            int not null
+        constraint invfrojel_pk
+            primary key,
+    FASTIGHET           nvarchar(150),
+    Fastighet_tillstand nvarchar(150),
+    Arendenummer        nvarchar(50),
+    Beslut_datum        datetime2,
+    Status              nvarchar(50),
+    Utskick_datum       datetime2,
+    Anteckning          nvarchar(254),
+    Utforddatum         datetime2,
+    Slamhamtning        nvarchar(100),
+    Antal_byggnader     numeric(38, 8),
+    alltidsant          int,
+    Shape               geometry,
+    GDB_GEOMATTR_DATA   varbinary(max),
+    skapad_datum        datetime2,
+    andrad_datum        datetime2
+)
+go
+
+create index invfrojel_idx
+    on gng.Inventering_frojel (Shape)
+go
+BEGIN TRANSACTION
+insert into gng.Inventering_frojel (OBJECTID,                                           FASTIGHET,Fastighet_tillstand,  Beslut_datum,   Status,     Anteckning,                                                                                                                                                                 Utforddatum,                Slamhamtning,                Antal_byggnader,    alltidsant,  Shape,  skapad_datum,   andrad_datum)
+select                             (row_number() over (order by fastighet,flaggnr)),    fastighet,Fastighet_tillstand,  Beslut_datum,   Fstatus,    concat(Byggnadstyp,' ',Anteckning,' ',nullif(concat('vaPlan: ',VaPlan,' '),'vaPlan:  '),nullif(concat('egetOmh: ',egetOmhändertangandeInfo,' '),'egetOmh:  ')),             utförddatum,                slam,                        flaggnr,            1,           flagga, CURRENT_TIMESTAMP,CURRENT_TIMESTAMP
+from #röd where Socken = 'fröjel';
+ROLLBACK TRANSACTION
+
+
+
+
+create table gng.Inventering_ganthem
+(
+    OBJECTID            int not null
+        constraint invganthem_pk
+            primary key,
+    FASTIGHET           nvarchar(150),
+    Fastighet_tillstand nvarchar(150),
+    Arendenummer        nvarchar(50),
+    Beslut_datum        datetime2,
+    Status              nvarchar(50),
+    Utskick_datum       datetime2,
+    Anteckning          nvarchar(254),
+    Utforddatum         datetime2,
+    Slamhamtning        nvarchar(100),
+    Antal_byggnader     numeric(38, 8),
+    alltidsant          int,
+    Shape               geometry,
+    GDB_GEOMATTR_DATA   varbinary(max),
+    skapad_datum        datetime2,
+    andrad_datum        datetime2
+)
+go
+
+create index invganthem_idx
+    on gng.Inventering_ganthem (Shape)
+go
+BEGIN TRANSACTION
+insert into gng.Inventering_ganthem (OBJECTID,                                           FASTIGHET,Fastighet_tillstand,  Beslut_datum,   Status,     Anteckning,                                                                                                                                                                 Utforddatum,                Slamhamtning,                Antal_byggnader,    alltidsant,  Shape,  skapad_datum,   andrad_datum)
+select                             (row_number() over (order by fastighet,flaggnr)),    fastighet,Fastighet_tillstand,  Beslut_datum,   Fstatus,    concat(Byggnadstyp,' ',Anteckning,' ',nullif(concat('vaPlan: ',VaPlan,' '),'vaPlan:  '),nullif(concat('egetOmh: ',egetOmhändertangandeInfo,' '),'egetOmh:  ')),             utförddatum,                slam,                        flaggnr,            1,           flagga, CURRENT_TIMESTAMP,CURRENT_TIMESTAMP
+from #röd where Socken = 'Ganthem';
+ROLLBACK TRANSACTION
+
+
+create table gng.Inventering_Halla
+(
+    OBJECTID            int not null
+        constraint invHalla_pk
+            primary key,
+    FASTIGHET           nvarchar(150),
+    Fastighet_tillstand nvarchar(150),
+    Arendenummer        nvarchar(50),
+    Beslut_datum        datetime2,
+    Status              nvarchar(50),
+    Utskick_datum       datetime2,
+    Anteckning          nvarchar(254),
+    Utforddatum         datetime2,
+    Slamhamtning        nvarchar(100),
+    Antal_byggnader     numeric(38, 8),
+    alltidsant          int,
+    Shape               geometry,
+    GDB_GEOMATTR_DATA   varbinary(max),
+    skapad_datum        datetime2,
+    andrad_datum        datetime2
+)
+go
+
+create index invHalla_idx
+    on gng.Inventering_Halla (Shape)
+go
+BEGIN TRANSACTION
+insert into gng.Inventering_Halla (OBJECTID,                                           FASTIGHET,Fastighet_tillstand,  Beslut_datum,   Status,     Anteckning,                                                                                                                                                                 Utforddatum,                Slamhamtning,                Antal_byggnader,    alltidsant,  Shape,  skapad_datum,   andrad_datum)
+select                             (row_number() over (order by fastighet,flaggnr)),    fastighet,Fastighet_tillstand,  Beslut_datum,   Fstatus,    concat(Byggnadstyp,' ',Anteckning,' ',nullif(concat('vaPlan: ',VaPlan,' '),'vaPlan:  '),nullif(concat('egetOmh: ',egetOmhändertangandeInfo,' '),'egetOmh:  ')),             utförddatum,                slam,                        flaggnr,            1,           flagga, CURRENT_TIMESTAMP,CURRENT_TIMESTAMP
+from #röd where Socken = 'Halla';
+ROLLBACK TRANSACTION
+
+
+create table gng.Inventering_klinte
+(
+    OBJECTID            int not null
+        constraint invklinte_pk
+            primary key,
+    FASTIGHET           nvarchar(150),
+    Fastighet_tillstand nvarchar(150),
+    Arendenummer        nvarchar(50),
+    Beslut_datum        datetime2,
+    Status              nvarchar(50),
+    Utskick_datum       datetime2,
+    Anteckning          nvarchar(254),
+    Utforddatum         datetime2,
+    Slamhamtning        nvarchar(100),
+    Antal_byggnader     numeric(38, 8),
+    alltidsant          int,
+    Shape               geometry,
+    GDB_GEOMATTR_DATA   varbinary(max),
+    skapad_datum        datetime2,
+    andrad_datum        datetime2
+)
+go
+
+create index invklinte_idx
+    on gng.Inventering_klinte (Shape)
+go
+BEGIN TRANSACTION
+insert into gng.Inventering_klinte (OBJECTID,                                           FASTIGHET,Fastighet_tillstand,  Beslut_datum,   Status,     Anteckning,                                                                                                                                                                 Utforddatum,                Slamhamtning,                Antal_byggnader,    alltidsant,  Shape,  skapad_datum,   andrad_datum)
+select                             (row_number() over (order by fastighet,flaggnr)),    fastighet,Fastighet_tillstand,  Beslut_datum,   Fstatus,    concat(Byggnadstyp,' ',Anteckning,' ',nullif(concat('vaPlan: ',VaPlan,' '),'vaPlan:  '),nullif(concat('egetOmh: ',egetOmhändertangandeInfo,' '),'egetOmh:  ')),             utförddatum,                slam,                        flaggnr,            1,           flagga, CURRENT_TIMESTAMP,CURRENT_TIMESTAMP
+from #röd where Socken = 'klinte';
+ROLLBACK TRANSACTION
+
+create table gng.Inventering_roma
+(
+    OBJECTID            int not null
+        constraint invroma_pk
+            primary key,
+    FASTIGHET           nvarchar(150),
+    Fastighet_tillstand nvarchar(150),
+    Arendenummer        nvarchar(50),
+    Beslut_datum        datetime2,
+    Status              nvarchar(50),
+    Utskick_datum       datetime2,
+    Anteckning          nvarchar(254),
+    Utforddatum         datetime2,
+    Slamhamtning        nvarchar(100),
+    Antal_byggnader     numeric(38, 8),
+    alltidsant          int,
+    Shape               geometry,
+    GDB_GEOMATTR_DATA   varbinary(max),
+    skapad_datum        datetime2,
+    andrad_datum        datetime2
+)
+go
+
+create index invroma_idx
+    on gng.Inventering_roma (Shape)
+go
+BEGIN TRANSACTION
+insert into gng.Inventering_roma (OBJECTID,                                           FASTIGHET,Fastighet_tillstand,  Beslut_datum,   Status,     Anteckning,                                                                                                                                                                 Utforddatum,                Slamhamtning,                Antal_byggnader,    alltidsant,  Shape,  skapad_datum,   andrad_datum)
+select                             (row_number() over (order by fastighet,flaggnr)),    fastighet,Fastighet_tillstand,  Beslut_datum,   Fstatus,    concat(Byggnadstyp,' ',Anteckning,' ',nullif(concat('vaPlan: ',VaPlan,' '),'vaPlan:  '),nullif(concat('egetOmh: ',egetOmhändertangandeInfo,' '),'egetOmh:  ')),             utförddatum,                slam,                        flaggnr,            1,           flagga, CURRENT_TIMESTAMP,CURRENT_TIMESTAMP
+from #röd where Socken = 'roma';
+ROLLBACK TRANSACTION
 
 
 
