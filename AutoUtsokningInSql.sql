@@ -57,6 +57,7 @@ set @tid = CURRENT_TIMESTAMP INSERT INTO @statusTable (medelande)  select 'Start
 
 select* into #Socken_tillstånd from OPENQUERY (gisdb01, N'
 
+
       with socknarOfIntresse as (Select N''Björke'' "socken"  Union Select ''Dalhem'' as alias2 Union Select N''Fröjel'' as alias234567 Union Select ''Ganthem'' as alias23 Union Select ''Halla'' as alias234 Union Select ''Klinte'' as alias2345 Union Select ''Roma'' as alias23456) SELECT socken SockenX,concat(Trakt,'' '',Blockenhet) FAStighet, Shape from sde_gsd.gng.AY_0980 x inner join socknarOfIntresse on left(x.TRAKT, len(socknarOfIntresse.socken)) = socknarOfIntresse.socken
 
        ,AnSoMedSocken as (select left(Fastighet_tillstand, case when charindex('' '', Fastighet_tillstand) = 0 then len(Fastighet_tillstand) + 1 else charindex('' '', Fastighet_tillstand) end - 1) socken,Diarienummer,Fastighet_tillstand                                                             z,Beslut_datum,Utford_datum,Anteckning,Shape                                                                           anlShape from sde_miljo_halsoskydd.gng.ENSKILT_AVLOPP_sodra_P),
