@@ -31,27 +31,24 @@ IF OBJECT_ID('tempdb..#SockenYtor') IS NULL
     set @tid = CURRENT_TIMESTAMP ;
     INSERT INTO #statusTable (medelande) select 'Starting#SockenYtor' as alias
 BEGIN TRANSACTION
-    declare @query nvarchar(max),@bjorke nvarchar(255),@dalhem varchar(255),@frojel nvarchar(255),@ganthem varchar(255),@Halla varchar(255),@Klinte varchar(255),@Roma varchar(255),
-        @innerInnerQuery nvarchar(MAX),@innerQuery nvarchar(510),@outerparam nvarchar (250),@innerparam nvarchar (250)
 
-    set @bjorke=N'björke'
-    set @dalhem = 'Dalhem'
-    set @frojel = N'Fröjel'
-    set @ganthem = 'Ganthem'
-    set @Halla = 'Halla'
-    set @Klinte = 'Klinte'
-    set @Roma = 'Roma' ;
+    declare @externalQuery nvarchar(max), @externalparam nvarchar(255), @bjorke nvarchar(255),@dalhem varchar(255),@frojel nvarchar(255),@ganthem varchar(255),@Halla varchar(255),@Klinte varchar(255),@Roma varchar(255)
+    set @bjorke=N'björke'set @dalhem = 'Dalhem'set @frojel = N'Fröjel'set @ganthem = 'Ganthem'set @Halla = 'Halla'set @Klinte = 'Klinte'set @Roma = 'Roma';
+    set @externalparam = N'@bjorke nvarchar(255) , @dalhem varchar(255) , @frojel nvarchar(255) , @ganthem varchar(255) , @Halla varchar(255) , @Klinte varchar(255) ,  @Roma varchar(255)'
+    set @externalQuery =  'with socknarOfIntresse as (SELECT socken SockenX,concat(Trakt,SPACE(0),Blockenhet) FAStighet, Shape from sde_gsd.gng.AY_0980 x inner join (Select  @bjorke  "socken" Union Select @dalhem  "a" Union Select @frojel  "a" Union Select  @ganthem "a" Union Select   @Halla "a" Union Select  @Klinte  "a" Union Select  @Roma   "a" ) socknarOfIntresse on left(x.TRAKT, len(socknarOfIntresse.socken)) = socknarOfIntresse.socken ) select * from socknarOfIntresse'
 
-    set @innerInnerQuery = 'with socknarOfIntresse as (SELECT socken SockenX,concat(Trakt,SPACE(0),Blockenhet) FAStighet, Shape from sde_gsd.gng.AY_0980 x inner join (Select  @bjorke  "socken" Union Select @dalhem  "a" Union Select @frojel  "a" Union Select  @ganthem "a" Union Select   @Halla "a" Union Select  @Klinte  "a" Union Select  @Roma   "a" ) socknarOfIntresse on left(x.TRAKT, len(socknarOfIntresse.socken)) = socknarOfIntresse.socken ) select * from socknarOfIntresse'
-    set @innerparam = N'@bjorke nvarchar(255) , @dalhem varchar(255) , @frojel nvarchar(255) , @ganthem varchar(255) , @Halla varchar(255) , @Klinte varchar(255) ,  @Roma varchar(255), @innerInnerQuery nvarchar(250)'
-    set @innerQuery = 'select * INTO #SockenYtor from OPENQUERY(gisdb01,  '''';with socknarOfIntresse as (SELECT socken SockenX,concat(Trakt,SPACE(0),Blockenhet) FAStighet, Shape from sde_gsd.gng.AY_0980 x inner join (Select  @bjorke  "socken" Union Select @dalhem  "a" Union Select @frojel  "a" Union Select  @ganthem "a" Union Select   @Halla "a" Union Select  @Klinte  "a" Union Select  @Roma "a" ) socknarOfIntresse on left(x.TRAKT, len(socknarOfIntresse.socken)) = socknarOfIntresse.socken ) select * from socknarOfIntresse'''')'
-    EXEC sp_executesql @innerQuery,@innerParam,@bjorke=@bjorke, @dalhem=@dalhem, @frojel=@frojel, @ganthem= @ganthem, @Halla=@Halla, @Klinte= @Klinte, @Roma=@Roma,@innerInnerQuery=@innerInnerQuery
-    set @outerparam = N'@innerQuery nvarchar(250), @innerInnerQuery nvarchar(250), @innerparam nvarchar (250),@bjorke nvarchar(255) , @dalhem varchar(255) , @frojel nvarchar(255) , @ganthem varchar(255) , @Halla varchar(255) , @Klinte varchar(255) ,  @Roma varchar(255)'
-    set @query= N'EXEC sp_executesql @innerQuery,@innerParam,@bjorke=@bjorke, @dalhem=@dalhem, @frojel=@frojel, @ganthem= @ganthem, @Halla=@Halla, @Klinte= @Klinte, @Roma=@Roma,@innerInnerQuery=@innerInnerQuery';
+    CREATE TABLE #SockenYtor
+    (
+        socken nvarchar(100),
+        FAStighet nvarchar (250),
+        Shape geometry
+    )
 
-
-EXEC sp_executesql @query, @outerParam,  @innerQuery =@innerQuery,@innerParam=@innerParam,@bjorke=@bjorke, @dalhem=@dalhem, @frojel=@frojel, @ganthem= @ganthem, @Halla=@Halla, @Klinte= @Klinte, @Roma=@Roma, @innerInnerQuery=@innerInnerQuery
-
+    INSERT INTO #SockenYtor
+    exec
+        gisdb01.master.dbo.sp_executesql @externalQuery,
+             @externalparam,
+             @bjorke=@bjorke, @dalhem=@dalhem, @frojel=@frojel, @ganthem= @ganthem, @Halla=@Halla, @Klinte= @Klinte, @Roma=@Roma
 
 Commit Transaction
     end try
