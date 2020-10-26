@@ -13,7 +13,7 @@ if (select 1) IS NULL BEGIN TRY
     Drop table #ByggnadPaFastighetISocken
     Drop table #Socken_tillstand
     Drop table #egetOmhandertagande
-    Drop table #spillvaten
+    Drop table #Spillvatten
     Drop table #slam
     Drop table #rodx
     Commit Transaction
@@ -35,8 +35,8 @@ BEGIN TRANSACTION
     declare @externalQuery nvarchar(max), @externalparam nvarchar(255), @bjorke nvarchar(255),@dalhem varchar(255),@frojel nvarchar(255),@ganthem varchar(255),@Halla varchar(255),@Klinte varchar(255),@Roma varchar(255)
     set @bjorke=N'björke'set @dalhem = 'Dalhem'set @frojel = N'Fröjel'set @ganthem = 'Ganthem'set @Halla = 'Halla'set @Klinte = 'Klinte'set @Roma = 'Roma';
     set @externalparam = N'@bjorke nvarchar(255) , @dalhem varchar(255) , @frojel nvarchar(255) , @ganthem varchar(255) , @Halla varchar(255) , @Klinte varchar(255) ,  @Roma varchar(255)'
-    set @externalQuery =  'with fastighetsfilter as (Select  @bjorke  "socken" Union Select @dalhem  "a" Union Select @frojel  "a" Union Select  @ganthem "a" Union Select   @Halla "a" Union Select  @Klinte  "a" Union Select  @Roma   "a" )'+  
-                          ',,socknarOfIntresse as (SELECT fastighetsFilter.socken SockenX,concat(Trakt,SPACE(1),Blockenhet) FAStighet, Shape from sde_gsd.gng.AY_0980 x inner join fastighetsFilter on left(x.TRAKT, len(socknarOfIntresse.socken)) = socknarOfIntresse.socken )' +
+    set @externalQuery =  'with fastighetsfilter as (Select  @bjorke  "socken" Union Select @dalhem  "a" Union Select @frojel  "a" Union Select  @ganthem "a" Union Select   @Halla "a" Union Select  @Klinte  "a" Union Select  @Roma   "a" )'+
+                          ',socknarOfIntresse as (SELECT fastighetsFilter.socken SockenX,concat(Trakt,SPACE(1),Blockenhet) FAStighet, Shape from sde_gsd.gng.AY_0980 x inner join fastighetsFilter on left(x.TRAKT, len(fastighetsfilter.socken)) = fastighetsfilter.socken)' +
                           'select * from socknarOfIntresse'
 
     CREATE TABLE #SockenYtor
@@ -69,7 +69,7 @@ IF OBJECT_ID(N'tempdb..#ByggnadPaFastighetISocken') is not null
          end end
  IF OBJECT_ID(N'tempdb..#ByggnadPaFastighetISocken') is null
          begin
-set @tid = CURRENT_TIMESTAMP INSERT INTO #statusTable (medelande)  select 'Starting#Byggnadsyta' "a" 
+set @tid = CURRENT_TIMESTAMP INSERT INTO #statusTable (medelande)  select 'Starting#Byggnadsyta' "a"
 BEGIN TRY
     BEGIN TRANSACTION
 
@@ -117,8 +117,8 @@ BEGIN TRY
     set @bjorke=N'björke'set @dalhem = 'Dalhem'set @frojel = N'Fröjel'set @ganthem = 'Ganthem'set @Halla = 'Halla'set @Klinte = 'Klinte'set @Roma = 'Roma';
     set @externalparam = N'@bjorke nvarchar(255) , @dalhem varchar(255) , @frojel nvarchar(255) , @ganthem varchar(255) , @Halla varchar(255) , @Klinte varchar(255) ,  @Roma varchar(255)'
 
-    set @externalQuery =  'with fastighetsfilter as (Select  @bjorke  "socken" Union Select @dalhem  "a" Union Select @frojel  "a" Union Select  @ganthem "a" Union Select   @Halla "a" Union Select  @Klinte  "a" Union Select  @Roma   "a" )'+
-                          ',,socknarOfIntresse as (SELECT fastighetsFilter.socken SockenX,concat(Trakt,SPACE(1),Blockenhet) FAStighet, Shape from sde_gsd.gng.AY_0980 x inner join fastighetsFilter on left(x.TRAKT, len(socknarOfIntresse.socken)) = socknarOfIntresse.socken )' +
+    set @externalQuery = 'with fastighetsfilter as (Select  @bjorke  "socken" Union Select @dalhem  "a" Union Select @frojel  "a" Union Select  @ganthem "a" Union Select   @Halla "a" Union Select  @Klinte  "a" Union Select  @Roma   "a" )'+
+                        ',socknarOfIntresse as (SELECT fastighetsFilter.socken SockenX,concat(Trakt,SPACE(1),Blockenhet) FAStighet, Shape from sde_gsd.gng.AY_0980 x inner join fastighetsFilter on left(x.TRAKT, len(fastighetsFilter.socken)) = fastighetsFilter.socken )' +
                           N',AnSoMedSocken as (select left(Fastighet_tillstand, case when charindex(SPACE(1), Fastighet_tillstand) = 0 then len(Fastighet_tillstand) + 1 else charindex(SPACE(1), Fastighet_tillstand) end - 1) socken,Diarienummer,Fastighet_tillstand   z,Beslut_datum,Utford_datum,Anteckning,Shape                 anlShape from sde_miljo_halsoskydd.gng.ENSKILT_AVLOPP_sodra_P), AnNoMedSocken as (select left(Fastighet_tillstand, case when charindex(SPACE(1), Fastighet_tillstand) = 0 then len(Fastighet_tillstand) + 1 else charindex(SPACE(1), Fastighet_tillstand) end - 1) socken,Diarienummer,Fastighet_tillstand   z,Beslut_datum,Utford_datum,Anteckning,Shape                 anlShape from sde_miljo_halsoskydd.gng.ENSKILT_AVLOPP_Norra_P), AnMeMedSocken as (select left(Fastighet_tilstand, case when charindex(SPACE(1), Fastighet_tilstand) = 0 then len(Fastighet_tilstand) + 1 else charindex(SPACE(1), Fastighet_tilstand) end - 1) socken,Diarienummer,Fastighet_tilstand                                                            z,Beslut_datum,Utford_datum,Anteckning,Shape               anlShape from sde_miljo_halsoskydd.gng.ENSKILT_AVLOPP_MELLERSTA_P),SodraFiltrerad as (select Diarienummer, z q, Beslut_datum, Utford_datum, Anteckning, AllaAvlopp.anlShape, FAStighet from AnSoMedSocken AllaAvlopp inner join(select FiltreradeFast.*from socknarOfIntresse FiltreradeFast inner join (select socken from AnSoMedSocken group by socken) q on socken = sockenX) FFast on AllaAvlopp.socken = ffast.SockenX and AllaAvlopp.anlShape.STIntersects(FFast.Shape) = 1), NorraFiltrerad as (select Diarienummer, z q, Beslut_datum, Utford_datum, Anteckning, AllaAvlopp.anlShape, FAStighet from AnNoMedSocken AllaAvlopp inner join(select FiltreradeFast.*from socknarOfIntresse FiltreradeFast inner join (select socken from AnNoMedSocken group by socken) q on socken = sockenX) FFast on AllaAvlopp.socken = ffast.SockenX and AllaAvlopp.anlShape.STIntersects(FFast.Shape) = 1), MellerstaFiltrerad as (select Diarienummer, z q, Beslut_datum, Utford_datum, Anteckning, AllaAvlopp.anlShape, FAStighet from AnMeMedSocken AllaAvlopp inner join(select FiltreradeFast.*from socknarOfIntresse FiltreradeFast inner join (select socken from AnMeMedSocken group by socken) q on socken = sockenX) FFast on AllaAvlopp.socken = ffast.SockenX and AllaAvlopp.anlShape.STIntersects(FFast.Shape) = 1), SammanSlagna as (select Diarienummer, q "Fastighet_tillstand",isnull(TRY_CONVERT(DateTime, Beslut_datum,102), DATETIME2FROMPARTS(1988, 1, 1, 1, 1, 1, 1, 1)) Beslut_datum, isnull(TRY_CONVERT(DateTime, Utford_datum,102), DATETIME2FROMPARTS(1988, 1, 1, 1, 1, 1, 1, 1)) Utford_datum, Anteckning, anlShape, FAStighet from (select * from SodraFiltrerad union all select * from NorraFiltrerad union all select * from MellerstaFiltrerad) z) ' +
                           N'select FAStighet,Diarienummer,Fastighet_tillstand,Beslut_datum,Utford_datum "utförddatum",Anteckning,anlShape     AnlaggningsPunkt from SammanSlagna'
 
@@ -206,13 +206,13 @@ BEGIN TRY
 go
 declare @tid smalldatetime;
 INSERT INTO #statusTable (medelande) select '#initiating#Spillvatten' "a" ;
-IF OBJECT_ID('tempdb..#spillvaten') IS not NULL
-begin if not (exists(select 1 from #spillvaten))
-begin drop table #spillvaten
+IF OBJECT_ID('tempdb..#Spillvatten') IS not NULL
+begin if not (exists(select 1 from #Spillvatten))
+begin drop table #Spillvatten
     end end
-IF OBJECT_ID('tempdb..#spillvaten') IS NULL
+IF OBJECT_ID('tempdb..#Spillvatten') IS NULL
     begin
-set @tid = CURRENT_TIMESTAMP INSERT INTO #statusTable (medelande)  select 'Starting#spillvaten' "a"
+set @tid = CURRENT_TIMESTAMP INSERT INTO #statusTable (medelande)  select 'Starting#Spillvatten' "a"
 BEGIN TRY
     BEGIN TRANSACTION
 
@@ -238,7 +238,7 @@ BEGIN TRY
 Commit Transaction
 
     end try begin catch ROLLBACK TRANSACTION  insert into #statusTable select ERROR_MESSAGE() "E" , CURRENT_TIMESTAMP "C" , @@ROWCOUNT as [@4] print 'failed to build' end catch set @tid = CURRENT_TIMESTAMP - @tid INSERT INTO #statusTable select 'rebuilt#' "a" ,@tid, @@ROWCOUNT as [@3]end INSERT INTO #statusTable select
-    'preloading#spillvaten'
+    'preloading#Spillvatten'
       ,CURRENT_TIMESTAMP,count(*) from
 #Spillvatten;
 
@@ -255,16 +255,12 @@ IF OBJECT_ID(
 set @tid = CURRENT_TIMESTAMP INSERT INTO #statusTable (medelande)  select 'Starting#TaxeKod' "a"
 BEGIN TRY
     BEGIN TRANSACTION
-
-
-declare @externalQuery nvarchar(max), @externalparam nvarchar(1000), @bjorke nvarchar(255),@dalhem varchar(255),@frojel nvarchar(255),@ganthem varchar(255),@Halla varchar(255),@Klinte varchar(255),@Roma varchar(255)
+    declare @externalQuery nvarchar(max), @externalparam nvarchar(1000), @bjorke nvarchar(255),@dalhem varchar(255),@frojel nvarchar(255),@ganthem varchar(255),@Halla varchar(255),@Klinte varchar(255),@Roma varchar(255)
     ,@cont nvarchar(250),@grund nvarchar(250),@overtra nvarchar(250),@hush nvarchar(250),@avctr nvarchar(250),@budsm nvarchar(250),@hyra nvarchar(250),@depoX nvarchar(250);
    set @depoX='DEPO' set @cont = 'CONT'set @grund = 'GRUNDR'set @overtra = N'ÖVRTRA'set @hush = 'HUSH'set @avctr=N'ÅVCTR'set @budsm = 'BUDSM'set @hyra = 'HYRA'
     set @bjorke=N'björke'set @dalhem = 'Dalhem'set @frojel = N'Fröjel'set @ganthem = 'Ganthem'set @Halla = 'Halla'set @Klinte = 'Klinte'set @Roma = 'Roma';
-    set @externalparam = N'@bjorke nvarchar(255) , @dalhem varchar(255) , @frojel nvarchar(255) , @ganthem varchar(255) , @Halla varchar(255) , @Klinte varchar(255) ,  @Roma varchar(255)'
-                            +
+    set @externalparam = N'@bjorke nvarchar(255) , @dalhem varchar(255) , @frojel nvarchar(255) , @ganthem varchar(255) , @Halla varchar(255) , @Klinte varchar(255) ,  @Roma varchar(255)' +
                         ',@avctr nvarchar(255), @depoX varchar(255),@cont varchar(255),@grund varchar(255),@overtra nvarchar(255),@hush varchar(255),@budsm varchar(255),@hyra varchar(255)'
-
    set @externalQuery =
            'with fastighetsfilter as (Select  @bjorke  "socken" Union Select @dalhem  "a" Union Select @frojel  "a" Union Select  @ganthem "a" Union Select   @Halla "a" Union Select  @Klinte  "a" Union Select  @Roma   "a" )'+
     ',EjRelevanta as (select @depoX "strDelprodukt" union select @cont "a" union select @grund "a" union select @overtra "a" union select @hush "a" union select @avctr "a" union select @budsm "a" union select @hyra "a")
@@ -297,8 +293,8 @@ declare @externalQuery nvarchar(max), @externalparam nvarchar(1000), @bjorke nva
  ,CURRENT_TIMESTAMP,count(*) from
 #taxekod
 
-
-go declare @query nvarchar(max);declare @tid smalldatetime; INSERT INTO #statusTable (medelande) select
+go
+declare @tid smalldatetime; INSERT INTO #statusTable (medelande) select
 N'#initiating#röd'
  "a" ; IF OBJECT_ID(
  N'tempdb..#röd'
@@ -310,7 +306,9 @@ N'#initiating#röd'
 N'tempdb..#röd'
 ) IS NULL begin try set @tid = CURRENT_TIMESTAMP INSERT INTO #statusTable (medelande)  select
 N'Starting#Röd' "a";
-        BEGIN TRY DROP TABLE #slam END TRY BEGIN CATCH select 1 END CATCH
+        BEGIN TRY
+            BEGIN TRANSACTION
+            DROP TABLE #slam END TRY BEGIN CATCH select 1 END CATCH
         ;with
             taxekod as (select * from #taxekod )
             ,slam as ( select max(q2z) q2z,strDelprodukt, strTaxebenamning,strFastBeteckningHel, decAnlXKoordinat, decAnlYkoordinat
@@ -320,10 +318,12 @@ N'Starting#Röd' "a";
              slamm as (select strFastBeteckningHel,strDelprodukt,z2 = STUFF((SELECT distinct ','+ concat(nullif(x.strTaxebenamning,''), nullif(concat(' Avbrutet:', FORMAT(nullif(x.q2z, smalldatetimefromparts(1900, 01, 01, 00, 00)), 'yyyy-MM-dd')), ' Avbrutet:')) "c"
             FROM #slam x where q.strFastBeteckningHel = x.strFastBeteckningHel FOR XML PATH ('')), 1, 1, '')FROM #slam q group by strFastBeteckningHel,strDelprodukt)
             ,slam as (select strFastBeteckningHel,datStoppdatum =STUFF((SELECT distinct ','+nullif(strDelprodukt+'|','|')+z2 "n"  FROM slamm x where q.strFastBeteckningHel = x.strFastBeteckningHel FOR XML PATH ('')), 1, 1, '')from slamm q group by strFastBeteckningHel)
-            ,socknarOfInteresse as (select distinct sockenX socken, fastighet from #SockenYtor )
+            ,socknarOfInteresse as (select distinct socken, fastighet from #SockenYtor )
             ,byggnader as (select Fastighetsbeteckning fastighet, Byggnadstyp,ByggShape from #ByggnadPaFastighetISocken)
-            ,vaPlan as (select fastighet,typ  from #spillvaten)
-            ,egetOmhandertagande as (select  fastighet,egetOmhandertangandeInfo,LocaltOmH from #egetOmhandertagande )
+             ,vaPlan as (select fastighet,typ  from #Spillvatten)
+            ,egetOmhandertagande as (select  fastighet,
+                                            egetOmhandertangandeInfo = (concat(nullif(Diarienr+' -',' - '), nullif(Fastighe00+' - ',' - '), nullif(Fastighet_+' - ',' -'), nullif(Eget_omhän+' - ',' - '), nullif(Lokalt_omh+' - ',' -'), nullif(Anteckning+' - ',' - '),FORMAT(Beslutsdat,'yyyy - MM - dd')) )
+                                            ,LocaltOmH from #egetOmhandertagande )
             ,anlaggningar as (select diarienummer,Fastighet,Fastighet_tillstand,Beslut_datum,utförddatum,Anteckning,(case when not (Beslut_datum > DATETIME2FROMPARTS(2003, 1, 1, 1, 1, 1, 1, 1) and utförddatum > DATETIME2FROMPARTS(2003, 1, 1, 1, 1, 1, 1, 1)) then N'röd' else N'grön' end) fstatus,anlaggningspunkt from #Socken_tillstand)
             , attUtsokaFran as (select *, row_number() over (partition by q.fastighet order by q.Anteckning desc ) flaggnr from (select anlaggningar.diarienummer,(case when anlaggningar.anlaggningspunkt is not null then anlaggningar.fstatus else '?' end) fstatus, socknarOfInteresse.socken,socknarOfInteresse.fastighet,Byggnadstyp,Fastighet_tillstand,Beslut_datum,utförddatum,Anteckning,(case when anlaggningar.anlaggningspunkt is not null then anlaggningar.anlaggningspunkt else ByggShape end) flagga from socknarOfInteresse left outer join byggnader on socknarOfInteresse.fastighet = byggnader.fastighet left outer join anlaggningar on socknarOfInteresse.fastighet = anlaggningar.fastighet) q  where q.flagga is not null)
             ,q as (select attUtsokaFran.socken,attUtsokaFran.fastighet,attUtsokaFran.Fastighet_tillstand,attUtsokaFran.Diarienummer,attUtsokaFran.Byggnadstyp,Beslut_datum,utförddatum "utförddatum",attUtsokaFran.Anteckning,
@@ -332,355 +332,88 @@ N'Starting#Röd' "a";
                     slam                     = (select top 1 datStoppdatum from slam where attUtsokaFran.fastighet = slam.strFastBeteckningHel),flaggnr,flagga.STPointN(1) flagga from attUtsokaFran)
             ,rodx as ( select socken,fastighet,Fastighet_tillstand,Byggnadstyp,Beslut_datum,utförddatum,Anteckning,VaPlan,egetOmhandertangandeInfo,slam,flaggnr,flagga, (case when fstatus = N'röd' then (case when (vaPlan is null and egetOmhandertangandeInfo is null) then N'röd' else (case when VaPlan is not null then 'KomV?' else (case when null is not null then 'gem' else '?' end) end) end) else fstatus end ) Fstatus from q)
             select *into #rodx from rodx
-    Commit Transaction end try begin catch ROLLBACK TRANSACTION  insert into #statusTable select ERROR_MESSAGE() "E" , CURRENT_TIMESTAMP "C" , @@ROWCOUNT as [@4] print 'failed to build' end catch set @tid = CURRENT_TIMESTAMP - @tid INSERT INTO #statusTable select 'rebuilt#' "a" ,@tid, @@ROWCOUNT as [@3] INSERT INTO #statusTable select
+    Commit Transaction
+    end try begin catch ROLLBACK TRANSACTION  insert into #statusTable select ERROR_MESSAGE() "E" , CURRENT_TIMESTAMP "C" , @@ROWCOUNT as [@4] print 'failed to build' end catch set @tid = CURRENT_TIMESTAMP - @tid INSERT INTO #statusTable select 'rebuilt#' "a" ,@tid, @@ROWCOUNT as [@3] INSERT INTO #statusTable select
 N'preloading#röd'
  ,CURRENT_TIMESTAMP,count(*) from
  #rodx
 
 
-go
-begin try
-INSERT INTO #statusTable (medelande) select '#goingToRepport' "a" ;
-select * from #statusTable
- end try begin catch
-    insert into #statusTable select ERROR_MESSAGE() "e",CURRENT_TIMESTAMP "t",@@ROWCOUNT "c"
-    select * from #statusTable
-end catch
 
+go declare @tid smalldatetime; set @tid = CURRENT_TIMESTAMP INSERT INTO #statusTable (medelande)  select 'tableCreateInventering_Bjorke' "a" BEGIN TRY BEGIN TRANSACTION
+create table dbo.Inventering_Bjorke ( OBJECTID            int not null constraint invBj_pk primary key, FASTIGHET           nvarchar(150),Fastighet_tillstand nvarchar(150),Arendenummer        nvarchar(50), Beslut_datum        datetime2,Status              nvarchar(50),Utskick_datum       datetime2, Anteckning          nvarchar(254),Utforddatum         datetime2,Slamhamtning        nvarchar(100), Antal_byggnader     numeric(38, 8),alltidsant          int,Shape               geometry, GDB_GEOMATTR_DATA   varbinary(max),skapad_datum        datetime2,andrad_datum        datetime2 )
+    Commit Transaction end try begin catch ROLLBACK TRANSACTION  insert into #statusTable select ERROR_MESSAGE() "m",CURRENT_TIMESTAMP "t",@@ROWCOUNT  "c"print 'failed to build'  end catch set @tid = CURRENT_TIMESTAMP - @tid INSERT INTO #statusTable select 'built#',@tid,@@ROWCOUNT
 
+go declare @tid smalldatetime; BEGIN TRANSACTION set @tid = CURRENT_TIMESTAMP INSERT INTO #statusTable (medelande)  select 'createIndex#Inventering_Bjorke' "a" BEGIN TRY    BEGIN TRANSACTION
+create index invBj_idx on dbo.Inventering_Bjorke (Shape) end try begin catch
+    Commit Transaction ROLLBACK TRANSACTION  insert into #statusTable select ERROR_MESSAGE() "m",CURRENT_TIMESTAMP "t",@@ROWCOUNT  "c"print 'failed to build'  end catch set @tid = CURRENT_TIMESTAMP - @tid INSERT INTO #statusTable select 'built#',@tid,@@ROWCOUNT
 
-go
-declare @query nvarchar(max);
-declare @tid smalldatetime;
---Kopierade tabellföreteckning från gng.FLAGGSKIKTET_P
-set @tid = CURRENT_TIMESTAMP INSERT INTO #statusTable (medelande)  select 'tableCreate#Inventering_Bjorke' "a"  BEGIN TRY
-    BEGIN TRANSACTION
-create table gng.Inventering_Bjorke
-(
-    OBJECTID            int not null
-        constraint invBj_pk
-            primary key,
-    FASTIGHET           nvarchar(150),Fastighet_tillstand nvarchar(150),Arendenummer        nvarchar(50),Beslut_datum        datetime2,Status              nvarchar(50),Utskick_datum       datetime2,Anteckning          nvarchar(254),Utforddatum         datetime2,Slamhamtning        nvarchar(100),Antal_byggnader     numeric(38, 8),alltidsant          int,Shape               geometry,GDB_GEOMATTR_DATA   varbinary(max),skapad_datum        datetime2,andrad_datum        datetime2
-)
-    Commit Transaction
-end try begin catch
-    ROLLBACK TRANSACTION  insert into #statusTable select ERROR_MESSAGE() "m",CURRENT_TIMESTAMP "t",@@ROWCOUNT  "c"print 'failed to build'  end catch set @tid = CURRENT_TIMESTAMP - @tid INSERT INTO #statusTable select 'built#',@tid,@@ROWCOUNT
-
-go
-declare @query nvarchar(max);
-declare @tid smalldatetime;
-    BEGIN TRANSACTION
-set @tid = CURRENT_TIMESTAMP INSERT INTO #statusTable (medelande)  select 'createIndex#Inventering_Bjorke' "a"  BEGIN TRY
-    BEGIN TRANSACTION
-create index invBj_idx
-    on gng.Inventering_Bjorke (Shape)
-end try begin catch
-    Commit Transaction
-    ROLLBACK TRANSACTION  insert into #statusTable select ERROR_MESSAGE() "m",CURRENT_TIMESTAMP "t",@@ROWCOUNT  "c"print 'failed to build'  end catch set @tid = CURRENT_TIMESTAMP - @tid INSERT INTO #statusTable select 'built#',@tid,@@ROWCOUNT
-
-
-insert into gng.Inventering_Bjorke (OBJECTID,                                           FASTIGHET,Fastighet_tillstand,  Beslut_datum,   Status,     Anteckning,                                                                                                                                                                 Utforddatum,                Slamhamtning,                Antal_byggnader,    alltidsant,  Shape,  skapad_datum,   andrad_datum)
-select                             (row_number() over (order by fastighet,flaggnr)) "a",    fastighet,Fastighet_tillstand,  Beslut_datum,   Fstatus,    concat(Byggnadstyp,' ',Anteckning,' ',nullif(concat('vaPlan: ',VaPlan,' '),'vaPlan:  '),nullif(concat('egetOmh: ',egetOmhandertangandeInfo,' '),'egetOmh:  ')),             utförddatum,                slam,                        flaggnr,            1,           flagga, CURRENT_TIMESTAMP,CURRENT_TIMESTAMP
-from #rodx where Socken = N'Björke';
-    Commit Transaction
-select * from #rodx where left(fastighet, len('Halla')) = 'Halla';
-
-go
-declare @query nvarchar(max);
-declare @tid smalldatetime;
-    BEGIN TRANSACTION
-set @tid = CURRENT_TIMESTAMP INSERT INTO #statusTable (medelande)  select 'tableCreate#Inventering_dalhem' "a"  BEGIN TRY
-    BEGIN TRANSACTION
-create table gng.Inventering_dalhem
-(
-    OBJECTID            int not null
-        constraint invdalhem_pk
-            primary key,
-    FASTIGHET           nvarchar(150),Fastighet_tillstand nvarchar(150),Arendenummer        nvarchar(50),Beslut_datum        datetime2,Status              nvarchar(50),Utskick_datum       datetime2,Anteckning          nvarchar(254),Utforddatum         datetime2,Slamhamtning        nvarchar(100),Antal_byggnader     numeric(38, 8),alltidsant          int,Shape               geometry,GDB_GEOMATTR_DATA   varbinary(max),skapad_datum        datetime2,andrad_datum        datetime2
-)
-    Commit Transaction
- end try begin catch
-    ROLLBACK TRANSACTION  insert into #statusTable select ERROR_MESSAGE() "m",CURRENT_TIMESTAMP "t",@@ROWCOUNT  "c"print 'failed to build'  end catch set @tid = CURRENT_TIMESTAMP - @tid INSERT INTO #statusTable select 'built#',@tid,@@ROWCOUNT
-
-go
-declare @query nvarchar(max);
-declare @tid smalldatetime;
-    BEGIN TRANSACTION
-set @tid = CURRENT_TIMESTAMP INSERT INTO #statusTable (medelande)  select 'createIndex#Inventering_dalhem' "a"  BEGIN TRY
-    BEGIN TRANSACTION
-create index invdalhem_idx
-    on gng.Inventering_dalhem (Shape)
-    Commit Transaction
-end try begin catch
-    ROLLBACK TRANSACTION  insert into #statusTable select ERROR_MESSAGE() "m",CURRENT_TIMESTAMP "t",@@ROWCOUNT  "c"print 'failed to build'  end catch set @tid = CURRENT_TIMESTAMP - @tid INSERT INTO #statusTable select 'built#',@tid,@@ROWCOUNT
-
-begin try
-    BEGIN TRANSACTION
-insert into gng.Inventering_Dalhem (OBJECTID,                                           FASTIGHET,Fastighet_tillstand,  Beslut_datum,   Status,     Anteckning,                                                                                                                                                                 Utforddatum,                Slamhamtning,                Antal_byggnader,    alltidsant,  Shape,  skapad_datum,   andrad_datum)
-select                             (row_number() over (order by fastighet,flaggnr)) "a",    fastighet,Fastighet_tillstand,  Beslut_datum,   Fstatus,    concat(Byggnadstyp,' ',Anteckning,' ',nullif(concat('vaPlan: ',VaPlan,' '),'vaPlan:  '),nullif(concat('egetOmh: ',egetOmhandertangandeInfo,' '),'egetOmh:  ')),             utförddatum,                slam,                        flaggnr,            1,           flagga, CURRENT_TIMESTAMP,CURRENT_TIMESTAMP
-from #rodx where Socken = 'Dalhem';
-    Commit Transaction
-end try begin catch
-    ROLLBACK TRANSACTION  insert into #statusTable select ERROR_MESSAGE() "m",CURRENT_TIMESTAMP "t",@@ROWCOUNT  "c"print 'failed to build'  end catch set @tid = CURRENT_TIMESTAMP - @tid INSERT INTO #statusTable select 'built#',@tid,@@ROWCOUNT
-
-go
-declare @query nvarchar(max);
-declare @tid smalldatetime;
-    BEGIN TRANSACTION
-
-set @tid = CURRENT_TIMESTAMP INSERT INTO #statusTable (medelande)  select 'tableCreate#Inventering_frojel' "a"  BEGIN TRY
-    BEGIN TRANSACTION
-create table gng.Inventering_frojel
-(
-    OBJECTID            int not null
-        constraint invfrojel_pk
-            primary key,
-    FASTIGHET           nvarchar(150),
-    Fastighet_tillstand nvarchar(150),
-    Arendenummer        nvarchar(50),
-    Beslut_datum        datetime2,
-    Status              nvarchar(50),
-    Utskick_datum       datetime2,
-    Anteckning          nvarchar(254),
-    Utforddatum         datetime2,
-    Slamhamtning        nvarchar(100),
-    Antal_byggnader     numeric(38, 8),
-    alltidsant          int,
-    Shape               geometry,
-    GDB_GEOMATTR_DATA   varbinary(max),
-    skapad_datum        datetime2,
-    andrad_datum        datetime2
-)
+insert into dbo.Inventering_Bjorke (OBJECTID,                                           FASTIGHET,Fastighet_tillstand,  Beslut_datum,   Status,     Anteckning,                                                                                                                                                                 Utforddatum,                Slamhamtning,                Antal_byggnader,    alltidsant,  Shape,  skapad_datum,   andrad_datum)
+select                             (row_number() over (order by fastighet,flaggnr)) "a",    fastighet,Fastighet_tillstand,  Beslut_datum,   Fstatus, concat(Byggnadstyp,' ',Anteckning,' ',nullif(concat('vaPlan: ',VaPlan,' '),'vaPlan:  '),nullif(concat('egetOmh: ',egetOmhandertangandeInfo,' '),'egetOmh:  ')), utförddatum,                slam,                        flaggnr,            1,           flagga, CURRENT_TIMESTAMP,CURRENT_TIMESTAMP from #rodx where Socken = N'Björke';
     Commit Transaction
 
-end try begin catch
-    ROLLBACK TRANSACTION  insert into #statusTable select ERROR_MESSAGE() "m",CURRENT_TIMESTAMP "t",@@ROWCOUNT  "c"print 'failed to build'  end catch set @tid = CURRENT_TIMESTAMP - @tid INSERT INTO #statusTable select 'built#',@tid,@@ROWCOUNT
+go declare @query nvarchar(max); declare @tid smalldatetime; BEGIN TRANSACTION set @tid = CURRENT_TIMESTAMP INSERT INTO #statusTable (medelande)  select 'tableCreate#Inventering_dalhem' "a"  BEGIN TRY    BEGIN TRANSACTION
+create table dbo.Inventering_dalhem ( OBJECTID            int not null constraint invdalhem_pk primary key, FASTIGHET           nvarchar(150),Fastighet_tillstand nvarchar(150),Arendenummer        nvarchar(50),Beslut_datum        datetime2,Status              nvarchar(50),Utskick_datum       datetime2,Anteckning          nvarchar(254),Utforddatum         datetime2,Slamhamtning        nvarchar(100),Antal_byggnader     numeric(38, 8),alltidsant          int,Shape               geometry,GDB_GEOMATTR_DATA   varbinary(max),skapad_datum        datetime2,andrad_datum        datetime2 )
+    Commit Transaction end try begin catch ROLLBACK TRANSACTION  insert into #statusTable select ERROR_MESSAGE() "m",CURRENT_TIMESTAMP "t",@@ROWCOUNT  "c"print 'failed to build'  end catch set @tid = CURRENT_TIMESTAMP - @tid INSERT INTO #statusTable select 'built#',@tid,@@ROWCOUNT
 
-go
-declare @query nvarchar(max);
-declare @tid smalldatetime;
-    BEGIN TRANSACTION
+go declare @query nvarchar(max); declare @tid smalldatetime; BEGIN TRANSACTION set @tid = CURRENT_TIMESTAMP INSERT INTO #statusTable (medelande)  select 'createIndex#Inventering_dalhem' "a"  BEGIN TRY    BEGIN TRANSACTION
+create index invdalhem_idx on dbo.Inventering_dalhem (Shape)
+    Commit Transaction end try begin catch ROLLBACK TRANSACTION  insert into #statusTable select ERROR_MESSAGE() "m",CURRENT_TIMESTAMP "t",@@ROWCOUNT  "c"print 'failed to build'  end catch set @tid = CURRENT_TIMESTAMP - @tid INSERT INTO #statusTable select 'built#',@tid,@@ROWCOUNT
 
-set @tid = CURRENT_TIMESTAMP INSERT INTO #statusTable (medelande)  select 'createIndex#Inventering_frojel' "a"  BEGIN TRY
-    BEGIN TRANSACTION
-create index invfrojel_idx
-    on gng.Inventering_frojel (Shape)
-    Commit Transaction
-end try begin catch
-    ROLLBACK TRANSACTION  insert into #statusTable select ERROR_MESSAGE() "m",CURRENT_TIMESTAMP "t",@@ROWCOUNT  "c"print 'failed to build'  end catch set @tid = CURRENT_TIMESTAMP - @tid INSERT INTO #statusTable select 'built#',@tid,@@ROWCOUNT
+begin try    BEGIN TRANSACTION insert into dbo.Inventering_Dalhem (OBJECTID,                                           FASTIGHET,Fastighet_tillstand,  Beslut_datum,   Status,     Anteckning,                                                                                                                                                                 Utforddatum,                Slamhamtning,                Antal_byggnader,    alltidsant,  Shape,  skapad_datum,   andrad_datum) select                             (row_number() over (order by fastighet,flaggnr)) "a",    fastighet,Fastighet_tillstand,  Beslut_datum,   Fstatus,    concat(Byggnadstyp,' ',Anteckning,' ',nullif(concat('vaPlan: ',VaPlan,' '),'vaPlan:  '),nullif(concat('egetOmh: ',egetOmhandertangandeInfo,' '),'egetOmh:  ')),             utförddatum,                slam,                        flaggnr,            1,           flagga, CURRENT_TIMESTAMP,CURRENT_TIMESTAMP from #rodx where Socken = 'Dalhem';
+    Commit Transaction end try begin catch ROLLBACK TRANSACTION  insert into #statusTable select ERROR_MESSAGE() "m",CURRENT_TIMESTAMP "t",@@ROWCOUNT  "c"print 'failed to build'  end catch set @tid = CURRENT_TIMESTAMP - @tid INSERT INTO #statusTable select 'built#',@tid,@@ROWCOUNT
 
-begin try
-    BEGIN TRANSACTION
-insert into gng.Inventering_frojel (OBJECTID,                                           FASTIGHET,Fastighet_tillstand,  Beslut_datum,   Status,     Anteckning,                                                                                                                                                                 Utforddatum,                Slamhamtning,                Antal_byggnader,    alltidsant,  Shape,  skapad_datum,   andrad_datum)
-select                             (row_number() over (order by fastighet,flaggnr)) "a",    fastighet,Fastighet_tillstand,  Beslut_datum,   Fstatus,    concat(Byggnadstyp,' ',Anteckning,' ',nullif(concat('vaPlan: ',VaPlan,' '),'vaPlan:  '),nullif(concat('egetOmh: ',egetOmhandertangandeInfo,' '),'egetOmh:  ')),             utförddatum,                slam,                        flaggnr,            1,           flagga, CURRENT_TIMESTAMP,CURRENT_TIMESTAMP
-from #rodx where Socken = N'fröjel';
-    COMMIT TRANSACTION
-end try begin catch
-    ROLLBACK TRANSACTION  insert into #statusTable select ERROR_MESSAGE() "m",CURRENT_TIMESTAMP "t",@@ROWCOUNT  "c"print 'failed to build'  end catch set @tid = CURRENT_TIMESTAMP - @tid INSERT INTO #statusTable select 'built#',@tid,@@ROWCOUNT
+go declare @query nvarchar(max); declare @tid smalldatetime; BEGIN TRANSACTION set @tid = CURRENT_TIMESTAMP INSERT INTO #statusTable (medelande)  select 'tableCreate#Inventering_frojel' "a"  BEGIN TRY    BEGIN TRANSACTION
+create table dbo.Inventering_frojel ( OBJECTID            int not null constraint invfrojel_pk primary key, FASTIGHET           nvarchar(150), Fastighet_tillstand nvarchar(150), Arendenummer        nvarchar(50), Beslut_datum        datetime2, Status              nvarchar(50), Utskick_datum       datetime2, Anteckning          nvarchar(254), Utforddatum         datetime2, Slamhamtning        nvarchar(100), Antal_byggnader     numeric(38, 8), alltidsant          int, Shape               geometry, GDB_GEOMATTR_DATA   varbinary(max), skapad_datum        datetime2, andrad_datum        datetime2 )
+    Commit Transaction end try begin catch ROLLBACK TRANSACTION  insert into #statusTable select ERROR_MESSAGE() "m",CURRENT_TIMESTAMP "t",@@ROWCOUNT  "c"print 'failed to build'  end catch set @tid = CURRENT_TIMESTAMP - @tid INSERT INTO #statusTable select 'built#',@tid,@@ROWCOUNT
 
-go
-declare @query nvarchar(max);
-declare @tid smalldatetime;
-    BEGIN TRANSACTION
+go declare @query nvarchar(max); declare @tid smalldatetime; BEGIN TRANSACTION set @tid = CURRENT_TIMESTAMP INSERT INTO #statusTable (medelande)  select 'createIndex#Inventering_frojel' "a"  BEGIN TRY    BEGIN TRANSACTION
+create index invfrojel_idx on dbo.Inventering_frojel (Shape)
+    Commit Transaction end try begin catch ROLLBACK TRANSACTION  insert into #statusTable select ERROR_MESSAGE() "m",CURRENT_TIMESTAMP "t",@@ROWCOUNT  "c"print 'failed to build'  end catch set @tid = CURRENT_TIMESTAMP - @tid INSERT INTO #statusTable select 'built#',@tid,@@ROWCOUNT
 
-set @tid = CURRENT_TIMESTAMP INSERT INTO #statusTable (medelande)  select 'tableCreate#Inventering_ganthem' "a"  BEGIN TRY
-    BEGIN TRANSACTION
-create table gng.Inventering_ganthem
-(
-    OBJECTID            int not null
-        constraint invganthem_pk
-            primary key,
-    FASTIGHET           nvarchar(150),
-    Fastighet_tillstand nvarchar(150),
-    Arendenummer        nvarchar(50),
-    Beslut_datum        datetime2,
-    Status              nvarchar(50),
-    Utskick_datum       datetime2,
-    Anteckning          nvarchar(254),
-    Utforddatum         datetime2,
-    Slamhamtning        nvarchar(100),
-    Antal_byggnader     numeric(38, 8),
-    alltidsant          int,
-    Shape               geometry,
-    GDB_GEOMATTR_DATA   varbinary(max),
-    skapad_datum        datetime2,
-    andrad_datum        datetime2
-)
-    Commit Transaction
-    end try begin catch
-    ROLLBACK TRANSACTION  insert into #statusTable select ERROR_MESSAGE() "m",CURRENT_TIMESTAMP "t",@@ROWCOUNT  "c"print 'failed to build'  end catch set @tid = CURRENT_TIMESTAMP - @tid INSERT INTO #statusTable select 'built#',@tid,@@ROWCOUNT
+begin try    BEGIN TRANSACTION insert into dbo.Inventering_frojel (OBJECTID,                                           FASTIGHET,Fastighet_tillstand,  Beslut_datum,   Status,     Anteckning,                                                                                                                                                                 Utforddatum,                Slamhamtning,                Antal_byggnader,    alltidsant,  Shape,  skapad_datum,   andrad_datum) select                             (row_number() over (order by fastighet,flaggnr)) "a",    fastighet,Fastighet_tillstand,  Beslut_datum,   Fstatus,    concat(Byggnadstyp,' ',Anteckning,' ',nullif(concat('vaPlan: ',VaPlan,' '),'vaPlan:  '),nullif(concat('egetOmh: ',egetOmhandertangandeInfo,' '),'egetOmh:  ')),             utförddatum,                slam,                        flaggnr,            1,           flagga, CURRENT_TIMESTAMP,CURRENT_TIMESTAMP from #rodx where Socken = N'fröjel';
+    COMMIT TRANSACTION end try begin catch ROLLBACK TRANSACTION  insert into #statusTable select ERROR_MESSAGE() "m",CURRENT_TIMESTAMP "t",@@ROWCOUNT  "c"print 'failed to build'  end catch set @tid = CURRENT_TIMESTAMP - @tid INSERT INTO #statusTable select 'built#',@tid,@@ROWCOUNT
 
-go
-declare @query nvarchar(max);
-declare @tid smalldatetime;
-    BEGIN TRANSACTION
+go declare @query nvarchar(max); declare @tid smalldatetime; BEGIN TRANSACTION set @tid = CURRENT_TIMESTAMP INSERT INTO #statusTable (medelande)  select 'tableCreate#Inventering_ganthem' "a"  BEGIN TRY    BEGIN TRANSACTION
+create table dbo.Inventering_ganthem ( OBJECTID            int not null constraint invganthem_pk primary key, FASTIGHET           nvarchar(150), Fastighet_tillstand nvarchar(150), Arendenummer        nvarchar(50), Beslut_datum        datetime2, Status              nvarchar(50), Utskick_datum       datetime2, Anteckning          nvarchar(254), Utforddatum         datetime2, Slamhamtning        nvarchar(100), Antal_byggnader     numeric(38, 8), alltidsant          int, Shape               geometry, GDB_GEOMATTR_DATA   varbinary(max), skapad_datum        datetime2, andrad_datum        datetime2 )
+    Commit Transaction end try begin catch ROLLBACK TRANSACTION  insert into #statusTable select ERROR_MESSAGE() "m",CURRENT_TIMESTAMP "t",@@ROWCOUNT  "c"print 'failed to build'  end catch set @tid = CURRENT_TIMESTAMP - @tid INSERT INTO #statusTable select 'built#',@tid,@@ROWCOUNT
 
-set @tid = CURRENT_TIMESTAMP INSERT INTO #statusTable (medelande)  select 'createIndex#Inventering_ganthem' "a"  BEGIN TRY
-    BEGIN TRANSACTION
-create index invganthem_idx
-    on gng.Inventering_ganthem (Shape)
-    Commit Transaction
-end try begin catch
-    ROLLBACK TRANSACTION  insert into #statusTable select ERROR_MESSAGE() "m",CURRENT_TIMESTAMP "t",@@ROWCOUNT  "c"print 'failed to build'  end catch set @tid = CURRENT_TIMESTAMP - @tid INSERT INTO #statusTable select 'built#',@tid,@@ROWCOUNT
+go declare @query nvarchar(max); declare @tid smalldatetime; BEGIN TRANSACTION set @tid = CURRENT_TIMESTAMP INSERT INTO #statusTable (medelande)  select 'createIndex#Inventering_ganthem' "a"  BEGIN TRY    BEGIN TRANSACTION
+create index invganthem_idx on dbo.Inventering_ganthem (Shape)
+    Commit Transaction end try begin catch ROLLBACK TRANSACTION  insert into #statusTable select ERROR_MESSAGE() "m",CURRENT_TIMESTAMP "t",@@ROWCOUNT  "c"print 'failed to build'  end catch set @tid = CURRENT_TIMESTAMP - @tid INSERT INTO #statusTable select 'built#',@tid,@@ROWCOUNT
 
-begin try
-    BEGIN TRANSACTION
-insert into gng.Inventering_ganthem (OBJECTID,                                           FASTIGHET,Fastighet_tillstand,  Beslut_datum,   Status,     Anteckning,                                                                                                                                                                 Utforddatum,                Slamhamtning,                Antal_byggnader,    alltidsant,  Shape,  skapad_datum,   andrad_datum)
-select                             (row_number() over (order by fastighet,flaggnr)) "a",    fastighet,Fastighet_tillstand,  Beslut_datum,   Fstatus,    concat(Byggnadstyp,' ',Anteckning,' ',nullif(concat('vaPlan: ',VaPlan,' '),'vaPlan:  '),nullif(concat('egetOmh: ',egetOmhandertangandeInfo,' '),'egetOmh:  ')),             utförddatum,                slam,                        flaggnr,            1,           flagga, CURRENT_TIMESTAMP,CURRENT_TIMESTAMP
-from #rodx where Socken = 'ganthem';
-    Commit Transaction
-end try begin catch
-    ROLLBACK TRANSACTION  insert into #statusTable select ERROR_MESSAGE() "m",CURRENT_TIMESTAMP "t",@@ROWCOUNT  "c"print 'failed to build'  end catch set @tid = CURRENT_TIMESTAMP - @tid INSERT INTO #statusTable select 'built#',@tid,@@ROWCOUNT
+begin try    BEGIN TRANSACTION insert into dbo.Inventering_ganthem (OBJECTID,                                           FASTIGHET,Fastighet_tillstand,  Beslut_datum,   Status,     Anteckning,                                                                                                                                                                 Utforddatum,                Slamhamtning,                Antal_byggnader,    alltidsant,  Shape,  skapad_datum,   andrad_datum) select                             (row_number() over (order by fastighet,flaggnr)) "a",    fastighet,Fastighet_tillstand,  Beslut_datum,   Fstatus,    concat(Byggnadstyp,' ',Anteckning,' ',nullif(concat('vaPlan: ',VaPlan,' '),'vaPlan:  '),nullif(concat('egetOmh: ',egetOmhandertangandeInfo,' '),'egetOmh:  ')),             utförddatum,                slam,                        flaggnr,            1,           flagga, CURRENT_TIMESTAMP,CURRENT_TIMESTAMP from #rodx where Socken = 'ganthem';
+    Commit Transaction end try begin catch ROLLBACK TRANSACTION  insert into #statusTable select ERROR_MESSAGE() "m",CURRENT_TIMESTAMP "t",@@ROWCOUNT  "c"print 'failed to build'  end catch set @tid = CURRENT_TIMESTAMP - @tid INSERT INTO #statusTable select 'built#',@tid,@@ROWCOUNT
 
-go
-declare @query nvarchar(max);
-declare @tid smalldatetime;
-    BEGIN TRANSACTION
-
-set @tid = CURRENT_TIMESTAMP INSERT INTO #statusTable (medelande)  select 'tableCreate#Inventering_halla' "a"  BEGIN TRY
-    BEGIN TRANSACTION
-create table gng.Inventering_halla
-(
-    OBJECTID            int not null
-        constraint invhalla_pk
-            primary key,
-    FASTIGHET           nvarchar(150),
-    Fastighet_tillstand nvarchar(150),
-    Arendenummer        nvarchar(50),
-    Beslut_datum        datetime2,
-    Status              nvarchar(50),
-    Utskick_datum       datetime2,
-    Anteckning          nvarchar(254),
-    Utforddatum         datetime2,
-    Slamhamtning        nvarchar(100),
-    Antal_byggnader     numeric(38, 8),
-    alltidsant          int,
-    Shape               geometry,
-    GDB_GEOMATTR_DATA   varbinary(max),
-    skapad_datum        datetime2,
-    andrad_datum        datetime2
-)   commit TRANSACTION
-    end try begin catch
-    ROLLBACK TRANSACTION  insert into #statusTable select ERROR_MESSAGE() "m",CURRENT_TIMESTAMP "t",@@ROWCOUNT  "c"print 'failed to build'  end catch set @tid = CURRENT_TIMESTAMP - @tid INSERT INTO #statusTable select 'built#',@tid,@@ROWCOUNT
+go declare @query nvarchar(max); declare @tid smalldatetime; BEGIN TRANSACTION set @tid = CURRENT_TIMESTAMP INSERT INTO #statusTable (medelande)  select 'tableCreate#Inventering_halla' "a"  BEGIN TRY    BEGIN TRANSACTION
+create table dbo.Inventering_halla ( OBJECTID            int not null constraint invhalla_pk primary key, FASTIGHET           nvarchar(150), Fastighet_tillstand nvarchar(150), Arendenummer        nvarchar(50), Beslut_datum        datetime2, Status              nvarchar(50), Utskick_datum       datetime2, Anteckning          nvarchar(254), Utforddatum         datetime2, Slamhamtning        nvarchar(100), Antal_byggnader     numeric(38, 8), alltidsant          int, Shape               geometry, GDB_GEOMATTR_DATA   varbinary(max), skapad_datum        datetime2, andrad_datum        datetime2 )   commit TRANSACTION end try begin catch ROLLBACK TRANSACTION  insert into #statusTable select ERROR_MESSAGE() "m",CURRENT_TIMESTAMP "t",@@ROWCOUNT  "c"print 'failed to build'  end catch set @tid = CURRENT_TIMESTAMP - @tid INSERT INTO #statusTable select 'built#',@tid,@@ROWCOUNT
 
 
-set @tid = CURRENT_TIMESTAMP INSERT INTO #statusTable (medelande)  select 'createIndex#Inventering_halla' "a"  BEGIN TRY
-    BEGIN TRANSACTION
-create index invhalla_idx
-    on gng.Inventering_halla (Shape)
-    Commit Transaction
-end try begin catch
-    ROLLBACK TRANSACTION  insert into #statusTable select ERROR_MESSAGE() "m",CURRENT_TIMESTAMP "t",@@ROWCOUNT  "c"print 'failed to build'  end catch set @tid = CURRENT_TIMESTAMP - @tid INSERT INTO #statusTable select 'built#',@tid,@@ROWCOUNT
+go declare @query nvarchar(max); declare @tid smalldatetime; BEGIN TRANSACTION set @tid = CURRENT_TIMESTAMP INSERT INTO #statusTable (medelande)  select 'createIndex#Inventering_halla' "a"  BEGIN TRY    BEGIN TRANSACTION
+create index invhalla_idx on dbo.Inventering_halla (Shape)
+    Commit Transaction end try begin catch ROLLBACK TRANSACTION  insert into #statusTable select ERROR_MESSAGE() "m",CURRENT_TIMESTAMP "t",@@ROWCOUNT  "c"print 'failed to build'  end catch set @tid = CURRENT_TIMESTAMP - @tid INSERT INTO #statusTable select 'built#',@tid,@@ROWCOUNT
 
-begin try
-    BEGIN TRANSACTION
-insert into gng.Inventering_halla (OBJECTID,                                           FASTIGHET,Fastighet_tillstand,  Beslut_datum,   Status,     Anteckning,                                                                                                                                                                 Utforddatum,                Slamhamtning,                Antal_byggnader,    alltidsant,  Shape,  skapad_datum,   andrad_datum)
-select                             (row_number() over (order by fastighet,flaggnr)) "a",    fastighet,Fastighet_tillstand,  Beslut_datum,   Fstatus,    concat(Byggnadstyp,' ',Anteckning,' ',nullif(concat('vaPlan: ',VaPlan,' '),'vaPlan:  '),nullif(concat('egetOmh: ',egetOmhandertangandeInfo,' '),'egetOmh:  ')),             utförddatum,                slam,                        flaggnr,            1,           flagga, CURRENT_TIMESTAMP,CURRENT_TIMESTAMP
-from #rodx where Socken = 'halla';
-    Commit Transaction
-end try begin catch
-    ROLLBACK TRANSACTION  insert into #statusTable select ERROR_MESSAGE() "m",CURRENT_TIMESTAMP "t",@@ROWCOUNT  "c"print 'failed to build'  end catch set @tid = CURRENT_TIMESTAMP - @tid INSERT INTO #statusTable select 'built#',@tid,@@ROWCOUNT
+begin try    BEGIN TRANSACTION insert into dbo.Inventering_halla (OBJECTID,                                           FASTIGHET,Fastighet_tillstand,  Beslut_datum,   Status,     Anteckning,                                                                                                                                                                 Utforddatum,                Slamhamtning,                Antal_byggnader,    alltidsant,  Shape,  skapad_datum,   andrad_datum) select                             (row_number() over (order by fastighet,flaggnr)) "a",    fastighet,Fastighet_tillstand,  Beslut_datum,   Fstatus,    concat(Byggnadstyp,' ',Anteckning,' ',nullif(concat('vaPlan: ',VaPlan,' '),'vaPlan:  '),nullif(concat('egetOmh: ',egetOmhandertangandeInfo,' '),'egetOmh:  ')),             utförddatum,                slam,                        flaggnr,            1,           flagga, CURRENT_TIMESTAMP,CURRENT_TIMESTAMP from #rodx where Socken = 'halla';
+    Commit Transaction end try begin catch ROLLBACK TRANSACTION  insert into #statusTable select ERROR_MESSAGE() "m",CURRENT_TIMESTAMP "t",@@ROWCOUNT  "c"print 'failed to build'  end catch set @tid = CURRENT_TIMESTAMP - @tid INSERT INTO #statusTable select 'built#',@tid,@@ROWCOUNT
 
-go
-declare @query nvarchar(max);
-declare @tid smalldatetime;
-    BEGIN TRANSACTION
+go declare @query nvarchar(max); declare @tid smalldatetime; BEGIN TRANSACTION set @tid = CURRENT_TIMESTAMP INSERT INTO #statusTable (medelande)  select 'tableCreate#Inventering_klinte' "a"  BEGIN TRY    BEGIN TRANSACTION
+create table dbo.Inventering_klinte ( OBJECTID            int not null constraint invklinte_pk primary key, FASTIGHET           nvarchar(150), Fastighet_tillstand nvarchar(150), Arendenummer        nvarchar(50), Beslut_datum        datetime2, Status              nvarchar(50), Utskick_datum       datetime2, Anteckning          nvarchar(254), Utforddatum         datetime2, Slamhamtning        nvarchar(100), Antal_byggnader     numeric(38, 8), alltidsant          int, Shape               geometry, GDB_GEOMATTR_DATA   varbinary(max), skapad_datum        datetime2, andrad_datum        datetime2 )
+   Commit Transaction end try begin catch ROLLBACK TRANSACTION  insert into #statusTable select ERROR_MESSAGE() "m",CURRENT_TIMESTAMP "t",@@ROWCOUNT  "c"print 'failed to build'  end catch set @tid = CURRENT_TIMESTAMP - @tid INSERT INTO #statusTable select 'built#',@tid,@@ROWCOUNT
 
-set @tid = CURRENT_TIMESTAMP INSERT INTO #statusTable (medelande)  select 'tableCreate#Inventering_klinte' "a"  BEGIN TRY
-    BEGIN TRANSACTION
-create table gng.Inventering_klinte
-(
-    OBJECTID            int not null
-        constraint invklinte_pk
-            primary key,
-    FASTIGHET           nvarchar(150),
-    Fastighet_tillstand nvarchar(150),
-    Arendenummer        nvarchar(50),
-    Beslut_datum        datetime2,
-    Status              nvarchar(50),
-    Utskick_datum       datetime2,
-    Anteckning          nvarchar(254),
-    Utforddatum         datetime2,
-    Slamhamtning        nvarchar(100),
-    Antal_byggnader     numeric(38, 8),
-    alltidsant          int,
-    Shape               geometry,
-    GDB_GEOMATTR_DATA   varbinary(max),
-    skapad_datum        datetime2,
-    andrad_datum        datetime2
-)   Commit Transaction
-    end try begin catch
-    ROLLBACK TRANSACTION  insert into #statusTable select ERROR_MESSAGE() "m",CURRENT_TIMESTAMP "t",@@ROWCOUNT  "c"print 'failed to build'  end catch set @tid = CURRENT_TIMESTAMP - @tid INSERT INTO #statusTable select 'built#',@tid,@@ROWCOUNT
+go declare @query nvarchar(max); declare @tid smalldatetime; BEGIN TRANSACTION set @tid = CURRENT_TIMESTAMP INSERT INTO #statusTable (medelande)  select 'createIndex#Inventering_klinte' "a"  BEGIN TRY    BEGIN TRANSACTION
+create index invklinte_idx on dbo.Inventering_klinte (Shape)
+    Commit Transaction end try begin catch ROLLBACK TRANSACTION  insert into #statusTable select ERROR_MESSAGE() "m",CURRENT_TIMESTAMP "t",@@ROWCOUNT  "c"print 'failed to build'  end catch set @tid = CURRENT_TIMESTAMP - @tid INSERT INTO #statusTable select 'built#',@tid,@@ROWCOUNT
 
-set @tid = CURRENT_TIMESTAMP INSERT INTO #statusTable (medelande)  select 'createIndex#Inventering_klinte' "a"  BEGIN TRY
-    BEGIN TRANSACTION
-create index invklinte_idx
-    on gng.Inventering_klinte (Shape)
-    Commit Transaction
-end try begin catch
-    ROLLBACK TRANSACTION  insert into #statusTable select ERROR_MESSAGE() "m",CURRENT_TIMESTAMP "t",@@ROWCOUNT  "c"print 'failed to build'  end catch set @tid = CURRENT_TIMESTAMP - @tid INSERT INTO #statusTable select 'built#',@tid,@@ROWCOUNT
+begin try    BEGIN TRANSACTION insert into dbo.Inventering_klinte (OBJECTID,                                           FASTIGHET,Fastighet_tillstand,  Beslut_datum,   Status,     Anteckning,                                                                                                                                                                 Utforddatum,                Slamhamtning,                Antal_byggnader,    alltidsant,  Shape,  skapad_datum,   andrad_datum) select                             (row_number() over (order by fastighet,flaggnr)) "a",    fastighet,Fastighet_tillstand,  Beslut_datum,   Fstatus,    concat(Byggnadstyp,' ',Anteckning,' ',nullif(concat('vaPlan: ',VaPlan,' '),'vaPlan:  '),nullif(concat('egetOmh: ',egetOmhandertangandeInfo,' '),'egetOmh:  ')),             utförddatum,                slam,                        flaggnr,            1,           flagga, CURRENT_TIMESTAMP,CURRENT_TIMESTAMP from #rodx where Socken = 'klinte';
+    Commit Transaction end try begin catch ROLLBACK TRANSACTION  insert into #statusTable select ERROR_MESSAGE() "m",CURRENT_TIMESTAMP "t",@@ROWCOUNT  "c"print 'failed to build'  end catch set @tid = CURRENT_TIMESTAMP - @tid INSERT INTO #statusTable select 'built#',@tid,@@ROWCOUNT
 
-begin try
-    BEGIN TRANSACTION
-insert into gng.Inventering_klinte (OBJECTID,                                           FASTIGHET,Fastighet_tillstand,  Beslut_datum,   Status,     Anteckning,                                                                                                                                                                 Utforddatum,                Slamhamtning,                Antal_byggnader,    alltidsant,  Shape,  skapad_datum,   andrad_datum)
-select                             (row_number() over (order by fastighet,flaggnr)) "a",    fastighet,Fastighet_tillstand,  Beslut_datum,   Fstatus,    concat(Byggnadstyp,' ',Anteckning,' ',nullif(concat('vaPlan: ',VaPlan,' '),'vaPlan:  '),nullif(concat('egetOmh: ',egetOmhandertangandeInfo,' '),'egetOmh:  ')),             utförddatum,                slam,                        flaggnr,            1,           flagga, CURRENT_TIMESTAMP,CURRENT_TIMESTAMP
-from #rodx where Socken = 'klinte';
-    Commit Transaction
-end try begin catch
-    ROLLBACK TRANSACTION  insert into #statusTable select ERROR_MESSAGE() "m",CURRENT_TIMESTAMP "t",@@ROWCOUNT  "c"print 'failed to build'  end catch set @tid = CURRENT_TIMESTAMP - @tid INSERT INTO #statusTable select 'built#',@tid,@@ROWCOUNT
+go declare @tid smalldatetime; BEGIN TRANSACTION set @tid = CURRENT_TIMESTAMP INSERT INTO #statusTable (medelande)  select 'tableCreate#Inventering_Roma' "a"  BEGIN TRY    BEGIN TRANSACTION
+create table dbo.Inventering_Roma ( OBJECTID            int not null constraint invRoma_pk primary key, FASTIGHET           nvarchar(150), Fastighet_tillstand nvarchar(150), Arendenummer        nvarchar(50), Beslut_datum        datetime2, Status              nvarchar(50), Utskick_datum       datetime2, Anteckning          nvarchar(254), Utforddatum         datetime2, Slamhamtning        nvarchar(100), Antal_byggnader     numeric(38, 8), alltidsant          int, Shape               geometry, GDB_GEOMATTR_DATA   varbinary(max), skapad_datum        datetime2, andrad_datum        datetime2 )  
+ Commit Transaction end try begin catch ROLLBACK TRANSACTION  insert into #statusTable select ERROR_MESSAGE() "m",CURRENT_TIMESTAMP "t",@@ROWCOUNT  "c"print 'failed to build'  end catch set @tid = CURRENT_TIMESTAMP - @tid INSERT INTO #statusTable select 'built#',@tid,@@ROWCOUNT
 
-go
-declare @query nvarchar(max);
-declare @tid smalldatetime;
-    BEGIN TRANSACTION
+go declare @query nvarchar(max); declare @tid smalldatetime; BEGIN TRANSACTION set @tid = CURRENT_TIMESTAMP INSERT INTO #statusTable (medelande)  select 'createIndex#Inventering_Roma' "a"  BEGIN TRY    BEGIN TRANSACTION
+create index invRoma_idx on dbo.Inventering_Roma (Shape)
+    Commit Transaction end try begin catch ROLLBACK TRANSACTION  insert into #statusTable select ERROR_MESSAGE() "m",CURRENT_TIMESTAMP "t",@@ROWCOUNT  "c"print 'failed to build'  end catch set @tid = CURRENT_TIMESTAMP - @tid INSERT INTO #statusTable select 'built#',@tid,@@ROWCOUNT
 
-set @tid = CURRENT_TIMESTAMP INSERT INTO #statusTable (medelande)  select 'tableCreate#Inventering_Roma' "a"  BEGIN TRY
-    BEGIN TRANSACTION
-create table gng.Inventering_Roma
-(
-    OBJECTID            int not null
-        constraint invRoma_pk
-            primary key,
-    FASTIGHET           nvarchar(150),
-    Fastighet_tillstand nvarchar(150),
-    Arendenummer        nvarchar(50),
-    Beslut_datum        datetime2,
-    Status              nvarchar(50),
-    Utskick_datum       datetime2,
-    Anteckning          nvarchar(254),
-    Utforddatum         datetime2,
-    Slamhamtning        nvarchar(100),
-    Antal_byggnader     numeric(38, 8),
-    alltidsant          int,
-    Shape               geometry,
-    GDB_GEOMATTR_DATA   varbinary(max),
-    skapad_datum        datetime2,
-    andrad_datum        datetime2
-)   Commit Transaction
- end try begin catch
-    ROLLBACK TRANSACTION  insert into #statusTable select ERROR_MESSAGE() "m",CURRENT_TIMESTAMP "t",@@ROWCOUNT  "c"print 'failed to build'  end catch set @tid = CURRENT_TIMESTAMP - @tid INSERT INTO #statusTable select 'built#',@tid,@@ROWCOUNT
-
-go
-declare @query nvarchar(max);
-declare @tid smalldatetime;
-    BEGIN TRANSACTION
-
-set @tid = CURRENT_TIMESTAMP INSERT INTO #statusTable (medelande)  select 'createIndex#Inventering_Roma' "a"  BEGIN TRY
-    BEGIN TRANSACTION
-create index invRoma_idx
-    on gng.Inventering_Roma (Shape)
-    Commit Transaction
-end try begin catch
-    ROLLBACK TRANSACTION  insert into #statusTable select ERROR_MESSAGE() "m",CURRENT_TIMESTAMP "t",@@ROWCOUNT  "c"print 'failed to build'  end catch set @tid = CURRENT_TIMESTAMP - @tid INSERT INTO #statusTable select 'built#',@tid,@@ROWCOUNT
-
-begin try
-    BEGIN TRANSACTION
-insert into gng.Inventering_Roma (OBJECTID,                                           FASTIGHET,Fastighet_tillstand,  Beslut_datum,   Status,     Anteckning,                                                                                                                                                                 Utforddatum,                Slamhamtning,                Antal_byggnader,    alltidsant,  Shape,  skapad_datum,   andrad_datum)
-select                             (row_number() over (order by fastighet,flaggnr)) "a",    fastighet,Fastighet_tillstand,  Beslut_datum,   Fstatus,    concat(Byggnadstyp,' ',Anteckning,' ',nullif(concat('vaPlan: ',VaPlan,' '),'vaPlan:  '),nullif(concat('egetOmh: ',egetOmhandertangandeInfo,' '),'egetOmh:  ')),             utförddatum,                slam,                        flaggnr,            1,           flagga, CURRENT_TIMESTAMP,CURRENT_TIMESTAMP
-from #rodx where Socken = 'Roma';
-    Commit Transaction
-end try begin catch
-    ROLLBACK TRANSACTION  insert into #statusTable select ERROR_MESSAGE() "m",CURRENT_TIMESTAMP "t",@@ROWCOUNT  "c"print 'failed to build'  end catch set @tid = CURRENT_TIMESTAMP - @tid INSERT INTO #statusTable select 'built#',@tid,@@ROWCOUNT
-
-
-go
+begin try    BEGIN TRANSACTION insert into dbo.Inventering_Roma (OBJECTID,                                           FASTIGHET,Fastighet_tillstand,  Beslut_datum,   Status,     Anteckning,                                                                                                                                                                 Utforddatum,                Slamhamtning,                Antal_byggnader,    alltidsant,  Shape,  skapad_datum,   andrad_datum) select                             (row_number() over (order by fastighet,flaggnr)) "a",    fastighet,Fastighet_tillstand,  Beslut_datum,   Fstatus,    concat(Byggnadstyp,' ',Anteckning,' ',nullif(concat('vaPlan: ',VaPlan,' '),'vaPlan:  '),nullif(concat('egetOmh: ',egetOmhandertangandeInfo,' '),'egetOmh:  ')),             utförddatum,                slam,                        flaggnr,            1,           flagga, CURRENT_TIMESTAMP,CURRENT_TIMESTAMP from #rodx where Socken = 'Roma';
+    Commit Transaction end try begin catch ROLLBACK TRANSACTION  insert into #statusTable select ERROR_MESSAGE() "m",CURRENT_TIMESTAMP "t",@@ROWCOUNT  "c"print 'failed to build'  end catch set @tid = CURRENT_TIMESTAMP - @tid INSERT INTO #statusTable select 'built#',@tid,@@ROWCOUNT go
