@@ -196,7 +196,8 @@ BEGIN TRY
         Anteckning nvarchar(250),
         LocaltOmH  geometry,
         fastighet  nvarchar (250),
-      egetOmhandertangandeInfo as (concat(nullif(Diarienr+' -',' - '), nullif(Fastighe00+' - ',' - '), nullif(Fastighet_+' - ',' -'), nullif(Eget_omhän+' - ',' - '), nullif(Lokalt_omh+' - ',' -'), nullif(Anteckning+' - ',' - '),FORMAT(Beslutsdat,'yyyy - MM - dd')) )
+      egetOmhandertangandeInfo as (
+  concat(nullif( 'DiaNr: '+ ltrim(Diarienr), 'DiaNr: '), nullif(' - ' + ltrim(Fastighe00), ' - '), nullif(' - ' + ltrim(Fastighet_), ' - '), nullif(' - ' + ltrim(Eget_omhän), ' - '), nullif(' - ' + ltrim(Lokalt_omh), ' - '), nullif(' - ' + ltrim(Anteckning), ' - '),nullif('. BeslDat: ' + FORMAT(Beslutsdat,'yyyy-MM-dd'), ' BeslDat: ')) )
     )
     INSERT INTO #egetOmhandertagande (Fastighet_,Fastighets,Eget_omhän,Lokalt_omh,Fastighe00,Beslutsdat,Diarienr,Anteckning,LocaltOmH,
         fastighet)
@@ -210,7 +211,6 @@ BEGIN TRY
 'preloading#egetOmhandertagande'
   ,CURRENT_TIMESTAMP,count(*) from
 #egetOmhandertagande;
-
 go
 declare @tid smalldatetime;
 INSERT INTO #statusTable (medelande) select '#initiating#Spillvatten' "a" ;
