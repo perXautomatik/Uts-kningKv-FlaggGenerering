@@ -1,6 +1,5 @@
 /*Insert Databases names into SQL Temp Table*/
-IF OBJECT_ID('tempdb..#statusTable') IS not NULL
-begin    Drop table #statusTable end
+IF OBJECT_ID('tempdb..#statusTable') IS not NULL begin    Drop table #statusTable end
 
 create table #statusTable (medelande NVARCHAR(max),start smalldatetime,rader integer);
 declare @tid smalldatetime;
@@ -9,7 +8,7 @@ declare @tid smalldatetime;
 
 if (select 1) IS NULL BEGIN TRY
     BEGIN TRANSACTION
-    Drop table #bjorketor
+    Drop table #SockenYtor
     Drop table #ByggnadPaFastighetISocken
     Drop table #Socken_tillstand
     Drop table #egetOmhandertagande
@@ -22,14 +21,14 @@ if (select 1) IS NULL BEGIN TRY
 set @tid = CURRENT_TIMESTAMP - @tid INSERT INTO #statusTable select 'built#',@tid,@@ROWCOUNT ; --koden skall inte exekveras i läsordning, alla initiate test moste först slutföras, sedan går programmet till repportblocket.
 
 go
-INSERT INTO #statusTable (medelande) select '#initiating#bjorketor' as alias;
+INSERT INTO #statusTable (medelande) select '#initiating#SockenYtor' as alias;
 declare @tid smalldatetime;
-IF OBJECT_ID('tempdb..#bjorketor') IS not NULL
-    begin if not (exists(select 1 from #bjorketor)) begin drop table #bjorketor;end end
-IF OBJECT_ID('tempdb..#bjorketor') IS NULL
+IF OBJECT_ID('tempdb..#SockenYtor') IS not NULL
+    begin if not (exists(select 1 from #SockenYtor)) begin drop table #SockenYtor;end end
+IF OBJECT_ID('tempdb..#SockenYtor') IS NULL
     begin try
     set @tid = CURRENT_TIMESTAMP ;
-    INSERT INTO #statusTable (medelande) select 'Starting#bjorketor' as alias
+    INSERT INTO #statusTable (medelande) select 'Starting#SockenYtor' as alias
 BEGIN TRANSACTION
 
     declare @externalQuery nvarchar(max), @externalparam nvarchar(255), @bjorke nvarchar(255),@dalhem varchar(255),@frojel nvarchar(255),@ganthem varchar(255),@Halla varchar(255),@Klinte varchar(255),@Roma varchar(255)
@@ -39,14 +38,14 @@ BEGIN TRANSACTION
                           ',socknarOfIntresse as (SELECT fastighetsFilter.socken SockenX,concat(Trakt,SPACE(1),Blockenhet) FAStighet, Shape from sde_gsd.gng.AY_0980 x inner join fastighetsFilter on left(x.TRAKT, len(fastighetsfilter.socken)) = fastighetsfilter.socken)' +
                           'select * from socknarOfIntresse'
 
-    CREATE TABLE #bjorketor
+    CREATE TABLE #SockenYtor
     (
         socken nvarchar(100),
         FAStighet nvarchar (250),
         Shape geometry
     )
 
-    INSERT INTO #bjorketor
+    INSERT INTO #SockenYtor
     exec
         gisdb01.master.dbo.sp_executesql @externalQuery,
              @externalparam,
@@ -57,8 +56,8 @@ Commit Transaction
         begin catch ROLLBACK TRANSACTION  insert into #statusTable select ERROR_MESSAGE() "E" , CURRENT_TIMESTAMP "C" , @@ROWCOUNT as [@4] print 'failed to build' end catch
     set @tid = CURRENT_TIMESTAMP - @tid
 INSERT INTO #statusTable select 'rebuilt#' "a" ,@tid, @@ROWCOUNT as [@3] INSERT INTO #statusTable
-select 'preloading#bjorketor'
-  ,CURRENT_TIMESTAMP,count(*) from #bjorketor;
+select 'preloading#SockenYtor'
+  ,CURRENT_TIMESTAMP,count(*) from #SockenYtor;
 
 go
 declare @tid smalldatetime;
@@ -78,13 +77,13 @@ BEGIN TRY
     set @externalparam = N'@bjorke nvarchar(255) , @dalhem varchar(255) , @frojel nvarchar(255) , @ganthem varchar(255) , @Halla varchar(255) , @Klinte varchar(255) ,  @Roma varchar(255)'
     set @externalQuery = 'with fastighetsfilter as (Select  @bjorke  "socken" Union Select @dalhem  "a" Union Select @frojel  "a" Union Select  @ganthem "a" Union Select   @Halla "a" Union Select  @Klinte  "a" Union Select  @Roma   "a" )'+
                         ',socknarOfIntresse as (SELECT fastighetsFilter.socken SockenX,concat(Trakt,SPACE(1),Blockenhet) FAStighet, Shape from sde_gsd.gng.AY_0980 x inner join fastighetsFilter on left(x.TRAKT, len(fastighetsFilter.socken)) = fastighetsFilter.socken )' +
-                        ',byggnad_yta as (select andamal_1T Byggnadstyp, Shape from sde_gsd.gng.BY_0980),q as (Select Byggnadstyp, socknarOfIntresse.fastighet Fastighetsbeteckning, byggnad_yta.SHAPE from byggnad_yta inner join socknarOfIntresse on byggnad_yta.Shape.STWithin(socknarOfIntresse.shape) = 1) ' +
+                        ',byggnad_yta as (select andamal_1T Byggnadstyp, Shape from sde_gsd.gng.BY_0980),q as (Select Byggnadstyp, socknarOfIntresse.fastighet Fastighetsbeteckning, byggnad_yta.SHAPE from byggnad_yta inner join socknarOfIntresse on byggnad_yta.Shape.STIntersects(socknarOfIntresse.shape) = 1) ' +
                         'select Fastighetsbeteckning, Byggnadstyp,shape ByggShape from (select *, row_number() over (partition by Fastighetsbeteckning order by Byggnadstyp ) orderz from q) z where orderz = 1'
-
+select @externalQuery
      CREATE TABLE #ByggnadPaFastighetISocken
     (
-        Byggnadstyp nvarchar(100),
         Fastighetsbeteckning nvarchar (250),
+        Byggnadstyp nvarchar(100),
         ByggShape geometry
     )
 
@@ -130,10 +129,17 @@ BEGIN TRY
         Beslut_datum smalldatetime,
         utförddatum smalldatetime,
         Anteckning nvarchar (max),
-        AnlaggningsPunkt geometry
+        AnlaggningsPunkt geometry,
+        fstatus as (case when not (Beslut_datum > DATETIME2FROMPARTS(2003, 1, 1, 1, 1, 1, 1, 1) and utförddatum > DATETIME2FROMPARTS(2003, 1, 1, 1, 1, 1, 1, 1)) then N'röd' else N'grön' end)
     )
 
-    INSERT INTO #Socken_tillstand
+    INSERT INTO #Socken_tillstand (FAStighet,
+        Diarienummer,
+        Fastighet_tillstand,
+        Beslut_datum,
+        utförddatum,
+        Anteckning,
+        AnlaggningsPunkt)
     exec
         gisdb01.master.dbo.sp_executesql @externalQuery,
              @externalparam,
@@ -189,9 +195,11 @@ BEGIN TRY
         Diarienr   nvarchar(250),
         Anteckning nvarchar(250),
         LocaltOmH  geometry,
-        fastighet  nvarchar (250)
+        fastighet  nvarchar (250),
+      egetOmhandertangandeInfo as (concat(nullif(Diarienr+' -',' - '), nullif(Fastighe00+' - ',' - '), nullif(Fastighet_+' - ',' -'), nullif(Eget_omhän+' - ',' - '), nullif(Lokalt_omh+' - ',' -'), nullif(Anteckning+' - ',' - '),FORMAT(Beslutsdat,'yyyy - MM - dd')) )
     )
-    INSERT INTO #egetOmhandertagande
+    INSERT INTO #egetOmhandertagande (Fastighet_,Fastighets,Eget_omhän,Lokalt_omh,Fastighe00,Beslutsdat,Diarienr,Anteckning,LocaltOmH,
+        fastighet)
     exec
         gisdb01.master.dbo.sp_executesql @externalQuery,
              @externalparam,
@@ -229,13 +237,13 @@ BEGIN TRY
     (
         fastighet  nvarchar (250),typ nvarchar (max)
     )
-
     INSERT INTO #Spillvatten
     exec
         gisdb01.master.dbo.sp_executesql @externalQuery,
              @externalparam,
              @bjorke=@bjorke, @dalhem=@dalhem, @frojel=@frojel, @ganthem= @ganthem, @Halla=@Halla, @Klinte= @Klinte, @Roma=@Roma
 Commit Transaction
+
 
     end try begin catch ROLLBACK TRANSACTION  insert into #statusTable select ERROR_MESSAGE() "E" , CURRENT_TIMESTAMP "C" , @@ROWCOUNT as [@4] print 'failed to build' end catch set @tid = CURRENT_TIMESTAMP - @tid INSERT INTO #statusTable select 'rebuilt#' "a" ,@tid, @@ROWCOUNT as [@3]end INSERT INTO #statusTable select
     'preloading#Spillvatten'
@@ -245,16 +253,20 @@ Commit Transaction
 
 go
 declare @tid smalldatetime;
-INSERT INTO #statusTable (medelande) select '#initiating#taxekod' "a" ;
-IF OBJECT_ID('tempdb..#taxekod') IS not NULL
-begin if not (exists(select 1 from #taxekod )) begin drop table #taxekod
-    end end
+INSERT INTO #statusTable (medelande) select '#initiating#slam' "a" ;
+    IF OBJECT_ID('tempdb..#slam') IS not NULL
+    begin if not (exists(select 1 from #slam )) begin drop table #slam
+        end end
+IF OBJECT_ID(N'tempdb..#slamx') IS not NULL
+        begin DROP TABLE #slamx end
 IF OBJECT_ID(
- N'tempdb..#Taxekod') IS NULL
+ N'tempdb..#slam') IS NULL
  begin
-set @tid = CURRENT_TIMESTAMP INSERT INTO #statusTable (medelande)  select 'Starting#TaxeKod' "a"
+set @tid = CURRENT_TIMESTAMP INSERT INTO #statusTable (medelande)  select 'Starting#slam' "a"
 BEGIN TRY
     BEGIN TRANSACTION
+
+
     declare @externalQuery nvarchar(max), @externalparam nvarchar(1000), @bjorke nvarchar(255),@dalhem varchar(255),@frojel nvarchar(255),@ganthem varchar(255),@Halla varchar(255),@Klinte varchar(255),@Roma varchar(255)
     ,@cont nvarchar(250),@grund nvarchar(250),@overtra nvarchar(250),@hush nvarchar(250),@avctr nvarchar(250),@budsm nvarchar(250),@hyra nvarchar(250),@depoX nvarchar(250);
    set @depoX='DEPO' set @cont = 'CONT'set @grund = 'GRUNDR'set @overtra = N'ÖVRTRA'set @hush = 'HUSH'set @avctr=N'ÅVCTR'set @budsm = 'BUDSM'set @hyra = 'HYRA'
@@ -274,69 +286,100 @@ BEGIN TRY
 
     select anlaggning.strFastBeteckningHel, case when nullif(decAnlYkoordinat, 0) is not null then nullif(decAnlXKoordinat, 0) end decAnlXKoordinat, case when nullif(decAnlXKoordinat, 0) is not null then nullif(decAnlYkoordinat, 0) end decAnlYkoordinat, intTjanstnr, strDelprodukt, strTaxebenamning,latestStop from anlFilteredBySocken anlaggning inner join groupdTjanste on anlaggning.strAnlnr = maxStrAnlnr'
 
-      CREATE TABLE #taxekod
+      CREATE TABLE #slamx
     (
-        strFastBeteckningHel nvarchar (250), decAnlXKoordinat float, decAnlYkoordinat float, intTjanstnr int, strDelprodukt nvarchar (250), strTaxebenamning nvarchar (250), q2z datetime
+        strFastBeteckningHel nvarchar (250), decAnlXKoordinat float, decAnlYkoordinat float, intTjanstnr int, strDelprodukt nvarchar (250), strTaxebenamning nvarchar (250), stopDat datetime
     )
 
-    INSERT INTO #taxekod
+    INSERT INTO #slamx
     exec
         admsql01.master.dbo.
         sp_executesql @externalQuery,
              @externalparam,
              @bjorke=@bjorke, @dalhem=@dalhem, @frojel=@frojel, @ganthem= @ganthem, @Halla=@Halla, @Klinte= @Klinte, @Roma=@Roma
             ,@depoX = @depoX ,@cont = @cont,@grund = @grund,@overtra = @overtra, @hush = @hush, @avctr=@avctr, @budsm = @budsm, @hyra = @hyra
-
+        ;with
+            groupedMaxSlutdat as ( select max(stopDat) q2z,strDelprodukt, strTaxebenamning,strFastBeteckningHel, decAnlXKoordinat, decAnlYkoordinat from #slamx q group by strDelprodukt, strTaxebenamning,strFastBeteckningHel,decAnlXKoordinat,decAnlYkoordinat)
+            , stuffedTypText as (select distinct strFastBeteckningHel,
+                                                 strDelprodukt,
+                                                 stuffing = STUFF((SELECT char(13) + nullif(' ' +
+                                                                          concat(nullif(x.strTaxebenamning, ''),
+                                                                                 nullif(concat(' Avbrutet:', FORMAT(
+                                                                                         nullif(x.stopDat, smalldatetimefromparts(1900, 01, 01, 00, 00)),
+                                                                                         'yyyy-MM-dd')),
+                                                                                        ' Avbrutet:')),' ') "c"
+                                                                   FROM #slamx x
+                                                                   where q.strFastBeteckningHel = x.strFastBeteckningHel
+                                                                   FOR XML PATH (''), root('MyString'), type
+).value('/MyString[1]','varchar(max)')
+, 1, 2, '')
+                                 FROM groupedMaxSlutdat q
+                                 group by strFastBeteckningHel, strDelprodukt)
+         select *
+         into #slam
+         from (select strFastBeteckningHel,
+                      datStoppdatum =STUFF((SELECT char(13) + nullif(' ' + nullif(strDelprodukt + '|', '|') + stuffing, ' ') as n
+                                            FROM stuffedTypText x
+                                            where q.strFastBeteckningHel = x.strFastBeteckningHel
+                                            FOR XML PATH (''), root('MyString'), type
+).value('/MyString[1]','varchar(max)')
+, 1, 2, '')
+               from stuffedTypText q
+               group by strFastBeteckningHel) stuffedWithStopDat;
   Commit Transaction
     end try begin catch ROLLBACK TRANSACTION  insert into #statusTable select ERROR_MESSAGE() "E" , CURRENT_TIMESTAMP "C" , @@ROWCOUNT as [@4] print 'failed to build' end catch set @tid = CURRENT_TIMESTAMP - @tid INSERT INTO #statusTable select 'rebuilt#' "a" ,@tid, @@ROWCOUNT as [@3]end INSERT INTO #statusTable select
- 'preloading#taxekod'
+ 'preloading#slam'
  ,CURRENT_TIMESTAMP,count(*) from
-#taxekod
+#slam
+
+
 
 go
-declare @tid smalldatetime; INSERT INTO #statusTable (medelande) select
-N'#initiating#rodx'
- "a" ; IF OBJECT_ID(
- N'tempdb..#rodx'
-    ) IS not NULL begin if not (exists(select 1 from
- #rodx
- )) begin drop table
- #rodx
-    end end IF OBJECT_ID(
-N'tempdb..#rodx'
-) IS NULL begin try set @tid = CURRENT_TIMESTAMP INSERT INTO #statusTable (medelande)  select
-N'Starting#rodx' "a";
-        BEGIN TRY
+declare @tid smalldatetime;
+    begin try 
+        set @tid = CURRENT_TIMESTAMP INSERT INTO #statusTable (medelande)  select N'Starting#rodx' "a";
             BEGIN TRANSACTION
-            DROP TABLE #slam END TRY BEGIN CATCH select 1 END CATCH
+            IF OBJECT_ID(N'tempdb..#rodx') IS not NULL
+                begin 
+                    if (exists(select 1 from #rodx))
+                        begin
+                            drop table #rodx
+                            INSERT INTO #statusTable (medelande)  select N'purged#rodx' "a";
+                        end
+                end
+        Commit Transaction
         ;with
-            taxekod as (select * from #taxekod )
-            ,slam as ( select max(q2z) q2z,strDelprodukt, strTaxebenamning,strFastBeteckningHel, decAnlXKoordinat, decAnlYkoordinat
-                        from taxekod q group by strDelprodukt, strTaxebenamning,strFastBeteckningHel,decAnlXKoordinat,decAnlYkoordinat)
-            select * into #slam from slam;
-        ;with
-             slamm as (select strFastBeteckningHel,strDelprodukt,z2 = STUFF((SELECT distinct ','+ concat(nullif(x.strTaxebenamning,''), nullif(concat(' Avbrutet:', FORMAT(nullif(x.q2z, smalldatetimefromparts(1900, 01, 01, 00, 00)), 'yyyy-MM-dd')), ' Avbrutet:')) "c"
-            FROM #slam x where q.strFastBeteckningHel = x.strFastBeteckningHel FOR XML PATH ('')), 1, 1, '')FROM #slam q group by strFastBeteckningHel,strDelprodukt)
-            ,slam as (select strFastBeteckningHel,datStoppdatum =STUFF((SELECT distinct ','+nullif(strDelprodukt+'|','|')+z2 "n"  FROM slamm x where q.strFastBeteckningHel = x.strFastBeteckningHel FOR XML PATH ('')), 1, 1, '')from slamm q group by strFastBeteckningHel)
-            ,socknarOfInteresse as (select distinct socken, fastighet from #bjorketor )
-            ,byggnader as (select Fastighetsbeteckning fastighet, Byggnadstyp,ByggShape from #ByggnadPaFastighetISocken)
-             ,vaPlan as (select fastighet,typ  from #Spillvatten)
-            ,egetOmhandertagande as (select  fastighet,
-                                            egetOmhandertangandeInfo = (concat(nullif(Diarienr+' -',' - '), nullif(Fastighe00+' - ',' - '), nullif(Fastighet_+' - ',' -'), nullif(Eget_omhän+' - ',' - '), nullif(Lokalt_omh+' - ',' -'), nullif(Anteckning+' - ',' - '),FORMAT(Beslutsdat,'yyyy - MM - dd')) )
-                                            ,LocaltOmH from #egetOmhandertagande )
-            ,anlaggningar as (select diarienummer,Fastighet,Fastighet_tillstand,Beslut_datum,utförddatum,Anteckning,(case when not (Beslut_datum > DATETIME2FROMPARTS(2003, 1, 1, 1, 1, 1, 1, 1) and utförddatum > DATETIME2FROMPARTS(2003, 1, 1, 1, 1, 1, 1, 1)) then N'röd' else N'grön' end) fstatus,anlaggningspunkt from #Socken_tillstand)
-            , attUtsokaFran as (select *, row_number() over (partition by q.fastighet order by q.Anteckning desc ) flaggnr from (select anlaggningar.diarienummer,(case when anlaggningar.anlaggningspunkt is not null then anlaggningar.fstatus else '?' end) fstatus, socknarOfInteresse.socken,socknarOfInteresse.fastighet,Byggnadstyp,Fastighet_tillstand,Beslut_datum,utförddatum,Anteckning,(case when anlaggningar.anlaggningspunkt is not null then anlaggningar.anlaggningspunkt else ByggShape end) flagga from socknarOfInteresse left outer join byggnader on socknarOfInteresse.fastighet = byggnader.fastighet left outer join anlaggningar on socknarOfInteresse.fastighet = anlaggningar.fastighet) q  where q.flagga is not null)
+            slam as (select * from #slam)
+            ,socknarOfInteresse as (select distinct socken, fastighet from #SockenYtor )
+            , vaPlan as (select fastighet,typ  from #Spillvatten)
+            ,egetOmhandertagande as ( select fastighet, egetOmhandertangandeInfo ,LocaltOmH from #egetOmhandertagande )
+            ,bygFasAnl as (
+                select anlaggningar.diarienummer,socknarOfInteresse.socken,socknarOfInteresse.fastighet,Byggnadstyp,Fastighet_tillstand,Beslut_datum,utförddatum,Anteckning,
+                       (case when anlaggningar.anlaggningspunkt is not null then anlaggningar.fstatus else '?' end) fstatus,
+                       coalesce(anlaggningar.anlaggningspunkt,ByggShape) flagga
+                from socknarOfInteresse
+                         left outer join #ByggnadPaFastighetISocken byggnader
+                             on socknarOfInteresse.fastighet = byggnader.Fastighetsbeteckning
+                         left outer join #Socken_tillstand anlaggningar on socknarOfInteresse.fastighet = anlaggningar.fastighet
+                where coalesce(anlaggningar.anlaggningspunkt,ByggShape) is not null)
+            , attUtsokaFran as (
+                select *, row_number() over (partition by bygFasAnl.fastighet order by bygFasAnl.Anteckning desc ) flaggnr from
+                    bygFasAnl  where bygFasAnl.flagga is not null)
             ,q as (select attUtsokaFran.socken,attUtsokaFran.fastighet,attUtsokaFran.Fastighet_tillstand,attUtsokaFran.Diarienummer,attUtsokaFran.Byggnadstyp,Beslut_datum,utförddatum "utförddatum",attUtsokaFran.Anteckning,
-                    VaPlan                   = (select top 1 typ from vaPlan where vaPlan.fastighet = attUtsokaFran.fastighet),fstatus,
-                    egetOmhandertangandeInfo = (select top 1 egetOmhandertangandeInfo from egetOmhandertagande where attUtsokaFran.fastighet = egetOmhandertagande.fastighet),
-                    slam                     = (select top 1 datStoppdatum from slam where attUtsokaFran.fastighet = slam.strFastBeteckningHel),flaggnr,flagga.STPointN(1) flagga from attUtsokaFran)
-            ,rodx as ( select socken,fastighet,Fastighet_tillstand,Byggnadstyp,Beslut_datum,utförddatum,Anteckning,VaPlan,egetOmhandertangandeInfo,slam,flaggnr,flagga, (case when fstatus = N'röd' then (case when (vaPlan is null and egetOmhandertangandeInfo is null) then N'röd' else (case when VaPlan is not null then 'KomV?' else (case when null is not null then 'gem' else '?' end) end) end) else fstatus end ) Fstatus from q)
-            select *into #rodx from rodx
-    Commit Transaction
-    end try begin catch ROLLBACK TRANSACTION  insert into #statusTable select ERROR_MESSAGE() "E" , CURRENT_TIMESTAMP "C" , @@ROWCOUNT as [@4] print 'failed to build' end catch set @tid = CURRENT_TIMESTAMP - @tid INSERT INTO #statusTable select 'rebuilt#' "a" ,@tid, @@ROWCOUNT as [@3] INSERT INTO #statusTable select
-N'preloading#rodx'
+                       VaPlan                   = (select top 1 typ from vaPlan where vaPlan.fastighet = attUtsokaFran.fastighet),fstatus,
+                       egetOmhandertangandeInfo = (select top 1 egetOmhandertangandeInfo from egetOmhandertagande where attUtsokaFran.fastighet = egetOmhandertagande.fastighet),
+                       slam                     = (select top 1 datStoppdatum from slam where attUtsokaFran.fastighet = slam.strFastBeteckningHel),flaggnr,flagga.STPointN(1) flagga from attUtsokaFran)
+            , rodx as (select socken,fastighet,Fastighet_tillstand,Byggnadstyp,Beslut_datum,utförddatum,Anteckning,VaPlan,egetOmhandertangandeInfo,slam,flaggnr,flagga,(case when (vaPlan is not null) then 'KomV' else case when fstatus = N'?' or fstatus = N'röd' then N'röd' else fstatus end end) Fstatus from q)
+         select * into #rodx from rodx
+    end try begin catch ROLLBACK TRANSACTION  insert into #statusTable select ERROR_MESSAGE() "E" , CURRENT_TIMESTAMP "C" ,
+@@ROWCOUNT as [@4] print 'failed to build' end catch set @tid = CURRENT_TIMESTAMP - @tid
+        INSERT INTO #statusTable select 'rebuilt#' "a" ,@tid,@@ROWCOUNT as [@3]
+
+INSERT INTO #statusTable select
+N'rebuilt#rodx'
  ,CURRENT_TIMESTAMP,count(*) from
  #rodx
+
 
 
 
@@ -362,3 +405,8 @@ go IF OBJECT_ID(N'tempdb..#rodx') IS not NULL begin if not (exists(select 1 from
    from #rodx where Socken = 'Roma';commit transaction end try begin catch rollback transaction end catch end go
 
 select * from #rodx
+select * from #statusTable
+
+select #rodx.* from #rodx
+left outer join tempExcel.dbo.AllaFastigheter2020 on AllaFastigheter2020.fastighet = #rodx.fastighet OR #rodx.fastighet = AllaFastigheter2020.socken where AllaFastigheter2020.fastighet is null
+and #rodx.fstatus = 'röd'
