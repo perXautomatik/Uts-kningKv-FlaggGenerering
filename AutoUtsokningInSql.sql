@@ -701,6 +701,7 @@ INSERT INTO @statusTable
 select 'built#', @tid, @@ROWCOUNT
 Commit Transaction
 go
+<<<<<<< HEAD
 BEGIN TRANSACTION
     insert into gng.Inventering_frojel (OBJECTID, FASTIGHET, Fastighet_tillstand, Beslut_datum, Status, Anteckning,
                                         Utforddatum, Slamhamtning, Antal_byggnader, alltidsant, Shape, skapad_datum,
@@ -755,7 +756,85 @@ end try begin catch
 end catch
 set @tid = CURRENT_TIMESTAMP - @tid
 INSERT INTO @statusTable
-select 'built#', @tid, @@ROWCOUNT
+select 'built#',
+       @tid,
+       @@ROWCOUNT =======
+declare @tid smalldatetime;
+INSERT INTO #statusTable (medelande)
+select N'#initiating#egetOmhandertagande' "a";
+IF OBJECT_ID(N'tempdb..#egetOmhandertagande') IS not NULL
+    begin
+        if not (exists(select 1 from #egetOmhandertagande))
+            begin
+                drop table #egetOmhandertagande;
+            end
+    end
+IF OBJECT_ID(N'tempdb..#egetOmhandertagande') IS NULL
+    begin
+        set @tid = CURRENT_TIMESTAMP INSERT INTO #statusTable (medelande) select 'Starting#egetOmhandertagande' "a"
+        BEGIN TRY
+            BEGIN TRANSACTION
+                declare @externalQuery nvarchar(max), @externalparam nvarchar(255), @bjorke nvarchar(255),@dalhem varchar(255),@frojel nvarchar(255),@ganthem varchar(255),@Halla varchar(255),@Klinte varchar(255),@Roma varchar(255)
+                set @bjorke = N'björke'set @dalhem = 'Dalhem'set @frojel = N'Fröjel'set @ganthem = 'Ganthem'
+                set @Halla = 'Halla'set @Klinte = 'Klinte'set @Roma = 'Roma';
+                set @externalparam =
+                        N'@bjorke nvarchar(255) , @dalhem varchar(255) , @frojel nvarchar(255) , @ganthem varchar(255) , @Halla varchar(255) , @Klinte varchar(255) ,  @Roma varchar(255)'
+
+                set @externalQuery = '
+    with fastighetsfilter as (Select  @bjorke  "socken" Union Select @dalhem  "a" Union Select @frojel  "a" Union Select  @ganthem "a" Union Select   @Halla "a" Union Select  @Klinte  "a" Union Select  @Roma   "a" )' +
+                                     ',socknarOfIntresse as (SELECT fastighetsFilter.socken SockenX,concat(Trakt,SPACE(1),Blockenhet) FAStighet, Shape from sde_gsd.gng.AY_0980 x inner join fastighetsFilter on left(x.TRAKT, len(fastighetsFilter.socken)) = fastighetsFilter.socken )' +
+                                     N',LOKALT_SLAM_P as (select Diarienr,Fastighet_,Fastighe00,Eget_omhän,Lokalt_omh,Anteckning,Beslutsdat,shape from sde_miljo_halsoskydd.gng.MoH_Slam_Lokalt_p_evw),
+                                                               Fas2 as (select *,concat(nullif(LOKALT_SLAM_P.Lokalt_omh + space(1), space(1)), nullif(LOKALT_SLAM_P.Fastighet_ + space(1), space(1)), nullif(LOKALT_SLAM_P.Fastighe00 + space(1), space(1))) fas from sde_miljo_halsoskydd.gng.MoH_Slam_Lokalt_p_evw LOKALT_SLAM_P),
+
+                                                               Med_fastighet as (select Fastighet_,Fastighets,Eget_omhän,Lokalt_omh,Fastighe00,Beslutsdat,Diarienr,Anteckning,shape LocaltOmH,fas from Fas2 where fas is not null and charindex(char(58), fas) > 0),
+                                                               utan_fastighet as (select Fastighet_,Fastighets,Eget_omhän,Lokalt_omh,Fastighe00,Beslutsdat,Diarienr,Anteckning,utan_fastighet.shape LocaltOmH,FAStighet            fas
+                                                               from (select * from Fas2 where fas is null OR charindex(char(58), fas) = 0) utan_fastighet inner join socknarOfIntresse sYt on sYt.shape.STIntersects(utan_fastighet.Shape) = 1)
+
+                                                          select Fastighet_, Fastighets, Eget_omhän, Lokalt_omh, Fastighe00, Beslutsdat, Diarienr, Anteckning,LocaltOmH, FAStighet
+                                                                from socknarOfIntresse sYt left outer join Med_fastighet on fas like char(37) + sYt.Fastighet + char(37) where fas is not null union all select * from utan_fastighet
+                                                          ';
+
+                CREATE TABLE #egetOmhandertagande
+                (
+                    Fastighet_               nvarchar(250),
+                    Fastighets               nvarchar(250),
+                    Eget_omhän               nvarchar(250),
+                    Lokalt_omh               nvarchar(250),
+                    Fastighe00               nvarchar(250),
+                    Beslutsdat               smalldatetime,
+                    Diarienr                 nvarchar(250),
+                    Anteckning               nvarchar(250),
+                    LocaltOmH                geometry,
+                    fastighet                nvarchar(250),
+                    egetOmhandertangandeInfo as (
+                        concat(nullif('DiaNr: ' + ltrim(Diarienr), 'DiaNr: '), nullif(' - ' + ltrim(Fastighe00), ' - '),
+                               nullif(' - ' + ltrim(Fastighet_), ' - '), nullif(' - ' + ltrim(Eget_omhän), ' - '),
+                               nullif(' - ' + ltrim(Lokalt_omh), ' - '), nullif(' - ' + ltrim(Anteckning), ' - '),
+                               nullif('. BeslDat: ' + FORMAT(Beslutsdat, 'yyyy-MM-dd'), ' BeslDat: ')))
+                )
+                INSERT INTO #egetOmhandertagande (Fastighet_, Fastighets, Eget_omhän, Lokalt_omh, Fastighe00,
+                                                  Beslutsdat, Diarienr, Anteckning, LocaltOmH,
+                                                  fastighet)
+                    exec
+                                gisdb01.master.dbo.sp_executesql @externalQuery,
+                                @externalparam,
+                                @bjorke=@bjorke, @dalhem=@dalhem, @frojel=@frojel, @ganthem= @ganthem, @Halla=@Halla,
+                                @Klinte= @Klinte, @Roma=@Roma
+            Commit Transaction
+--    drop table #egetOmhandertagande
+        end try begin catch
+            ROLLBACK TRANSACTION
+            insert into #statusTable select ERROR_MESSAGE() "E", CURRENT_TIMESTAMP "C", @@ROWCOUNT as [@4]
+            print 'failed to build'
+        end catch
+        set @tid = CURRENT_TIMESTAMP - @tid INSERT INTO #statusTable select 'rebuilt#' "a", @tid, @@ROWCOUNT as [@3]
+    end
+INSERT INTO #statusTable
+select 'preloading#egetOmhandertagande'
+     , CURRENT_TIMESTAMP
+     , count(*)
+from #egetOmhandertagande;
+>>>>>>> bb2cf63... fixat egetomhändertagande
 go
 set @tid = CURRENT_TIMESTAMP
 INSERT INTO @statusTable (medelande)
