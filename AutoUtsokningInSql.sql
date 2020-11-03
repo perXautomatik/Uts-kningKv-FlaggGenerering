@@ -99,7 +99,7 @@ go
 
 go
     declare @tid smalldatetime;INSERT INTO #statusTable (medelande) select '#initiating#slam' "a" ; IF OBJECT_ID('tempdb..#slam') IS not NULL begin if not (exists(select 1 from #slam )) begin drop table #slam end end IF OBJECT_ID(N'tempdb..#slamx') IS not NULL begin DROP TABLE #slamx end IF OBJECT_ID( N'tempdb..#slam') IS NULL begin set @tid = CURRENT_TIMESTAMP INSERT INTO #statusTable (medelande)  select 'Starting#slam' "a" BEGIN TRY
-    BEGIN TRANSACTION --C7
+    BEGIN TRANSACTION --B7
     declare @externalQuery nvarchar(max), @externalparam nvarchar(1000), @bjorke nvarchar(255),@dalhem varchar(255),@frojel nvarchar(255),@ganthem varchar(255),@Halla varchar(255),@Klinte varchar(255),@Roma varchar(255),@cont nvarchar(250),@grund nvarchar(250),@overtra nvarchar(250),@hush nvarchar(250),@avctr nvarchar(250),@budsm nvarchar(250),@hyra nvarchar(250),@depoX nvarchar(250); set @depoX='DEPO' set @cont = 'CONT'set @grund = 'GRUNDR'set @overtra = N'ÖVRTRA'set @hush = 'HUSH'set @avctr=N'ÅVCTR'set @budsm = 'BUDSM'set @hyra = 'HYRA'set @bjorke=N'björke'set @dalhem = 'Dalhem'set @frojel = N'Fröjel'set @ganthem = 'Ganthem'set @Halla = 'Halla'set @Klinte = 'Klinte'set @Roma = 'Roma'; set @externalparam = N'@bjorke nvarchar(255) , @dalhem varchar(255) , @frojel nvarchar(255) , @ganthem varchar(255) , @Halla varchar(255) , @Klinte varchar(255) ,  @Roma varchar(255)' + ',@avctr nvarchar(255), @depoX varchar(255),@cont varchar(255),@grund varchar(255),@overtra nvarchar(255),@hush varchar(255),@budsm varchar(255),@hyra varchar(255)'
 	set @externalQuery =  '
 			with
@@ -115,12 +115,12 @@ go
  			select anlaggning.strFastBeteckningHel, case when nullif(decAnlYkoordinat, 0) is not null then nullif(decAnlXKoordinat, 0) end decAnlXKoordinat, case when nullif(decAnlXKoordinat, 0) is not null then nullif(decAnlYkoordinat, 0) end decAnlYkoordinat, intTjanstnr, strDelprodukt, strTaxebenamning,latestStop from anlFilteredBySocken anlaggning inner join groupdTjanste on anlaggning.strAnlnr = maxStrAnlnr'
 
     CREATE TABLE #slamx (strFastBeteckningHel nvarchar (250), decAnlXKoordinat float, decAnlYkoordinat float, intTjanstnr int, strDelprodukt nvarchar (250), strTaxebenamning nvarchar (250), stopDat datetime) INSERT INTO #slamx exec admsql01.master.dbo.sp_executesql @externalQuery, @externalparam, @bjorke=@bjorke, @dalhem=@dalhem, @frojel=@frojel, @ganthem= @ganthem, @Halla=@Halla, @Klinte= @Klinte, @Roma=@Roma,@depoX = @depoX ,@cont = @cont,@grund = @grund,@overtra = @overtra, @hush = @hush, @avctr=@avctr, @budsm = @budsm, @hyra = @hyra;with groupedMaxSlutdat as ( select max(stopDat) q2z,strDelprodukt, strTaxebenamning,strFastBeteckningHel, decAnlXKoordinat, decAnlYkoordinat from #slamx q group by strDelprodukt, strTaxebenamning,strFastBeteckningHel,decAnlXKoordinat,decAnlYkoordinat) , stuffedTypText as (select distinct strFastBeteckningHel, strDelprodukt, stuffing = STUFF((SELECT char(13) + nullif(' ' + concat(nullif(x.strTaxebenamning, ''), nullif(concat(' Avbrutet:', FORMAT(nullif(x.stopDat, smalldatetimefromparts(1900, 01, 01, 00, 00)), 'yyyy-MM-dd')), ' Avbrutet:')),' ') "c" FROM #slamx x where q.strFastBeteckningHel = x.strFastBeteckningHel FOR XML PATH (''), root('MyString'), type).value('/MyString[1]','varchar(max)'), 1, 2, '')FROM groupedMaxSlutdat q group by strFastBeteckningHel, strDelprodukt)select *into #slam from (select strFastBeteckningHel, datStoppdatum =STUFF((SELECT char(13) + nullif(' ' + nullif(strDelprodukt + '|', '|') + stuffing, ' ') as n FROM stuffedTypText x where q.strFastBeteckningHel = x.strFastBeteckningHel FOR XML PATH (''), root('MyString'), type).value('/MyString[1]','varchar(max)'), 1, 2, '')from stuffedTypText q group by strFastBeteckningHel) stuffedWithStopDat;
-    Commit Transaction --B7
+    Commit Transaction --C7
     end try begin catch ROLLBACK TRANSACTION  insert into #statusTable select ERROR_MESSAGE() "E" , CURRENT_TIMESTAMP "C" , @@ROWCOUNT as [@4] print 'failed to build' end catch set @tid = CURRENT_TIMESTAMP - @tid INSERT INTO #statusTable select 'rebuilt#' "a" ,@tid, @@ROWCOUNT as [@3]end INSERT INTO #statusTable select 'preloading#slam',CURRENT_TIMESTAMP,count(*) from #slam
 
 go
 	declare @tid smalldatetime; begin try set @tid = CURRENT_TIMESTAMP INSERT INTO #statusTable (medelande)  select N'Starting#rodx' "a";
-	BEGIN TRANSACTION --B8
+	BEGIN TRANSACTION --Bröd
 	    IF OBJECT_ID(N'tempdb..#rodx') IS not NULL begin if (exists(select 1 from #rodx)) begin drop table #rodx INSERT INTO #statusTable (medelande)  select N'purged#rodx' "a";end end Commit Transaction
         ;with
             slam as (select * from #slam)
@@ -135,7 +135,7 @@ go
                        slam                     = (select top 1 datStoppdatum from slam where attUtsokaFran.fastighet = slam.strFastBeteckningHel),flaggnr,flagga.STPointN(1) flagga from attUtsokaFran)
             , rodx as (select socken,fastighet,Fastighet_tillstand,Byggnadstyp,Beslut_datum,utförddatum,Anteckning,VaPlan,egetOmhandertangandeInfo,slam,flaggnr,flagga,(case when (vaPlan is not null) then 'KomV' else case when fstatus = N'?' or fstatus = N'röd' then N'röd' else fstatus end end) Fstatus from q)
          select * into #rodx from rodx
-	commit TRANSACTION --C8
+	commit TRANSACTION --Cröd
 	 end try begin catch ROLLBACK TRANSACTION  insert into #statusTable select ERROR_MESSAGE() "E" , CURRENT_TIMESTAMP "C" , @@ROWCOUNT as [@4] print 'failed to build' end catch set @tid = CURRENT_TIMESTAMP - @tid INSERT INTO #statusTable select 'rebuilt#' "a" ,@tid,@@ROWCOUNT as [@3]
 
 	INSERT INTO #statusTable select N'rebuilt#rodx',CURRENT_TIMESTAMP,count(*) from #rodx
