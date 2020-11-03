@@ -13,84 +13,70 @@ begin try
     INSERT INTO @statusTable (medelande) select '#initiating#slam';
     IF OBJECT_ID('tempdb..#slam') IS NULL
         RAISERROR ( 18,-1,-1,'taxekodTabell saknas, exekvera om slaminitate');
-    else
-        begin
-            if not (exists(select 1 from #slam))
-                begin
-                    drop table #slam; RAISERROR ( 18,-1,-1,N'taxekod Var olämplig,tabell förstörd, exekvera-om slaminitiate')
-                end
-        end
+    ELSE BEGIN
+	IF NOT (exists(SELECT 1 FROM #SLAM)) BEGIN
+	    DROP TABLE #SLAM; RAISERROR ( 18,-1,-1,N'taxekod Var olämplig,tabell förstörd, exekvera-om slaminitiate')
+	END
+    END
     INSERT INTO @statusTable select 'preloading#slam', CURRENT_TIMESTAMP, count(*) from #slam;
     INSERT INTO @statusTable (medelande) select '#initiating#sockenYtor';
     IF OBJECT_ID('tempdb..#SockenYtor') IS NULL
         goto SockenYtor
-    else
-        begin
-            if not (exists(select 1 from #SockenYtor))
-                begin
-                    drop table #SockenYtor; goto SockenYtor;
-                end
-        end
+    ELSE BEGIN
+	IF NOT (exists(SELECT 1 FROM #SOCKENYTOR)) BEGIN
+	    DROP TABLE #SOCKENYTOR; GOTO SOCKENYTOR;
+	END
+    END
     INSERT INTO @statusTable select 'preloading#SockenYtor', CURRENT_TIMESTAMP, count(*) from #SockenYtor;
 
     INSERT INTO @statusTable (medelande) select '#initiating#Byggnader';
     IF OBJECT_ID(N'tempdb..#ByggnadPåFastighetISocken') IS NULL
         goto ByggnadPåFastighetISocken
-    else
-        begin
-            if not (exists(select 1 from #ByggnadPåFastighetISocken))
-                begin
-                    drop table #ByggnadPåFastighetISocken; goto ByggnadPåFastighetISocken;
-                end
-        end
+    ELSE BEGIN
+	IF NOT (exists(SELECT 1 FROM #BYGGNADPÅFASTIGHETISOCKEN)) BEGIN
+	    DROP TABLE #BYGGNADPÅFASTIGHETISOCKEN; GOTO BYGGNADPÅFASTIGHETISOCKEN;
+	END
+    END
     INSERT INTO @statusTable
     select 'preloading#ByggnadPåFastighetISocken', CURRENT_TIMESTAMP, count(*)
     from #ByggnadPåFastighetISocken;
     INSERT INTO @statusTable (medelande) select '#initiating#sockenTillstånd';
     IF OBJECT_ID(N'tempdb..#Socken_tillstånd') IS NULL
         goto Socken_tillstånd
-    else
-        begin
-            if not (exists(select 1 from #Socken_tillstånd))
-                begin
-                    drop table #Socken_tillstånd; goto Socken_tillstånd;
-                end
-        end
+    ELSE BEGIN
+	IF NOT (exists(SELECT 1 FROM #SOCKEN_TILLSTÅND)) BEGIN
+	    DROP TABLE #SOCKEN_TILLSTÅND; GOTO SOCKEN_TILLSTÅND;
+	END
+    END
     INSERT INTO @statusTable select 'preloading#Socken_tillstånd', CURRENT_TIMESTAMP, count(*) from #Socken_tillstånd;
     INSERT INTO @statusTable (medelande) select '#initiating#egetOmhändertagande';
     IF OBJECT_ID(N'tempdb..#egetOmhändertagande') IS NULL
         goto egetOmhändertagande
-    else
-        begin
-            if not (exists(select 1 from #egetOmhändertagande))
-                begin
-                    drop table #egetOmhändertagande; goto egetOmhändertagande;
-                end
-        end
+    ELSE BEGIN
+	IF NOT (exists(SELECT 1 FROM #EGETOMHÄNDERTAGANDE)) BEGIN
+	    DROP TABLE #EGETOMHÄNDERTAGANDE; GOTO EGETOMHÄNDERTAGANDE;
+	END
+    END
     INSERT INTO @statusTable
     select 'preloading#egetOmhändertagande', CURRENT_TIMESTAMP, count(*)
     from #egetOmhändertagande;
     INSERT INTO @statusTable (medelande) select '#initiating#Spillvatten';
     IF OBJECT_ID('tempdb..#spillvaten') IS NULL
         goto spillvaten
-    else
-        begin
-            if not (exists(select 1 from #spillvaten))
-                begin
-                    drop table #spillvaten; goto spillvaten;
-                end
-        end
+    ELSE BEGIN
+	IF NOT (exists(SELECT 1 FROM #SPILLVATEN)) BEGIN
+	    DROP TABLE #SPILLVATEN; GOTO SPILLVATEN;
+	END
+    END
     INSERT INTO @statusTable select 'preloading#spillvaten', CURRENT_TIMESTAMP, count(*) from #spillvaten;
     INSERT INTO @statusTable (medelande) select '#initiating#röd';
     IF OBJECT_ID(N'tempdb..#röd') IS NULL
         goto röd
-    else
-        begin
-            if not (exists(select 1 from #röd))
-                begin
-                    drop table #röd; goto röd;
-                end
-        end
+    ELSE BEGIN
+	IF NOT (exists(SELECT 1 FROM #RÖD)) BEGIN
+	    DROP TABLE #RÖD; GOTO RÖD;
+	END
+    END
     INSERT INTO @statusTable select 'preloading#röd', CURRENT_TIMESTAMP, count(*) from #röd
     INSERT INTO @statusTable (medelande) select '#goingToRepport';goto repport
 
@@ -117,24 +103,24 @@ begin try
     INSERT INTO @statusTable (medelande) select 'Starting#SockenYtor'
     BEGIN TRY
         BEGIN TRANSACTION
-            with socknarOfIntresse as (Select N'Björke' "socken"
-                                       Union
-                                       Select 'Dalhem' as alias2
-                                       Union
-                                       Select N'Fröjel' as alias234567
-                                       Union
-                                       Select 'Ganthem' as alias23
-                                       Union
-                                       Select 'Halla' as alias234
-                                       Union
-                                       Select 'Klinte' as alias2345
-                                       Union
-                                       Select 'Roma' as alias23456)
-            SELECT socken SockenX, concat(Trakt, ' ', Blockenhet) FAStighet, Shape
-            INTO #SockenYtor
-            from sde_gsd.gng.AY_0980 x
-                     inner join socknarOfIntresse
-                                on left(x.TRAKT, len(socknarOfIntresse.socken)) = socknarOfIntresse.socken
+	    WITH
+		SOCKNAROFINTRESSE AS (SELECT N'Björke' "socken"
+				      UNION
+				      SELECT 'Dalhem' AS ALIAS2
+				      UNION
+				      SELECT N'Fröjel' AS ALIAS234567
+				      UNION
+				      SELECT 'Ganthem' AS ALIAS23
+				      UNION
+				      SELECT 'Halla' AS ALIAS234
+				      UNION
+				      SELECT 'Klinte' AS ALIAS2345
+				      UNION
+				      SELECT 'Roma' AS ALIAS23456)
+	    SELECT SOCKEN SOCKENX, concat(TRAKT, ' ', BLOCKENHET) FASTIGHET, SHAPE
+	    INTO #SOCKENYTOR
+	    FROM SDE_GSD.GNG.AY_0980 X
+		INNER JOIN SOCKNAROFINTRESSE ON left(X.TRAKT, len(SOCKNAROFINTRESSE.SOCKEN)) = SOCKNAROFINTRESSE.SOCKEN
         Commit Transaction
     end try begin catch
         ROLLBACK TRANSACTION insert into @statusTable select ERROR_MESSAGE(), CURRENT_TIMESTAMP, @@ROWCOUNT
@@ -146,185 +132,188 @@ begin try
 
     set @tid = CURRENT_TIMESTAMP INSERT INTO @statusTable (medelande) select 'Starting#Byggnadsyta'
     BEGIN TRY
-        BEGIN TRANSACTION
-            with byggnad_yta as (select andamal_1T Byggnadstyp, Shape from sde_gsd.gng.BY_0980),
-                 q as (Select Byggnadstyp, socknarOfIntresse.fastighet Fastighetsbeteckning, byggnad_yta.SHAPE
-                       from byggnad_yta
-                                inner join #SockenYtor socknarOfIntresse
-                                           on byggnad_yta.Shape.STWithin(socknarOfIntresse.shape) = 1)
-            select Fastighetsbeteckning, Byggnadstyp, shape ByggShape
-            into #ByggnadPåFastighetISocken
-            from (select *, row_number() over (partition by Fastighetsbeteckning order by Byggnadstyp ) orderz from q) z
-            where orderz = 1;
-        Commit Transaction
-    end try begin catch
-        ROLLBACK TRANSACTION insert into @statusTable select ERROR_MESSAGE(), CURRENT_TIMESTAMP, @@ROWCOUNT
-        print 'failed to build' throw
-    end catch
-    set @tid = CURRENT_TIMESTAMP - @tid INSERT INTO @statusTable select 'rebuilt#', @tid, @@ROWCOUNT goto TableInitiate;
-    Socken_tillstånd:
-    set @tid = CURRENT_TIMESTAMP INSERT INTO @statusTable (medelande) select 'Starting#Socken_tillstånd'
+	BEGIN TRANSACTION
+	    WITH
+		BYGGNAD_YTA AS (SELECT ANDAMAL_1T BYGGNADSTYP, SHAPE FROM SDE_GSD.GNG.BY_0980), Q AS (SELECT BYGGNADSTYP
+													   , SOCKNAROFINTRESSE.FASTIGHET FASTIGHETSBETECKNING
+													   , BYGGNAD_YTA.SHAPE
+												      FROM BYGGNAD_YTA
+													  INNER JOIN #SOCKENYTOR SOCKNAROFINTRESSE
+													  ON BYGGNAD_YTA.SHAPE.STWithin(SOCKNAROFINTRESSE.SHAPE) = 1)
+	    SELECT FASTIGHETSBETECKNING, BYGGNADSTYP, SHAPE BYGGSHAPE
+	    INTO #BYGGNADPÅFASTIGHETISOCKEN
+	    FROM (SELECT *, row_number() OVER (PARTITION BY FASTIGHETSBETECKNING ORDER BY BYGGNADSTYP ) ORDERZ FROM Q) Z
+	    WHERE ORDERZ = 1;
+	COMMIT TRANSACTION
+    END TRY BEGIN CATCH
+	ROLLBACK TRANSACTION
+	INSERT INTO @STATUSTABLE SELECT ERROR_MESSAGE(), CURRENT_TIMESTAMP, @@ROWCOUNTPRINT 'failed to build' THROW
+    END CATCH
+    SET @TID = CURRENT_TIMESTAMP - @TID INSERT INTO @STATUSTABLE SELECT 'rebuilt#', @TID, @@ROWCOUNT GOTO TABLEINITIATE;
+
+    SOCKEN_TILLSTÅND:
+    SET @TID = CURRENT_TIMESTAMP INSERT INTO @STATUSTABLE (MEDELANDE) SELECT 'Starting#Socken_tillstånd'
     BEGIN TRY
-        BEGIN TRANSACTION
-            with AnSoMedSocken as (select left(Fastighet_tillstand, case
-                                                                        when charindex(' ', Fastighet_tillstand) = 0
-                                                                            then len(Fastighet_tillstand) + 1
-                                                                        else charindex(' ', Fastighet_tillstand) end -
-                                                                    1) socken,
-                                          Diarienummer,
-                                          Fastighet_tillstand          z,
-                                          Beslut_datum,
-                                          Utford_datum,
-                                          Anteckning,
-                                          Shape                        anlShape
-                                   from sde_miljo_halsoskydd.gng.ENSKILT_AVLOPP_sodra_P),
-                 AnNoMedSocken as (select left(Fastighet_tillstand, case
-                                                                        when charindex(' ', Fastighet_tillstand) = 0
-                                                                            then len(Fastighet_tillstand) + 1
-                                                                        else charindex(' ', Fastighet_tillstand) end -
-                                                                    1) socken,
-                                          Diarienummer,
-                                          Fastighet_tillstand          z,
-                                          Beslut_datum,
-                                          Utford_datum,
-                                          Anteckning,
-                                          Shape                        anlShape
-                                   from sde_miljo_halsoskydd.gng.ENSKILT_AVLOPP_Norra_P),
-                 AnMeMedSocken as (select left(Fastighet_tilstand, case
-                                                                       when charindex(' ', Fastighet_tilstand) = 0
-                                                                           then len(Fastighet_tilstand) + 1
-                                                                       else charindex(' ', Fastighet_tilstand) end -
-                                                                   1) socken,
-                                          Diarienummer,
-                                          Fastighet_tilstand          z,
-                                          Beslut_datum,
-                                          Utford_datum,
-                                          Anteckning,
-                                          Shape                       anlShape
-                                   from sde_miljo_halsoskydd.gng.ENSKILT_AVLOPP_MELLERSTA_P),
-                 SodraFiltrerad as (select Diarienummer,
-                                           z q,
-                                           Beslut_datum,
-                                           Utford_datum,
-                                           Anteckning,
-                                           AllaAvlopp.anlShape,
-                                           FAStighet
-                                    from AnSoMedSocken AllaAvlopp
-                                             inner join(select FiltreradeFast.*
-                                                        from #sockenYtor FiltreradeFast
-                                                                 inner join (select socken from AnSoMedSocken group by socken) q on socken = sockenX) FFast
-                                                       on AllaAvlopp.socken = ffast.SockenX and
-                                                          AllaAvlopp.anlShape.STIntersects(FFast.Shape) = 1),
-                 NorraFiltrerad as (select Diarienummer,
-                                           z q,
-                                           Beslut_datum,
-                                           Utford_datum,
-                                           Anteckning,
-                                           AllaAvlopp.anlShape,
-                                           FAStighet
-                                    from AnNoMedSocken AllaAvlopp
-                                             inner join(select FiltreradeFast.*
-                                                        from #sockenYtor FiltreradeFast
-                                                                 inner join (select socken from AnNoMedSocken group by socken) q on socken = sockenX) FFast
-                                                       on AllaAvlopp.socken = ffast.SockenX and
-                                                          AllaAvlopp.anlShape.STIntersects(FFast.Shape) = 1),
-                 MellerstaFiltrerad as (select Diarienummer,
-                                               z q,
-                                               Beslut_datum,
-                                               Utford_datum,
-                                               Anteckning,
-                                               AllaAvlopp.anlShape,
-                                               FAStighet
-                                        from AnMeMedSocken AllaAvlopp
-                                                 inner join(select FiltreradeFast.*
-                                                            from #sockenYtor FiltreradeFast
-                                                                     inner join (select socken from AnMeMedSocken group by socken) q on socken = sockenX) FFast
-                                                           on AllaAvlopp.socken = ffast.SockenX and
-                                                              AllaAvlopp.anlShape.STIntersects(FFast.Shape) = 1),
-                 SammanSlagna as (select Diarienummer,
-                                         q                                                     "Fastighet_tillstand",
-                                         isnull(TRY_CONVERT(DateTime, Beslut_datum, 102),
-                                                DATETIME2FROMPARTS(1988, 1, 1, 1, 1, 1, 1, 1)) Beslut_datum,
-                                         isnull(TRY_CONVERT(DateTime, Utford_datum, 102),
-                                                DATETIME2FROMPARTS(1988, 1, 1, 1, 1, 1, 1, 1)) Utford_datum,
-                                         Anteckning,
-                                         anlShape,
-                                         FAStighet
-                                  from (select *
-                                        from SodraFiltrerad
-                                        union all
-                                        select *
-                                        from NorraFiltrerad
-                                        union all
-                                        select *
-                                        from MellerstaFiltrerad) z)
-            select FAStighet,
-                   Diarienummer,
-                   Fastighet_tillstand,
-                   Beslut_datum,
-                   Utford_datum "utförddatum",
-                   Anteckning,
-                   anlShape     AnlaggningsPunkt
-            into #Socken_tillstånd
-            from SammanSlagna
-        Commit Transaction
-    end try begin catch
-        ROLLBACK TRANSACTION insert into @statusTable select ERROR_MESSAGE(), CURRENT_TIMESTAMP, @@ROWCOUNT
-        print 'failed to build' throw
-    end catch
+	BEGIN TRANSACTION
+	    WITH
+		ANSOMEDSOCKEN      AS (SELECT left(FASTIGHET_TILLSTAND,
+						   CASE WHEN charindex(' ', FASTIGHET_TILLSTAND) = 0
+							    THEN len(FASTIGHET_TILLSTAND) + 1
+							    ELSE charindex(' ', FASTIGHET_TILLSTAND)
+						   END - 1)       SOCKEN
+					    , DIARIENUMMER
+					    , FASTIGHET_TILLSTAND Z
+					    , BESLUT_DATUM
+					    , UTFORD_DATUM
+					    , ANTECKNING
+					    , SHAPE               ANLSHAPE
+				       FROM SDE_MILJO_HALSOSKYDD.GNG.ENSKILT_AVLOPP_SODRA_P)
+	      , ANNOMEDSOCKEN      AS (SELECT left(FASTIGHET_TILLSTAND,
+						   CASE WHEN charindex(' ', FASTIGHET_TILLSTAND) = 0
+							    THEN len(FASTIGHET_TILLSTAND) + 1
+							    ELSE charindex(' ', FASTIGHET_TILLSTAND)
+						   END - 1)       SOCKEN
+					    , DIARIENUMMER
+					    , FASTIGHET_TILLSTAND Z
+					    , BESLUT_DATUM
+					    , UTFORD_DATUM
+					    , ANTECKNING
+					    , SHAPE               ANLSHAPE
+				       FROM SDE_MILJO_HALSOSKYDD.GNG.ENSKILT_AVLOPP_NORRA_P)
+	      , ANMEMEDSOCKEN      AS (SELECT left(FASTIGHET_TILSTAND, CASE WHEN charindex(' ', FASTIGHET_TILSTAND) = 0
+										THEN len(FASTIGHET_TILSTAND) + 1
+										ELSE charindex(' ', FASTIGHET_TILSTAND)
+								       END - 1) SOCKEN
+					    , DIARIENUMMER
+					    , FASTIGHET_TILSTAND                Z
+					    , BESLUT_DATUM
+					    , UTFORD_DATUM
+					    , ANTECKNING
+					    , SHAPE                             ANLSHAPE
+				       FROM SDE_MILJO_HALSOSKYDD.GNG.ENSKILT_AVLOPP_MELLERSTA_P)
+	      , SODRAFILTRERAD     AS (SELECT DIARIENUMMER
+					    , Z Q
+					    , BESLUT_DATUM
+					    , UTFORD_DATUM
+					    , ANTECKNING
+					    , ALLAAVLOPP.ANLSHAPE
+					    , FASTIGHET
+				       FROM ANSOMEDSOCKEN ALLAAVLOPP
+					   INNER JOIN(SELECT FILTRERADEFAST.*
+						      FROM #SOCKENYTOR FILTRERADEFAST
+							  INNER JOIN (SELECT SOCKEN FROM ANSOMEDSOCKEN GROUP BY SOCKEN) Q ON SOCKEN = SOCKENX) FFAST
+					   ON ALLAAVLOPP.SOCKEN = FFAST.SOCKENX AND
+					      ALLAAVLOPP.ANLSHAPE.STIntersects(FFAST.SHAPE) = 1)
+	      , NORRAFILTRERAD     AS (SELECT DIARIENUMMER
+					    , Z Q
+					    , BESLUT_DATUM
+					    , UTFORD_DATUM
+					    , ANTECKNING
+					    , ALLAAVLOPP.ANLSHAPE
+					    , FASTIGHET
+				       FROM ANNOMEDSOCKEN ALLAAVLOPP
+					   INNER JOIN(SELECT FILTRERADEFAST.*
+						      FROM #SOCKENYTOR FILTRERADEFAST
+							  INNER JOIN (SELECT SOCKEN FROM ANNOMEDSOCKEN GROUP BY SOCKEN) Q ON SOCKEN = SOCKENX) FFAST
+					   ON ALLAAVLOPP.SOCKEN = FFAST.SOCKENX AND
+					      ALLAAVLOPP.ANLSHAPE.STIntersects(FFAST.SHAPE) = 1)
+	      , MELLERSTAFILTRERAD AS (SELECT DIARIENUMMER
+					    , Z Q
+					    , BESLUT_DATUM
+					    , UTFORD_DATUM
+					    , ANTECKNING
+					    , ALLAAVLOPP.ANLSHAPE
+					    , FASTIGHET
+				       FROM ANMEMEDSOCKEN ALLAAVLOPP
+					   INNER JOIN(SELECT FILTRERADEFAST.*
+						      FROM #SOCKENYTOR FILTRERADEFAST
+							  INNER JOIN (SELECT SOCKEN FROM ANMEMEDSOCKEN GROUP BY SOCKEN) Q ON SOCKEN = SOCKENX) FFAST
+					   ON ALLAAVLOPP.SOCKEN = FFAST.SOCKENX AND
+					      ALLAAVLOPP.ANLSHAPE.STIntersects(FFAST.SHAPE) = 1)
+	      , SAMMANSLAGNA       AS (SELECT DIARIENUMMER
+					    , Q                                                     "Fastighet_tillstand"
+					    , isnull(TRY_CONVERT(DATETIME, BESLUT_DATUM, 102),
+						     DATETIME2FROMPARTS(1988, 1, 1, 1, 1, 1, 1, 1)) BESLUT_DATUM
+					    , isnull(TRY_CONVERT(DATETIME, UTFORD_DATUM, 102),
+						     DATETIME2FROMPARTS(1988, 1, 1, 1, 1, 1, 1, 1)) UTFORD_DATUM
+					    , ANTECKNING
+					    , ANLSHAPE
+					    , FASTIGHET
+				       FROM (SELECT *
+					     FROM SODRAFILTRERAD
+					     UNION ALL
+					     SELECT *
+					     FROM NORRAFILTRERAD
+					     UNION ALL
+					     SELECT *
+					     FROM MELLERSTAFILTRERAD) Z)
+	    SELECT FASTIGHET
+		 , DIARIENUMMER
+		 , FASTIGHET_TILLSTAND
+		 , BESLUT_DATUM
+		 , UTFORD_DATUM "utförddatum"
+		 , ANTECKNING
+		 , ANLSHAPE     ANLAGGNINGSPUNKT
+	    INTO #SOCKEN_TILLSTÅND
+	    FROM SAMMANSLAGNA
+	COMMIT TRANSACTION
+    END TRY BEGIN CATCH
+	ROLLBACK TRANSACTION INSERT INTO @STATUSTABLE SELECT ERROR_MESSAGE(), CURRENT_TIMESTAMP, @@ROWCOUNT
+	PRINT 'failed to build' THROW
+    END CATCH
     set @tid = CURRENT_TIMESTAMP - @tid INSERT INTO @statusTable select 'rebuilt#', @tid, @@ROWCOUNT goto TableInitiate;
     egetOmhändertagande:
     set @tid = CURRENT_TIMESTAMP INSERT INTO @statusTable (medelande) select 'Starting#egetOmhändertagande'
     BEGIN TRY
-        BEGIN TRANSACTION
-            with LOKALT_SLAM_P as (select Diarienr,
-                                          Fastighet_,
-                                          Fastighe00,
-                                          Eget_omhän,
-                                          Lokalt_omh,
-                                          Anteckning,
-                                          Beslutsdat,
-                                          shape
-                                   from sde_miljo_halsoskydd.gng.MoH_Slam_Lokalt_p_evw)
-                    ,
-                 Med_fastighet as (select *
-                                   from (select *,
-                                                concat(nullif(LOKALT_SLAM_P.Lokalt_omh, ''), ' ',
-                                                       nullif(LOKALT_SLAM_P.Fastighet_, ''), ' ',
-                                                       nullif(LOKALT_SLAM_P.Fastighe00, '')) fas
-                                         from sde_miljo_halsoskydd.gng.MoH_Slam_Lokalt_p_evw LOKALT_SLAM_P) q
-                                   where fas is not null
-                                     and charindex(':', fas) > 0),
-                 utan_fastighet as (select OBJECTID,
-                                           Fastighet_,
-                                           Fastighets,
-                                           Eget_omhän,
-                                           Lokalt_omh,
-                                           Fastighe00,
-                                           Beslutsdat,
-                                           Diarienr,
-                                           Anteckning,
-                                           utan_fastighet.Shape,
-                                           GDB_GEOMATTR_DATA,
-                                           SDE_STATE_ID,
-                                           FAStighet
-                                    from (select *
-                                          from sde_miljo_halsoskydd.gng.MoH_Slam_Lokalt_p_evw LOKALT_SLAM_P
-                                          where charindex(':', concat(nullif(LOKALT_SLAM_P.Lokalt_omh, ''), ' ',
-                                                                      nullif(LOKALT_SLAM_P.Fastighet_, ''), ' ',
-                                                                      nullif(LOKALT_SLAM_P.Fastighe00, ''))) =
-                                                0) utan_fastighet
-                                             inner join #SockenYtor sYt on sYt.shape.STIntersects(utan_fastighet.Shape) = 1)
-            select fastighet,
-                   concat(nullif(Diarienr + '-', '-'), nullif(Fastighe00 + '-', ' -'), nullif(Fastighet_ + '-', ' -'),
-                          nullif(Eget_omhän + '-', ' -'), nullif(Lokalt_omh + '-', ' -'),
-                          nullif(Anteckning + '-', ' -'), FORMAT(Beslutsdat, 'yyyy-MM-dd')) egetOmhändertangandeInfo,
-                   Shape                                                                    LocaltOmH
-            into #egetOmhändertagande
-            from (select OBJECTID,
-                         Fastighet_,
-                         Fastighets,
-                         Eget_omhän,
+	BEGIN TRANSACTION
+	    WITH
+		LOKALT_SLAM_P  AS (SELECT DIARIENR
+					, FASTIGHET_
+					, FASTIGHE00
+					, EGET_OMHÄN
+					, LOKALT_OMH
+					, ANTECKNING
+					, BESLUTSDAT
+					, SHAPE
+				   FROM SDE_MILJO_HALSOSKYDD.GNG.MOH_SLAM_LOKALT_P_EVW)
+	      , MED_FASTIGHET  AS (SELECT *
+				   FROM (SELECT *
+					      , concat(nullif(LOKALT_SLAM_P.LOKALT_OMH, ''), ' ',
+						       nullif(LOKALT_SLAM_P.FASTIGHET_, ''), ' ',
+						       nullif(LOKALT_SLAM_P.FASTIGHE00, '')) FAS
+					 FROM SDE_MILJO_HALSOSKYDD.GNG.MOH_SLAM_LOKALT_P_EVW LOKALT_SLAM_P) Q
+				   WHERE FAS IS NOT NULL AND charindex(':', FAS) > 0)
+	      , UTAN_FASTIGHET AS (SELECT OBJECTID
+					, FASTIGHET_
+					, FASTIGHETS
+					, EGET_OMHÄN
+					, LOKALT_OMH
+					, FASTIGHE00
+					, BESLUTSDAT
+					, DIARIENR
+					, ANTECKNING
+					, UTAN_FASTIGHET.SHAPE
+					, GDB_GEOMATTR_DATA
+					, SDE_STATE_ID
+					, FASTIGHET
+				   FROM (SELECT *
+					 FROM SDE_MILJO_HALSOSKYDD.GNG.MOH_SLAM_LOKALT_P_EVW LOKALT_SLAM_P
+					 WHERE charindex(':', concat(nullif(LOKALT_SLAM_P.LOKALT_OMH, ''), ' ',
+								     nullif(LOKALT_SLAM_P.FASTIGHET_, ''), ' ',
+								     nullif(LOKALT_SLAM_P.FASTIGHE00, ''))) =
+					       0) UTAN_FASTIGHET
+				       INNER JOIN #SOCKENYTOR SYT ON SYT.SHAPE.STIntersects(UTAN_FASTIGHET.SHAPE) = 1)
+	    SELECT FASTIGHET
+		 , concat(nullif(DIARIENR + '-', '-'), nullif(FASTIGHE00 + '-', ' -'), nullif(FASTIGHET_ + '-', ' -'),
+			  nullif(EGET_OMHÄN + '-', ' -'), nullif(LOKALT_OMH + '-', ' -'),
+			  nullif(ANTECKNING + '-', ' -'), FORMAT(BESLUTSDAT, 'yyyy-MM-dd')) EGETOMHÄNDERTANGANDEINFO
+		 , SHAPE                                                                    LOCALTOMH
+	    INTO #EGETOMHÄNDERTAGANDE
+	    FROM (SELECT OBJECTID
+		       , FASTIGHET_
+		       , FASTIGHETS
+		       , EGET_OMHÄN
+		       ,
                          Lokalt_omh,
                          Fastighe00,
                          Beslutsdat,
