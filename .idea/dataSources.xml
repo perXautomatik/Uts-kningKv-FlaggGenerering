@@ -19,7 +19,7 @@
       <jdbc-driver>com.microsoft.sqlserver.jdbc.SQLServerDriver</jdbc-driver>
       <jdbc-url>jdbc:sqlserver://admsql04</jdbc-url>
     </data-source>
-    <data-source source="LOCAL" name="EDP-(solen@Geodata,VisionReg&amp;Avlopp)" group="EDP" uuid="5dd5ec07-b71c-48de-8aab-4cfa43540e71">
+    <data-source source="LOCAL" name="EDPRemote" group="EDP" uuid="5dd5ec07-b71c-48de-8aab-4cfa43540e71">
       <driver-ref>sqlserver.ms</driver-ref>
       <synchronize>true</synchronize>
       <jdbc-driver>com.microsoft.sqlserver.jdbc.SQLServerDriver</jdbc-driver>
