@@ -1,0 +1,1 @@
+create fulltext catalog fulltextCatalog as default;
