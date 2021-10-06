@@ -8,4 +8,5 @@ from  tempExcel.dbo.TestBatchHandelseSkapande
 
 
 
-group by recAerendeID, z.strFastighetsbeteckning, z.strFnrID, z.recFastighetID, intDiarieAar, strDiarieSerieKod, intDiarienummerLoepNummer, strDiarienummer
+group by recAerendeID, z.strFastighetsbeteckning, z.strFnrID, z.recFastighetID, intDiarieAar,
+         strDiarieSerieKod, intDiarienummerLoepNummer, strDiarienummer

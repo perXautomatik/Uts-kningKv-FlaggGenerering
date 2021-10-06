@@ -1,5 +1,3 @@
-
-
 /*Insert Databases names into SQL Temp Table*/
 declare @statusTable table(one NVARCHAR(max),start datetime,rader integer);
 declare @rebuiltStatus1 as binary = 0;
