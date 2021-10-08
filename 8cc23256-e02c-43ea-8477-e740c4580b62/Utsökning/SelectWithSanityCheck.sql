@@ -1,35 +1,36 @@
+declare @f varchar = 'Företag';
+declare @p varchar = 'Person';
+
+
 WITH
     FAKTURAMOTTAGAREKONTAKT AS (
 
 SELECT dbo.tbVisFakturaUnderlag.recFakturaUnderlagID, dbo.tbVisFakturaUnderlag.recFakturaUnderlagID AS intRecnum, dbo.tbVisFakturaUnderlag.intFakturaNr, dbo.tbVisFakturaUnderlag.decNettoBelopp, dbo.tbVisFakturaUnderlag.decMomsBelopp, dbo.tbVisFakturaUnderlag.decBruttoBelopp, dbo.tbVisFakturaUnderlag.bolSkickadEkonomiSystem, dbo.tbVisFakturaUnderlag.recEnstakaFakturaMottagareID, dbo.tbVisEnstakaFakturamottagare.intIdNummer, dbo.tbVisFakturaUnderlag.datSkapadDatum, dbo.tbVisEnstakaFakturamottagare.strExterntIdNummer, dbo.tbVisEnstakaFakturamottagare.bolIntern, dbo.tbVisEnstakaFakturamottagare.strSkanningskod, dbo.tbVisEnstakaFakturamottagare.strMotpartKoncernkod, dbo.tbVisEnstakaFakturamottagare.strGLN, dbo.tbVisEnstakaFakturamottagare.strKommun, dbo.tbVisEnstakaFakturamottagare.strReferensnummer, dbo.tbVisEnstakaFakturamottagare.strIntBokfoeringsKonto, dbo.tbVisEnstakaKontakt.strOrginisationPersonnummer, dbo.tbVisEnstakaKontakt.strVisasSom, dbo.tbVisEnstakaKontakt.strGatuadress, dbo.tbVisEnstakaKontakt.strCoadress, dbo.tbVisEnstakaKontakt.strPostnummer, dbo.tbVisEnstakaKontakt.strPostort, dbo.tbVisEnstakaKontakt.strLand,
 -- this looks very resourceheavy, better with join?
-       CASE WHEN (SELECT COUNT(*) FROM tbVisFakturaFilFakturaUnderlag WHERE recFakturaUnderlagID = dbo.tbVisFakturaUnderlag.recFakturaUnderlagID) > 0
-         THEN CAST('1' AS BIT)
-         ELSE CAST('0' AS bit)
-       END AS 'bolSkrivenTillFakturaFil',
+       CAST(iif(((SELECT COUNT(*) FROM tbVisFakturaFilFakturaUnderlag WHERE recFakturaUnderlagID = dbo.tbVisFakturaUnderlag.recFakturaUnderlagID) > 0),
+         '1','0') AS bit) AS 'bolSkrivenTillFakturaFil',
 
        CASE
-       WHEN (strKontaktTyp = 'Person' AND ISNULL(strFoeretag, '') <> '')  THEN (dbo.tbVisEnstakaKontakt.strEfternamn + ', ' + dbo.tbVisEnstakaKontakt.strFoernamn) + ' (' + dbo.tbVisEnstakaKontakt.strFoeretag + ')'
-       WHEN (strKontaktTyp = 'Person' AND ISNULL(strFoeretag, '') = '')  THEN (dbo.tbVisEnstakaKontakt.strEfternamn + ', ' + dbo.tbVisEnstakaKontakt.strFoernamn)
-       WHEN (strKontaktTyp = 'Företag' AND ((strFoernamn + strEfternamn) IS NOT NULL AND (strFoernamn + strEfternamn) <> ''))  THEN dbo.tbVisEnstakaKontakt.strFoeretag + ' (' + dbo.tbVisEnstakaKontakt.strEfternamn + ', ' + dbo.tbVisEnstakaKontakt.strFoernamn  + ')'
-       WHEN (strKontaktTyp = 'Företag' AND ((strFoernamn + strEfternamn) IS NULL OR (strFoernamn + strEfternamn) = '')) THEN (dbo.tbVisEnstakaKontakt.strFoeretag)
+       WHEN (isPers AND ISNULL(strFoeretag, '') <> '')                THEN (dbo.tbVisEnstakaKontakt.strEfternamn + ', ' + dbo.tbVisEnstakaKontakt.strFoernamn) + ' (' + dbo.tbVisEnstakaKontakt.strFoeretag + ')'
+       WHEN (isPers AND ISNULL(strFoeretag, '') = '')                 THEN (dbo.tbVisEnstakaKontakt.strEfternamn + ', ' + dbo.tbVisEnstakaKontakt.strFoernamn)
+       WHEN (isForetag AND (forEft IS NOT NULL AND forEft <> '')) THEN dbo.tbVisEnstakaKontakt.strFoeretag + ' (' + dbo.tbVisEnstakaKontakt.strEfternamn + ', ' + dbo.tbVisEnstakaKontakt.strFoernamn  + ')'
+       WHEN (isForetag AND (forEft IS NULL OR forEft = ''))       THEN (dbo.tbVisEnstakaKontakt.strFoeretag)
        ELSE
                        strVisasSom
        END as strVisasSomEfternamnFoerst,
 
+
        CASE
-       WHEN strKontaktTyp = 'Person'
-         THEN ISNULL(dbo.tbVisEnstakaKontakt.strEfternamn, '') + ISNULL(', ' + dbo.tbVisEnstakaKontakt.strFoernamn, '')
-       WHEN strKontaktTyp = 'Företag'
-         THEN dbo.tbVisEnstakaKontakt.strFoeretag
+       WHEN isPers   THEN ISNULL(dbo.tbVisEnstakaKontakt.strEfternamn, '') + ISNULL(', ' + dbo.tbVisEnstakaKontakt.strFoernamn, '')
+       WHEN isForetag THEN dbo.tbVisEnstakaKontakt.strFoeretag
        ELSE
          strVisasSom
        END AS strEfternamnFoernamn,
 
        CASE
-       WHEN strKontaktTyp = 'Person'
+       WHEN isPers
          THEN ISNULL(dbo.tbVisEnstakaKontakt.strFoernamn + ' ', '') + ISNULL(dbo.tbVisEnstakaKontakt.strEfternamn, '')
-       WHEN strKontaktTyp = 'Företag'
+       WHEN isForetag
          THEN dbo.tbVisEnstakaKontakt.strFoeretag
        ELSE
          strVisasSom
@@ -39,7 +40,7 @@ SELECT dbo.tbVisFakturaUnderlag.recFakturaUnderlagID, dbo.tbVisFakturaUnderlag.r
        strEfternamn,
        strFoeretag
 
-FROM dbo.tbVisFakturaUnderlag
+FROM (select (strKontaktTyp = @p) isPers,(strKontaktTyp = @f) isForetag,(strFoernamn + strEfternamn) forEft,* from  dbo.tbVisFakturaUnderlag) q
 LEFT OUTER JOIN dbo.tbVisEnstakaFakturamottagare
   ON dbo.tbVisEnstakaFakturamottagare.recEnstakaFakturamottagareID = dbo.tbVisFakturaUnderlag.recEnstakaFakturaMottagareID
 LEFT OUTER JOIN dbo.tbVisEnstakaKontakt
@@ -211,15 +212,11 @@ left OUTER JOIN GALLRAT
 
     )
 
-	SELECT * from va  WHERE strFastighetsbeteckning = 'Follingbo Klinte 1:36' or strFastighetsbeteckning = 'Follingbo Klinte 1:54'
+SELECT *from va WHERE strFastighetsbeteckning = 'Follingbo Klinte 1:36' or strFastighetsbeteckning = 'Follingbo Klinte 1:54'
 
 
 select distinct strDiarienummer,TBAEHAERENDE.recAerendeId,strLocalizationCode FROM TBAEHAERENDE
     LEFT OUTER JOIN DBO.TBAEHAERENDEDATA
-        ON DBO.TBAEHAERENDEDATA.RECAERENDEID = DBO.TBAEHAERENDE.RECAERENDEID
-Where STRAERENDEMENING = 'Klart vatten - information om avlopp'
-      AND strAerendeStatusPresent != 'Avslutat'
-      and strAerendeStatusPresent != 'Makulerat'
-ORDER BY TBAEHAERENDE.recAerendeId desc
+        ON DBO.TBAEHAERENDEDATA.RECAERENDEID = DBO.TBAEHAERENDE.RECAERENDEID Where STRAERENDEMENING = 'Klart vatten - information om avlopp' AND strAerendeStatusPresent != 'Avslutat' and strAerendeStatusPresent != 'Makulerat' ORDER BY TBAEHAERENDE.recAerendeId desc
 
 --SELECT top 100 * from TBAEHAERENDEDATA ORDER BY RECLASTAERENDESTATUSLOGID desc

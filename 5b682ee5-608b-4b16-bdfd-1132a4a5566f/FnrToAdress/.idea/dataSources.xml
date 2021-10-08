@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="DataSourceManagerImpl" format="xml" multifile-model="true">
+    <data-source source="LOCAL" name="Geofir" read-only="true" group="Gisdb01" uuid="027c2d16-67ba-4eeb-837e-f99b41e4c813">
+      <driver-ref>sqlserver.ms</driver-ref>
+      <synchronize>true</synchronize>
+      <jdbc-driver>com.microsoft.sqlserver.jdbc.SQLServerDriver</jdbc-driver>
+      <jdbc-url>jdbc:sqlserver://GISDATA</jdbc-url>
+    </data-source>
+    <data-source source="LOCAL" name="TempExcel" uuid="2ca40bb3-aca4-412d-a610-84b4e5da6dbe">
+      <driver-ref>sqlserver.ms</driver-ref>
+      <synchronize>true</synchronize>
+      <jdbc-driver>com.microsoft.sqlserver.jdbc.SQLServerDriver</jdbc-driver>
+      <jdbc-url>jdbc:sqlserver://localhost</jdbc-url>
+    </data-source>
+    <data-source source="LOCAL" name="EDP-(Testdb)" group="EDP" uuid="7c36b93a-8e8d-4cff-8993-17267a5fb816">
+      <driver-ref>sqlserver.ms</driver-ref>
+      <synchronize>true</synchronize>
+      <jdbc-driver>com.microsoft.sqlserver.jdbc.SQLServerDriver</jdbc-driver>
+      <jdbc-url>jdbc:sqlserver://admsql04</jdbc-url>
+    </data-source>
+    <data-source source="LOCAL" name="EDP-(solen@Geodata,VisionReg&amp;Avlopp)" read-only="true" group="EDP" uuid="5dd5ec07-b71c-48de-8aab-4cfa43540e71">
+      <driver-ref>sqlserver.ms</driver-ref>
+      <synchronize>true</synchronize>
+      <jdbc-driver>com.microsoft.sqlserver.jdbc.SQLServerDriver</jdbc-driver>
+      <jdbc-url>jdbc:sqlserver://admsql04</jdbc-url>
+    </data-source>
+    <data-source source="LOCAL" name="SOLENTABELLER" group="Gisdb01" uuid="947f2b47-af0c-4354-9696-9462b1a4bf8b">
+      <driver-ref>sqlserver.ms</driver-ref>
+      <synchronize>true</synchronize>
+      <jdbc-driver>com.microsoft.sqlserver.jdbc.SQLServerDriver</jdbc-driver>
+      <jdbc-url>jdbc:sqlserver://gisdb01;database=sde_miljo_halsoskydd</jdbc-url>
+    </data-source>
+    <data-source source="LOCAL" name="BygglovRegister&amp;LantmäterietsByggnadsyta" read-only="true" group="Gisdb01" uuid="a8e1f5be-90d2-4108-9ca0-70142103becd">
+      <driver-ref>sqlserver.ms</driver-ref>
+      <synchronize>true</synchronize>
+      <jdbc-driver>com.microsoft.sqlserver.jdbc.SQLServerDriver</jdbc-driver>
+      <jdbc-url>jdbc:sqlserver://gisdb01;database=sde_miljo_halsoskydd</jdbc-url>
+    </data-source>
+    <data-source source="LOCAL" name="FastighetsYta" read-only="true" group="Gisdb01" uuid="2b0fb1ea-95a8-43ea-8c0a-7d90c065cf10">
+      <driver-ref>sqlserver.ms</driver-ref>
+      <synchronize>true</synchronize>
+      <jdbc-driver>com.microsoft.sqlserver.jdbc.SQLServerDriver</jdbc-driver>
+      <jdbc-url>jdbc:sqlserver://gisdb01;database=sde_miljo_halsoskydd</jdbc-url>
+    </data-source>
+    <data-source source="LOCAL" name="Va - pipe Och Geopipe" read-only="true" group="Gisdb01" uuid="cd12987f-b0f9-4631-9b9f-2e5308f9c154">
+      <driver-ref>sqlserver.ms</driver-ref>
+      <synchronize>true</synchronize>
+      <jdbc-driver>com.microsoft.sqlserver.jdbc.SQLServerDriver</jdbc-driver>
+      <jdbc-url>jdbc:sqlserver://gisdb01;database=sde_miljo_halsoskydd</jdbc-url>
+    </data-source>
+    <data-source source="LOCAL" name="EDPFutureGotland" read-only="true" group="EDP" uuid="eb59c975-b040-4d08-b4d5-c3f719a48ea4">
+      <driver-ref>sqlserver.ms</driver-ref>
+      <synchronize>true</synchronize>
+      <jdbc-driver>com.microsoft.sqlserver.jdbc.SQLServerDriver</jdbc-driver>
+      <jdbc-url>jdbc:sqlserver://admsql01</jdbc-url>
+    </data-source>
+  </component>
+</project>

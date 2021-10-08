@@ -1,1 +1,0 @@
-select strPunkttyp from EDPVisionRegionGotlandAvlopp.dbo.tbVisKoordinat group by strPunkttyp order by strPunkttyp

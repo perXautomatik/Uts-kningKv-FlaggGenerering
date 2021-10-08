@@ -1,5 +1,11 @@
-with
-     TjansteNrAndTjanst as (
+declare @sockenStrang varchar = N'Källunge,Vallstena,Hörsne,Bara,Norrlanda,Stenkyrka'; --STRING_SPLIT(N'Källunge,Vallstena,Hörsne,Bara,Norrlanda,Stenkyrka', ','))
+WITH
+    SOCKNAROFINTRESSE AS (select N'Källunge' socken union select N'Vallstena' as alias
+			  union select N'Hörsne' as alias2345
+			  union select 'Bara' as alias2
+			  union select 'Norrlanda' as alias23
+			  union select 'Stenkyrka' as alias234)
+    ,TjansteNrAndTjanst as (
          select intTjanstnr,concat(strTaxekod_strDelprodukt,nullif(concat(' Avbrutet:',FORMAT (datStoppdatum, 'yyyy-MM-dd')),' Avbrutet:')) datStoppdatum from (select intTjanstnr,
                                  strAnlOrt,nullif(max(isnull(datStoppdatum, smalldatetimefromparts(1900, 01, 01, 00, 00))),smalldatetimefromparts(1900, 01, 01, 00, 00)) datStoppdatum,
                                  concat( strDelprodukt,'|',strTaxebenamning)              strTaxekod_strDelprodukt
@@ -15,6 +21,10 @@ with
            nullif(decAnlYkoordinat,0) decAnlYkoordinat
            from anlaggning
     )
+, filterOnSocken as (
+    select fastighetspunkterSlam.* from fastighetspunkterSlam inner join SOCKNAROFINTRESSE on strFastBeteckningHelX LIKE SOCKNAROFINTRESSE.SOCKEN + '%')
+
+
 
 select TjansteNrAndTjanst.datStoppdatum slamAnteckning,anlaggning.strFastBeteckningHel,fastighetspunkterSlam.decAnlXKoordinat,fastighetspunkterSlam.decAnlYkoordinat from
     TjansteNrAndTjanst
@@ -22,21 +32,13 @@ select TjansteNrAndTjanst.datStoppdatum slamAnteckning,anlaggning.strFastBeteckn
         on tjanst.intTjanstnr = TjansteNrAndTjanst.intTjanstnr
     left outer join anlaggning
         on anlaggning.strAnlnr = tjanst.strAnlnr
-    right outer join fastighetspunkterSlam
+    right outer join filterOnSocken fastighetspunkterSlam
         ON strFastBeteckningHelX = fastighetspunkterSlam.strFastBeteckningHelX
  --   group by datStoppdatum, strFastBeteckningHel, fastighetspunkterSlam.decAnlXKoordinat, fastighetspunkterSlam.decAnlYkoordinat
 ;
 
-SELECT TOP 501 t.*
-FROM dbo.vwFakturaRaderMedTaxansNuvarandePris t
+SELECT TOP 501 t.* FROM dbo.vwFakturaRaderMedTaxansNuvarandePris t
 
-SELECT TOP 501 intTjanstnr,
-               strTaxekod,
-               --strMatarnr,
-               strAnlnr,
-               --intRecnum,
-               intKundnr,
-               strAdress,
---               strProdukt,
-               strAktivTjanst
+SELECT TOP 501 intTjanstnr, strTaxekod, strAnlnr, intKundnr, strAdress, strAktivTjanst
+--strProdukt,intRecnum,strMatarnr,
 FROM dbo.vwAktivaAvslutadeEjStartadeVATjanster t
