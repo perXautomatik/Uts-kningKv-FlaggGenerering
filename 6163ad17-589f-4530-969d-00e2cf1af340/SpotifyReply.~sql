@@ -1,0 +1,16 @@
+
+delete from toUnnest where toUnnest.processed is not null
+
+;
+    with
+    rawJson                                                                    as (select Json, (playlist || [to]) "index" from main.SpotifyReply)
+    ,toUnNest2                                                               as
+    (select rawJson.Json processed, key, value, type, atom, id, '['||rawJson."index"||']' parent, fullkey, path FROM RAWjSON, json_each(processed))
+
+insert into toUnnest select * from toUnNest2;
+
+select group_concat(iif(key='name',value,null)) name, group_concat(iif(key='href',value,null)) href
+from JsonUnfold_toUnest
+where depth = 4 and (key='name' OR key = 'href') and rightstr(trail,5) <> 'album'
+group by leftstr(trail,length(trail)-7)
+

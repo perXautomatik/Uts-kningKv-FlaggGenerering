@@ -1,5 +1,6 @@
 begin try
-IF OBJECT_ID (N'dbo.checkThatItsNotBadHadelseNamn', N'FN') IS NOT NULL DROP FUNCTION checkThatItsNotBadHadelseNamn; END TRY BEGIN CATCH PRINT 'Error Number: ' + str(error_number()) ; PRINT 'Line Number: ' + str(error_line()); PRINT error_message(); ROLLBACK TRANSACTION; END CATCH; GO
+IF OBJECT_ID (N'dbo.checkThatItsNotBadHadelseNamn', N'FN') IS NOT NULL DROP
+    FUNCTION checkThatItsNotBadHadelseNamn; END TRY BEGIN CATCH PRINT 'Error Number: ' + str(error_number()) ; PRINT 'Line Number: ' + str(error_line()); PRINT error_message(); ROLLBACK TRANSACTION; END CATCH; GO
 CREATE FUNCTION dbo.checkThatItsNotBadHadelseNamn(@rub nvarchar(100)) RETURNS binary AS
 BEGIN
     DECLARE @ret binary;

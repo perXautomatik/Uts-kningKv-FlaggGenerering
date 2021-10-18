@@ -1,0 +1,80 @@
+with
+    rawJson                                                                    as (select Json,"index" from main.LastFmJson)
+    ,toUnNest                                                               as
+    (select rawJson.Json processed, key, value, type, atom, id, '['||rawJson."index"||']' parent, fullkey, path FROM RAWjSON, json_each(processed))
+
+, cte (depth,processed, trail, key, value, type, atom, id, parent, fullkey, path) as (
+	select depth,processed, (coalesce(parent,iPar)) trail, key, value, type, atom, id, coalesce(parent,iPar) , fullkey, path
+	from (
+	    select 0 depth, processed, parent as iPar,
+		key, value, type, atom, id, parent, fullkey, path
+	    from toUnNest where atom is not null
+	    union
+	    select 1 depth, i.processed, i.parent || i.key
+		 , js.*  from toUnNest i
+			    , json_each(i.value) js
+	    where  i.atom is null
+	)
+	union
+	    select 1+depth, value, trail || '.' || key , KEY, value, type, atom, id, trail, fullkey, path from cte
+		where atom is not null and not (trail like '%' || key)
+
+		union
+
+		select 1+depth, c1.value, c1.trail || '.' || c1.key ,  c2.KEY, c2.value, c2.type, c2.atom, c2.id, c1.trail, c2.fullkey, c2.path
+		from cte c1, json_each(c1.value) c2
+		where c1.atom is null
+   )
+,lastFmRes as (select lower(group_concat(iif(key='name',value,null))) name, group_concat(iif(key='playcount',value,null)) playcount,  group_concat(iif(key='#text',value,null)) artist
+from cte
+where (depth = 3 and (key = 'playcount' OR key = 'name'))  or (depth=4 and key = '#text')
+group by iif(rightstr(trail,7)='.artist',leftstr(trail,length(trail)-7),trail) order by playcount desc)
+
+,srawJson                                                                    as (select Json, (playlist || [to]) "index" from main.SpotifyReply)
+    ,toUnNest2                                                              as
+    (select rawJson.Json processed, key, value, type, atom, id, '['||rawJson."index"||']' parent, fullkey, path FROM sRAWjSON rawJson, json_each(processed))
+
+, cte2 (depth,processed, trail, key, value, type, atom, id, parent, fullkey, path) as (
+	select depth,processed, (coalesce(parent,iPar)) trail, key, value, type, atom, id, coalesce(parent,iPar) , fullkey, path
+	from (
+	    select 0 depth, processed, parent as iPar,
+		key, value, type, atom, id, parent, fullkey, path
+	    from toUnNest2 where atom is not null
+	    union
+	    select 1 depth, i.processed, i.parent || i.key
+		 , js.*  from toUnNest2 i
+			    , json_each(i.value) js
+	    where  i.atom is null
+	)
+	union
+	    select 1+depth, value, trail || '.' || key , KEY, value, type, atom, id, trail, fullkey, path from cte2
+		where atom is not null and not (trail like '%' || key)
+
+		union
+
+		select 1+depth, c1.value, c1.trail || '.' || c1.key ,  c2.KEY, c2.value, c2.type, c2.atom, c2.id, c1.trail, c2.fullkey, c2.path
+		from cte2 c1, json_each(c1.value) c2
+		where c1.atom is null
+   )
+
+,spotifyRes as (select lower(group_concat(iif(key='name',value,null))) name, group_concat(iif(key='href',value,null)) href
+from cte2
+where depth = 4 and (key='name' OR key = 'href') and rightstr(trail,5) <> 'album'
+group by leftstr(trail,length(trail)-7))
+,spotifyRes2 as (select iif(instr(name,' - ') > 0,replace(name,' - ',' (') || ')',name ) name, href
+		from spotifyRes)
+,lastFmRes2 as (select iif(instr(name,' - ') > 0,replace(name,' - ',' (') || ')',name ) name, playcount, artist
+		from lastFmRes)
+
+
+,Ressult as (select replace(href,'https://api.spotify.com/v1/tracks/','https://open.spotify.com/track/')href,name,sum(playcount)c,group_concat(artist) artist
+ from    (select href, name, playcount, artist
+	  from spotifyRes2 left join lastFmRes2 using (name)
+union
+     select href, name, playcount, artist
+	  from lastFmRes2 left join spotifyRes2 using (name)
+)
+		group by name,href order by iif(href is not null AND c is not null, c, href))
+
+select group_concat(name) names, sum(c) c, artist
+from Ressult where href is null group by artist order by c desc

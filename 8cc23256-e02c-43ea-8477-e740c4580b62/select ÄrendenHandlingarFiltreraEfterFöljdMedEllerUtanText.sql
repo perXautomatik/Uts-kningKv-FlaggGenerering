@@ -20,16 +20,21 @@ create table dbo.#filterArendeWhomHasAnsokan
     HandelseText       nvarchar(max),
     has                nvarchar(max)
 );
-
+--insert into #filterArendeWhomHasAnsokan
 with
    utanOnödigaHandlingar as (select * from (
 		    select datHaendelseDatum, strRubrik rub, strText HandelseText, strRiktning, strKommunikationssaett, recHaendelseKategoriID, recLastHaendelseStatusLogID, recHaendelseID, intRecnum, recDiarieAarsSerieID, intLoepnummer, intAntalFiler, recRemissutskickID, recFoervaltningID, strPublicering, recEnhetID, recAvdelningID, bolKaensligaPersonuppgifter, strEnhetNamn, strEnhetKod, strAvdelningNamn, strAvdelningKod, strFoervaltningKod, strHaendelseIdentifiering, strOrgannamn, strBeslutsNummer, datBeslutsDatum, recOrganID, recHaendelseBeslutID, strBeslutsutfall, recDelegationskodID, strDelegationskod, strDelegationsNamn, strHaendelseKategori, strHaendelseKategoriKod, bolEjAktuell, bolBeslut, strHaendelseKategoriKommentar, strFastighetsbeteckning, strFnrID, recFastighetID, intLoepnummerHaendelse, recAerendeID, bolMainHuvudBeslut, strSekretess, strBegraensa, strSekretessMyndighet, datSekretessDatum, recEnstakaKontaktID, strGatuadress, strPostnummer, strPostort, strVisasSom, strRoll, recKontaktRollID, recHaendelseEnstakaKontaktID, strSignature, intUserID, strHandlaeggarNamn, datDatum, strLogKommentar, strHaendelseStatusPresent, strHaendelseStatusLogTyp, strHaendelseStatusLocalizationCode,
 			   strDiarienummer dianr, strAerendeTyp, recAerendetypID, strAerendeFastighet, strAerendeStatusPresent, strAerendeLocalizationCode, strSoekbegrepp, recDiarieSerieID, strDiarieserieAerende, intDiarieAar, intDiarienummerLoepNummer, intSerieStartVaerde, recDiarieSeriePostlista, strDiarieseriePostlista, intDiarieAarPostlista, strTillhoerPostlista, strAerendemening, strAerendetypKod, recKommunID, strKommunNamn, strFoervaltningNamn, intArbetsdagar, strSummaTidposter, strPoITkategori, recDelprocessID, strDelprocesskod, strDelprocess, datGallrad, datArkiverad
 		 from dbo.vwAehHaendelse) z
-			where not (rub in ('Mottagningskvitto', N'Uppföljning 2 år från klart vatten utskick')) And left(rub,len(N'Bekräftelse')) <> (N'Bekräftelse') And left(rub,len('Besiktning')) <> ('Besiktning') And left(rub,len('Klart Vatten')) <> ('Klart Vatten') And left(rub,len(N'Påminnelse om åtgärd')) <> (N'Påminnelse om åtgärd') AND not(HandelseText is null AND left(rub,len(N'Kontakt i ärende')) = (N'Kontakt i ärende')) AND not rub like '%Makulerad%' AND dianr <> '--- Makulerad ---'
+			where not (rub in ('Mottagningskvitto', N'Uppföljning 2 år från klart vatten utskick'))
+			      And left(rub,len(N'Bekräftelse')) <> (N'Bekräftelse') And left(rub,len('Besiktning')) <> ('Besiktning')
+			      And left(rub,len('Klart Vatten')) <> ('Klart Vatten') And
+			      left(rub,len(N'Påminnelse om åtgärd')) <> (N'Påminnelse om åtgärd') AND
+			      not(HandelseText is null AND left(rub,len(N'Kontakt i ärende')) = (N'Kontakt i ärende')) AND
+			      not rub like '%Makulerad%' AND dianr <> '--- Makulerad ---'
        ),
 
-    tablex as (select * from (SELECT q.strDiarienummer                                                        dianr
+    arendenNHandlingar as (select * from (SELECT q.strDiarienummer                                                        dianr
 		    , q.strFastighetsbeteckning                                                kir
 		    , coalesce(q.strSignature, strUserVisasSom)                             as [Handläggarsignatur]
 		    , q.strVisasSom                                                         as [Huvudkontakt]
@@ -51,11 +56,13 @@ with
 	and ArendeText like '%atten%'
          )
    INSERT INTO #filterArendeWhomHasAnsokan(dianr, kir, Handläggarsignatur, Huvudkontakt, Sökbegrepp, ArendeText, status, Beslutsdatum, Kommentar, Löpnummer, dat, Händelsekategori, rikt, rub, HandelseText, has)
-   Select dianr, kir, Handläggarsignatur, Huvudkontakt, Sökbegrepp, ArendeText, status, Beslutsdatum, Kommentar, Löpnummer, dat, Händelsekategori, rikt, rub, HandelseText, '-' from tablex
+   Select dianr, kir, Handläggarsignatur, Huvudkontakt, Sökbegrepp, ArendeText, status, Beslutsdatum, Kommentar, Löpnummer, dat, Händelsekategori, rikt, rub, HandelseText, '-' from arendenNHandlingar
 
 ;
+
 with
     AnsUtg2                         as (select dianr,Löpnummer,rub,rikt,kir from #filterArendeWhomHasAnsokan)
+
   , harForbud                       as (select dianr, max(Löpnummer) hasForb,max(kir) kir
   					from AnsUtg2
 					where rub like N'Beslut om förbud%'
@@ -70,35 +77,24 @@ with
 					where rub like '%tförandeintyg%' AND rikt = 'inkommande'
 					group by dianr
 				    ),
-   tinner as (select handelsetext,N'Kontakt i ärende' ka,'Information om' io,rub,dianr,dat from #filterArendeWhomHasAnsokan where HandelseText is not null)
+harHandelseText as (select handelsetext,N'Kontakt i ärende' ka,'Information om' io,rub,dianr,dat from #filterArendeWhomHasAnsokan where HandelseText is not null)
 
 ,harForbANsUtf as (select x.dianr,kir, hasForb,coalesce(q.hasAns,t.hasUtf,0) qt,(select top 1 HandelseText from
-	 Tinner
+	 harHandelseText
 	where (left(rub, len(ka)) = ka OR left(rub, len(io)) = io)
-	and Tinner.dianr = x.dianr
-	order by dat) as senastKontakt
+	and harHandelseText.dianr = x.dianr
+	order by dat) as senastKontakt from harForbud x
+	    left outer join harAnsökan q on x.dianr = q.dianr
+	    left outer join harUtf t on x.dianr = t.dianr)
+--select dianr, kir, senastKontakt from harForbANsUtf where hasForb > qt
 
-			from harForbud x
-			    left outer join harAnsökan q on x.dianr = q.dianr
-			    left outer join harUtf t on x.dianr = t.dianr)
-select dianr, kir, senastKontakt
-from harForbANsUtf where hasForb > qt
-
-
-
-
-
-					     , OnlyDiarenummerMedAnsökan       as (
-	select q.dianr, kir, Handläggarsignatur, Huvudkontakt, Sökbegrepp, ArendeText, status, Beslutsdatum, Kommentar, Löpnummer, dat, Händelsekategori, rikt, rub, HandelseText, harAnsökan.has
-	from harAnsökan	inner join #filterArendeWhomHasAnsokan q on harAnsökan.dianr = q.dianr)
+	, OnlyDiarenummerMedAnsökan       as (
+				select q.dianr, kir, Handläggarsignatur, Huvudkontakt, Sökbegrepp, ArendeText, status,
+				       Beslutsdatum, Kommentar, Löpnummer, dat, Händelsekategori, rikt, rub, HandelseText, harAnsökan.has
+				from harAnsökan	inner join #filterArendeWhomHasAnsokan q on harAnsökan.dianr = q.dianr)
 
   , senastKontaktMedHandelsetext    as (select dianr,
-	(select top 1 HandelseText from
-	 Tinner
-	where HandelseText is not null
-	AND (left(rub, len(ka)) = ka OR left(rub, len(io)) = io)
-	and Tinner.dianr = Touter.dianr
-	order by dat) as senastKontakt
+	(select top 1 HandelseText from harHandelseText where HandelseText is not null AND (left(rub, len(ka)) = ka OR left(rub, len(io)) = io) and harHandelseText.dianr = Touter.dianr order by dat) as senastKontakt
 					from OnlyDiarenummerMedAnsökan as Touter)
 
   , senasteHandelseIfallIntoKontakt as 	(select * from senastKontaktMedHandelsetext where senastKontakt is null)
@@ -107,7 +103,7 @@ from harForbANsUtf where hasForb > qt
 						on q.dianr = harAnsökan.dianr)
 
   , senasteHendelseOmInteText       as (select dianr,
-				  	(select top 1 rub from ingenKontaktTextArenden as Tinner where Tinner.dianr = Touter.dianr order by dat) as senastRub
+				  	(select top 1 rub from ingenKontaktTextArenden as Tinner where harHandelseText.dianr = Touter.dianr order by dat) as senastRub
 					from OnlyDiarenummerMedAnsökan as Touter)
 
   , AnsUtg                          as (select dianr,rub fromdiarienummerMedAnsokan where rikt = N'Utgående')

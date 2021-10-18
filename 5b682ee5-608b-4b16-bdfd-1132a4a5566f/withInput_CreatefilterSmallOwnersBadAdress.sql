@@ -1,8 +1,8 @@
 WITH
     filterBadAdress as (SELECT
            		ROW_NUMBER() OVER ( PARTITION BY q.arndenr ORDER BY q.fra desc ) RowNum
-    			,qz.fra, qz.POSTORT, qz.POSTNUMMER, qz.ADRESS, qz.NAMN, qz.BETECKNING, qz.arndenr, qz.PERSORGNR
-    			from #input qz)
+    			,qz.fra, qz.POSTORT, qz.POSTNUMMER, qz.ADRESS, qz.NAMN, qz.BETECKNING, qz.arndenr, qz.PERSORGNR from #input qz
+        )
 
    ,z 		    as (select * from filterBadAdress
    		    	where postOrt <> ''

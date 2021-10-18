@@ -1,4 +1,9 @@
-with unfiltered as (SELECT FNR,
+with
+    input as (SELECT dbo.FNRKIRDIARENR_FörUtskick.FNR, dbo.FNRKIRDIARENR_FörUtskick.KIR
+        as "BETECKNING", dbo.FNRKIRDIARENR_FörUtskick.Diarienr
+      FROM dbo.FNRKIRDIARENR_FörUtskick )
+
+    ,unfiltered as (SELECT FNR,
        BETECKNING,
        ärndenr,
        CAST(
@@ -90,8 +95,7 @@ FROM (select FNR,
              [SAL_UTADR1],
              [PERSORGNR]) as tax
          LEFT JOIN
-     (SELECT dbo.FNRKIRDIARENR_FörUtskick.FNR, dbo.FNRKIRDIARENR_FörUtskick.KIR as "BETECKNING", dbo.FNRKIRDIARENR_FörUtskick.Diarienr
-      FROM dbo.FNRKIRDIARENR_FörUtskick ) AS input ON input.FNR = tax.FNR
+     input ON input.FNR = tax.FNR
       where input.BETECKNING is not null) as OrginalAndGeofir)
 
 select *

@@ -1,8 +1,3 @@
-
-
-
-
-
 ;if object_id('tempdb..##excluded') is null begin CREATE table ##excluded (dia VARCHAR(50),fas VARCHAR(50))
 
 CREATE INDEX exCInd on ##EXCLUDED(fas,dia);

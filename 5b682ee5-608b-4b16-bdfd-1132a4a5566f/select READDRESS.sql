@@ -1,4 +1,5 @@
--- adresspunkter
+with
+  adresspunkter as (select top 10 * from sde_geofir_gotland.gng.READDRESS)
 
 select NAME             namn
      , case when nullif(left(name, len(city)), city) is not null
@@ -17,7 +18,7 @@ select NAME             namn
      , modificationDate INSKDATUM
      , postCity         POSTORT
      , postCode         postnr
-select * from sde_geofir_gotland.gng.READDRESS
+	from adresspunkter
 
 
 

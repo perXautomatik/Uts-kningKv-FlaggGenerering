@@ -1,10 +1,10 @@
 declare @personNr nvarchar(13);
-@personNr = '19520627-1016'
+set @personNr = '19610607-1084'
 
 select x.*, q.BETECKNING
 from
  sde_geofir_gotland.gng.FA_FASTIGHET q
-join EDPVisionRegionGotlandAvlopp.dbo.vwAehAerendetsHuvudfastighet w on q.FNR = w.FNR
+--join EDPVisionRegionGotlandAvlopp.dbo.vwAehAerendetsHuvudfastighet w on q.FNR = w.FNR
     join
      (
 	SELECT t.FNR
