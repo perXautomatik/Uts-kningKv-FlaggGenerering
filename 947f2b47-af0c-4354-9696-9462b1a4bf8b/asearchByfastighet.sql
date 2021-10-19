@@ -1,5 +1,5 @@
 --handles even incomplete searchterms as long as socken is complete
-declare @searchstring nvarchar(50); set @searchstring = 'FARDHEM GARDARVE 1:8'
+declare @searchstring nvarchar(50); set @searchstring = 'FÅRÖ STORA GASMORA 1:57'
 
 declare @fastighetsBlock nvarchar(50);
 declare @withoutSocken nvarchar(50);
