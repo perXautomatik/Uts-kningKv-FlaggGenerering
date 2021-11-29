@@ -9,25 +9,19 @@ WITH
 
 
 
-  , ASO            AS (SELECT left(FASTIGHET_TILLSTAND,
-		    CASE WHEN charindex(' ', FASTIGHET_TILLSTAND) = 0 THEN len(FASTIGHET_TILLSTAND) + 1
+  , ASO            AS (SELECT left(FASTIGHET_TILLSTAND, CASE WHEN charindex(' ', FASTIGHET_TILLSTAND) = 0 THEN len(FASTIGHET_TILLSTAND) + 1
 		    ELSE charindex(' ', FASTIGHET_TILLSTAND) END - 1)       SOCKEN
-			    , DIARIENUMMER , BESLUT_DATUM, UTFORD_DATUM, ANTECKNING
-			    , FASTIGHET_TILLSTAND Z
+			    , DIARIENUMMER , BESLUT_DATUM, UTFORD_DATUM, ANTECKNING, FASTIGHET_TILLSTAND Z
 			    , SHAPE               ANLSHAPE
 		       FROM SDE_MILJO_HALSOSKYDD.GNG.ENSKILT_AVLOPP_SODRA_P)
-  , ANO              AS (SELECT left(FASTIGHET_TILLSTAND,
-		    CASE WHEN charindex(' ', FASTIGHET_TILLSTAND) = 0 THEN len(FASTIGHET_TILLSTAND) + 1
+  , ANO              AS (SELECT left(FASTIGHET_TILLSTAND, CASE WHEN charindex(' ', FASTIGHET_TILLSTAND) = 0 THEN len(FASTIGHET_TILLSTAND) + 1
 		    ELSE charindex(' ', FASTIGHET_TILLSTAND) END - 1)       SOCKEN
-			    , DIARIENUMMER , BESLUT_DATUM, UTFORD_DATUM, ANTECKNING
-			    , FASTIGHET_TILLSTAND Z
+			    , DIARIENUMMER , BESLUT_DATUM, UTFORD_DATUM, ANTECKNING, FASTIGHET_TILLSTAND Z
 			    , SHAPE               ANLSHAPE
 		       FROM SDE_MILJO_HALSOSKYDD.GNG.ENSKILT_AVLOPP_NORRA_P)
-  , AMO             AS (SELECT left(Fastighet_tilstand,
-		    CASE WHEN charindex(' ', Fastighet_tilstand) = 0 THEN len(Fastighet_tilstand) + 1
+  , AMO             AS (SELECT left(Fastighet_tilstand, CASE WHEN charindex(' ', Fastighet_tilstand) = 0 THEN len(Fastighet_tilstand) + 1
 		    ELSE charindex(' ', Fastighet_tilstand) END - 1)       SOCKEN
-			    , DIARIENUMMER , BESLUT_DATUM, UTFORD_DATUM, ANTECKNING
-			    , Fastighet_tilstand Z
+			    , DIARIENUMMER , BESLUT_DATUM, UTFORD_DATUM, ANTECKNING, Fastighet_tilstand Z
 			    , SHAPE               ANLSHAPE
 		       FROM SDE_MILJO_HALSOSKYDD.GNG.ENSKILT_AVLOPP_MELLERSTA_P)
 
@@ -61,5 +55,5 @@ from avloppPaSocknarna group by socken, left(Beslut_datum,2)
 
 
 
-select socken, count(*) c from filtreradeAnlaggningar group by socken
+select f.socken,f.c gammla, cast( (cast(f.c as float) / cast(a.c as float)) * 100 as int) "%AvHelaSocken" from (select socken, count(*) c from filtreradeAnlaggningar group by socken) f inner join (select socken, count(*) c from avloppPaSocknarna group by socken) a on a.socken = f.socken
 

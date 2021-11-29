@@ -488,15 +488,3 @@ INSERT INTO #tempTable (INTDIARIENUMMERLOEPNUMMER, STRFASTIGHETSBETECKNING, STRF
 INSERT INTO #tempTable (INTDIARIENUMMERLOEPNUMMER, STRFASTIGHETSBETECKNING, STRFNRID) VALUES (3812, 'BJÖRKE BJÖRKSARVE 1:8', '090003545');
 INSERT INTO #tempTable (INTDIARIENUMMERLOEPNUMMER, STRFASTIGHETSBETECKNING, STRFNRID) VALUES (3809, 'BJÖRKE BJÖRKSARVE 1:2', '090003539');
 INSERT INTO #tempTable (INTDIARIENUMMERLOEPNUMMER, STRFASTIGHETSBETECKNING, STRFNRID) VALUES (3533, 'BJÖRKE ANNEX 1:4', '090003504');
-
-UPDATE sde_miljo_halsoskydd.gng.FLAGGSKIKTET_P
-SET ARENDENUMMER = concat('mbnv 2020/', x.INTDIARIENUMMERLOEPNUMMER)
-from sde_miljo_halsoskydd.gng.FLAGGSKIKTET_P q inner join #tempTable x on FASTIGHET = x.STRFASTIGHETSBETECKNING
-WHERE
-    (left(fastighet, len('Björke')) = 'Björke' OR
-left(fastighet, len('Dalhem')) = 'Dalhem' OR
-left(fastighet, len('Fröjel')) = 'Fröjel' OR
-left(fastighet, len('Ganthem')) = 'Ganthem' OR
-left(fastighet, len('Halla')) = 'Halla' OR
-left(fastighet, len('Halla')) = 'Halla' OR
-left(fastighet, len('Roma')) = 'Roma')
