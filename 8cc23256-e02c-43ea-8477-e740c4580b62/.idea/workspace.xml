@@ -6,14 +6,24 @@
   <component name="ChangeListManager">
     <list default="true" id="09b3429d-f87d-4328-9288-b41dd3aea258" name="Default Changelist" comment="Completly New workStructure, &#10;this will make it much easier to keep track of dependensies">
       <change afterPath="$PROJECT_DIR$/LatestHandelse(harAnsokan)/(LatestHendelse)20194årsPåmHändelser.sql" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/LatestHandelse(harAnsokan)/.gitignore" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/LatestHandelse(harAnsokan)/.idea/.gitignore" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/LatestHandelse(harAnsokan)/.idea/Sql-harAns-kan.iml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/dataSources/2ca40bb3-aca4-412d-a610-84b4e5da6dbe/storage_v2/_staging_/database/tempExcel.Q2MDdA/schema/dbo.sYMBAA/routine/sp_xKonUpgToAdr.HCPS4w.sql" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/FilterByHendelse/CreateFnrToAdress.sql" beforeDir="false" afterPath="$PROJECT_DIR$/FilterByHendelse/CreateFnrToAdress.sql" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/FilterByHendelse/CreateFnrToAdress2.sql" beforeDir="false" afterPath="$PROJECT_DIR$/FilterByHendelse/CreateFnrToAdress2.sql" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/FilterByHendelse/InsertIntoFilterArendeWhomHasAnsokan.sql" beforeDir="false" afterPath="$PROJECT_DIR$/FilterByHendelse/InsertIntoFilterArendeWhomHasAnsokan.sql" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/FilterByHendelse/insertIntoFilterArendeWhomHasAnsokan_2.sql" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/FilterByHendelse/.idea/dataSources/2ca40bb3-aca4-412d-a610-84b4e5da6dbe/storage_v2/_staging_/database/tempExcel.Q2MDdA/schema/dbo.sYMBAA/routine/sp_xKonUpgToAdr.HCPS4w.sql" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/FilterByHendelse/FilterByHendelse/(Rebuild)TableTypes.sql" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/FilterByHendelse/FilterByHendelse/CreateFilterArendeWhomHasAnsokan.sql" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/FilterByHendelse/FilterByHendelse/CreateFnrToAdress.sql" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/FilterByHendelse/FilterByHendelse/CreateFnrToAdress2.sql" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/FilterByHendelse/FilterByHendelse/CreateTypeEndastUnikaArenden.sql" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/FilterByHendelse/FilterByHendelse/CreateVisionAdresser.sql" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/FilterByHendelse/FilterByHendelse/InsertIntoFilterArendeWhomHasAnsokan.sql" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/FilterByHendelse/FilterByHendelse/InsertIntoHandelser.sql" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/FilterByHendelse/FilterByHendelse/InsertIntoInputFnr.sql" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/FilterByHendelse/FilterByHendelse/InsertIntoTable3.sql" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/FilterByHendelse/FilterByHendelse/InsertIntoTable4.sql" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/FilterByHendelse/FilterByHendelse/TempfilterArendeWhomHasAnsokan.sql" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/FilterByHendelse/FilterByHendelse/insertIntoFilterArendeWhomHasAnsokan_2.sql" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/FilterByHendelse/SkapaHandelse.sql" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/FilterByHendelse/UpdateFileReference.sql" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/FilterByHendelse/UpdateraHändelser.sql" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/FilterByHendelse/behöverKorrigeras.sql" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/FnrToAdress/20201108ChristofferRknarExcel.sql" beforeDir="false" afterPath="$PROJECT_DIR$/FnrToAdress/RknarExcel.sql" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/LatestHandelse(harAnsokan)/LatestHendelse/CreateHandelseFilter.sql" beforeDir="false" afterPath="$PROJECT_DIR$/LatestHandelse(harAnsokan)/CreateHandelseFilter.sql" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/LatestHandelse(harAnsokan)/LatestHendelse/CreateOriginalListFIlter.sql" beforeDir="false" afterPath="$PROJECT_DIR$/LatestHandelse(harAnsokan)/CreateOriginalListFIlter.sql" afterDir="false" />
@@ -51,22 +61,13 @@
       <change beforePath="$PROJECT_DIR$/LatestHandelse(harAnsokan)/hs_err_pid8280.log" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/LatestHandelse(harAnsokan)/hs_err_pid9840.log" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/LatestHandelse(harAnsokan)/log/hs_err_pid11572.log" beforeDir="false" afterPath="$PROJECT_DIR$/LatestHandelse(harAnsokan)/log/hs_err_pid11572.log" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/SkapaHandelse.sql" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/TillMinaMedelanden/CreateFnrToAdress.sql" beforeDir="false" afterPath="$PROJECT_DIR$/TillMinaMedelanden/CreateFnrToAdress.sql" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/UpdateFileReference.sql" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/UpdateraHändelser.sql" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/VisionH-ndelserToEasyRead/20194årsPåmHändelser.sql" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/behöverKorrigeras.sql" beforeDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
     <option name="LAST_RESOLUTION" value="IGNORE" />
-  </component>
-  <component name="DatabaseLocalColorSettings">
-    <colors>
-      <entry key="sp_upgraddiagrams/dbo/tempExcel/2ca40bb3-aca4-412d-a610-84b4e5da6dbe:ROUTINE" value="Green" />
-    </colors>
   </component>
   <component name="DatabaseView">
     <option name="SHOW_INTERMEDIATE" value="true" />
@@ -82,18 +83,18 @@
     <expand>
       <path>
         <item name="Database" type="3277223f:DatabaseStructure$DbRootGroup" />
-        <item name="@admsql04" type="feb32156:DbDataSourceImpl" />
+        <item name="@localhost" type="feb32156:DbDataSourceImpl" />
       </path>
       <path>
         <item name="Database" type="3277223f:DatabaseStructure$DbRootGroup" />
-        <item name="@admsql04" type="feb32156:DbDataSourceImpl" />
-        <item name="master: database" type="ccb7ac2a:MsImplModel$Database" />
+        <item name="@localhost" type="feb32156:DbDataSourceImpl" />
+        <item name="EDPVisionRegionGotlandAvlopp: database" type="ccb7ac2a:MsImplModel$Database" />
       </path>
       <path>
         <item name="Database" type="3277223f:DatabaseStructure$DbRootGroup" />
-        <item name="@admsql04" type="feb32156:DbDataSourceImpl" />
-        <item name="master: database" type="ccb7ac2a:MsImplModel$Database" />
-        <item name="guest: schema" type="2865ee2e:MsImplModel$Schema" />
+        <item name="@localhost" type="feb32156:DbDataSourceImpl" />
+        <item name="EDPVisionRegionGotlandAvlopp: database" type="ccb7ac2a:MsImplModel$Database" />
+        <item name="dbo: schema" type="2865ee2e:MsImplModel$Schema" />
       </path>
     </expand>
     <select />
@@ -107,7 +108,7 @@
     <favorites_list name="UtsökningKv" />
   </component>
   <component name="Git.Settings">
-    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$/TillMinaMedelanden" />
   </component>
   <component name="GitToolBoxStore">
     <option name="recentBranches">
@@ -156,21 +157,21 @@
     <property name="database.data.extractors.current.id" value="Tab-separated (TSV)_id" />
     <property name="last_opened_file_path" value="$USER_HOME$/Desktop" />
     <property name="run.code.analysis.last.selected.profile" value="pProject Default" />
-    <property name="settings.editor.selected.configurable" value="database.main2" />
+    <property name="settings.editor.selected.configurable" value="project.propVCSSupport.Mappings" />
     <property name="sql.rename.search.for.storage.occurrences" value="true" />
   </component>
   <component name="RecentsManager">
+    <key name="MoveFile.RECENT_KEYS">
+      <recent name="C:\Users\crbk01\.DataGrip2019.3\config\projects\Kv-Utsökning" />
+      <recent name="C:\Users\crbk01\.DataGrip2019.3\config\projects\Kv-Utsökning\VisionH-ndelserToEasyRead" />
+      <recent name="C:\Users\crbk01\.DataGrip2019.3\config\projects\Kv-Utsökning\LatestHandelse(harAnsokan)" />
+      <recent name="C:\Users\crbk01\.DataGrip2019.3\config\projects\Kv-Utsökning\TillMinaMedelanden" />
+      <recent name="C:\Users\crbk01\.DataGrip2019.3\config\projects\Kv-Utsökning\TillMinaMedelanden\About" />
+    </key>
     <key name="CopyFile.RECENT_KEYS">
       <recent name="C:\Users\crbk01\.DataGrip2019.3\config\projects\UtsökningKv" />
       <recent name="C:\Users\crbk01\Desktop\OnGithub\Sql-harAns-kan" />
       <recent name="C:\Users\crbk01\Desktop" />
-    </key>
-    <key name="MoveFile.RECENT_KEYS">
-      <recent name="C:\Users\crbk01\.DataGrip2019.3\config\projects\Kv-Utsökning\LatestHandelse(harAnsokan)" />
-      <recent name="C:\Users\crbk01\.DataGrip2019.3\config\projects\Kv-Utsökning\TillMinaMedelanden" />
-      <recent name="C:\Users\crbk01\.DataGrip2019.3\config\projects\Kv-Utsökning\TillMinaMedelanden\About" />
-      <recent name="C:\Users\crbk01\.DataGrip2019.3\config\projects\Kv-Utsökning\TillMinaMedelanden\InsteadOfSheets(old)" />
-      <recent name="C:\Users\crbk01\.DataGrip2019.3\config\projects\Kv-Utsökning\LatestHandelse(harAnsokan)\log" />
     </key>
   </component>
   <component name="SQLScriptSettings">
@@ -186,21 +187,7 @@
         <serviceView>
           <option name="contentProportion" value="0.097740114" />
           <treeState>
-            <expand>
-              <path>
-                <item name="services root" type="e789fda9:ObjectUtils$Sentinel" />
-                <item name="root:@admsql04" type="7427dc5b:ServiceModel$ServiceGroupNode" />
-              </path>
-              <path>
-                <item name="services root" type="e789fda9:ObjectUtils$Sentinel" />
-                <item name="root:LocalTempAndEdpCopy" type="7427dc5b:ServiceModel$ServiceGroupNode" />
-              </path>
-              <path>
-                <item name="services root" type="e789fda9:ObjectUtils$Sentinel" />
-                <item name="root:LocalTempAndEdpCopy" type="7427dc5b:ServiceModel$ServiceGroupNode" />
-                <item name="com.intellij.database.console.session.MessageBusSession@1bbbe326" type="9fbbdea:ServiceModel$ServiceNode" />
-              </path>
-            </expand>
+            <expand />
             <select />
           </treeState>
         </serviceView>
@@ -504,6 +491,14 @@
     <option name="GROUP_MULTIFILE_MERGE_BY_DIRECTORY" value="true" />
   </component>
   <component name="WindowStateProjectService">
+    <state x="591" y="202" key="#Notifications" timestamp="1617701204424">
+      <screen x="78" y="0" width="1842" height="1080" />
+    </state>
+    <state x="591" y="202" key="#Notifications/78.0.1842.1080@78.0.1842.1080" timestamp="1617701204424" />
+    <state x="591" y="202" key="#com.intellij.execution.impl.EditConfigurationsDialog" timestamp="1617701260841">
+      <screen x="78" y="0" width="1842" height="1080" />
+    </state>
+    <state x="591" y="202" key="#com.intellij.execution.impl.EditConfigurationsDialog/78.0.1842.1080@78.0.1842.1080" timestamp="1617701260841" />
     <state x="771" y="350" key="#com.intellij.fileTypes.FileTypeChooser" timestamp="1616348788647">
       <screen x="78" y="0" width="1842" height="1080" />
     </state>
@@ -512,10 +507,10 @@
       <screen x="78" y="0" width="1842" height="1080" />
     </state>
     <state x="449" y="15" key="CommitChangelistDialog2/78.0.1842.1080@78.0.1842.1080" timestamp="1616348850368" />
-    <state x="779" y="273" key="FileChooserDialogImpl" timestamp="1616617833342">
+    <state x="779" y="273" key="FileChooserDialogImpl" timestamp="1617701105195">
       <screen x="78" y="0" width="1842" height="1080" />
     </state>
-    <state x="779" y="273" key="FileChooserDialogImpl/78.0.1842.1080@78.0.1842.1080" timestamp="1616617833342" />
+    <state x="779" y="273" key="FileChooserDialogImpl/78.0.1842.1080@78.0.1842.1080" timestamp="1617701105195" />
     <state width="1101" height="86" key="GridCell.Tab.0.bottom" timestamp="1616342061231">
       <screen x="78" y="0" width="1842" height="1080" />
     </state>
@@ -536,6 +531,10 @@
       <screen x="78" y="0" width="1842" height="1080" />
     </state>
     <state width="196" height="457" key="HiddenNamespacesPopup/78.0.1842.1080@78.0.1842.1080" timestamp="1616617575762" />
+    <state x="502" y="186" key="SettingsEditor" timestamp="1617701142819">
+      <screen x="78" y="0" width="1842" height="1080" />
+    </state>
+    <state x="502" y="186" key="SettingsEditor/78.0.1842.1080@78.0.1842.1080" timestamp="1617701142819" />
     <state x="707" y="368" key="com.intellij.ide.util.TipDialog" timestamp="1616330391843">
       <screen x="78" y="0" width="1842" height="1080" />
     </state>
