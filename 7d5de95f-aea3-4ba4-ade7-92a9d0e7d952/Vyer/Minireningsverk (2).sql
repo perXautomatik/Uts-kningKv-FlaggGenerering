@@ -1,5 +1,28 @@
-select       Besiktningsdatum Beslutsdatum, Datum, ToemningsdispensFrOM, Volym, ExterntTjaenstID, Tömningsintervall, Id, Tillsynsobjekt, Anläggningskategori, Anläggningstyp, Anteckning, Bedömning, Certifieringstyp, Recipient, Inventering, Status, Text, Vatten,kdecy, kdecX,
+Create view as Minireningsverk
+
+select
+       strPunkttyp,
+       Besiktningsdatum
+     Beslutsdatum,
+     Datum,
+     ToemningsdispensFrOM,
+     Volym,
+     ExterntTjaenstID,
+     Tömningsintervall,
+     Id,
+     Tillsynsobjekt,
+     Anläggningskategori,
+     Anläggningstyp,
+     Anteckning,
+     Bedömning,
+     Certifieringstyp,
+     Recipient,
+     Inventering,
+     Status,
+     Text,
+     Vatten,
     [geometry]::Point(kdecy, kdecX, 3015) AS Shape
+
 from
 (SELECT
     A.datBesiktningsdatum As Besiktningsdatum,
@@ -60,4 +83,4 @@ INNER JOIN EDPVisionRegionGotlandAvlopp.dbo.tbTrTillsynsobjekt AS T ON A.recTill
 INNER JOIN EDPVisionRegionGotlandAvlopp.dbo.tbTrTillsynsobjektKoordinat AS TK ON T.recTillsynsobjektID = TK.recTillsynsobjektID
 INNER JOIN EDPVisionRegionGotlandAvlopp.dbo.tbVisKoordinat AS K ON TK.recKoordinatID = K.recKoordinatID
 WHERE K.decX IS NOT NULL AND K.decY IS NOT NULL ) as AATAAAKATTK
-where strPunkttyp ='Ansluten byggnad'  OR strPunkttyp='Slamavskiljare'
+where strPunkttyp strPunkttyp='Efterföljande re' OR strPunkttyp='Slamavskiljare' OR strPunkttyp='Efterföljande rening'

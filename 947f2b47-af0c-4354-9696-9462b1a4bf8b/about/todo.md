@@ -1,0 +1,7 @@
+--Assuming this will be read by runConfiguration.
+-- goal; spread code over as many sub modules as feasable.
+-- goal; load remote queryies from file, into temporary table.
+	-- read from table to execution variables.
+-- goal; temporary methods, don't store anything we can rebuild and keep sourcecontrolled ofline.
+    	-- gist each submodule, later join as module to git repo.
+-- goal; column name sensetive, but not order, assume imput tables might be of wrong order.
