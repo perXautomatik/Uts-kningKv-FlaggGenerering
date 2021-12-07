@@ -1,0 +1,5 @@
+:r TillMinaMedelanden/CreateKirToFnr.sql
+:r TillMinaMedelanden/CreateFnrToAdress.sql
+:r TillMinaMedelanden/CreateHandelseTableType.sql
+:r TillMinaMedelanden/CreateCheckThatItsNotBadHadelseNamn.sql
+:r TillMinaMedelanden/CreateFilterByHasArende
