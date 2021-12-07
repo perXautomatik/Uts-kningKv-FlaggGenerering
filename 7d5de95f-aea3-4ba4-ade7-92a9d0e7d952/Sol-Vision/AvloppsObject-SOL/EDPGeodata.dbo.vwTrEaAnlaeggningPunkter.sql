@@ -1,0 +1,1 @@
+select top 10 * from EDPGeodata.dbo.vwTrEaAnlaeggningPunkter order by Beslutsdatum desc

@@ -1,0 +1,36 @@
+{
+	"folders": [
+		{
+			"path": "D:\\OnGithub\\Vyer"
+		},
+		{
+			"path": "D:\\.DataGrip2019.3\\config\\consoles\\db\\cbde40e1-0091-4576-9aa8-1c7aeb5086a4"
+		}
+	],
+	"settings": {
+		"files.exclude": {
+			"**/.git": true,
+			"**/.svn": true,
+			"**/.hg": true,
+			"**/CVS": true,
+			"**/.DS_Store": true,
+			"*.DAT": true,
+			"*.ID": true,
+			"*.IND": true,
+			"*.lnk": true,
+			"*.MAP": true,
+			"*.MBO": true,
+			"*.MBX": true,
+			"*.TAB": true,
+			"*.TDA": true,
+			"*.TIN": true,
+			"*.TMA": true,
+			"*.tmp": true,
+			"*.dat": true,
+			"*.one": true,
+			"*.cpuprofile": true,
+			"*.log": true,
+			"*.png": true
+		}		
+	}
+}

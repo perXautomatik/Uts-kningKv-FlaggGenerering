@@ -1,0 +1,1 @@
+select * from JsonUnfold_toUnest where trail is null

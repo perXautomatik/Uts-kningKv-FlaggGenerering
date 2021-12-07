@@ -1,0 +1,175 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<dataSource name="@admsql04">
+  <database-model serializer="dbm" dbms="MSSQL" family-id="MSSQL" format-version="4.17">
+    <root id="1">
+      <ServerVersion>12.0.5223</ServerVersion>
+    </root>
+    <database id="2" parent="1" name="BTV">
+      <ObjectId>26</ObjectId>
+      <Collation>Finnish_Swedish_CI_AS</Collation>
+    </database>
+    <database id="3" parent="1" name="DuoSTATION">
+      <ObjectId>8</ObjectId>
+      <Collation>Finnish_Swedish_CI_AS</Collation>
+    </database>
+    <database id="4" parent="1" name="DuoSTATION_RG">
+      <ObjectId>10</ObjectId>
+      <Collation>Finnish_Swedish_CI_AS</Collation>
+    </database>
+    <database id="5" parent="1" name="EDPGeodata">
+      <ObjectId>25</ObjectId>
+      <Collation>Finnish_Swedish_CI_AS</Collation>
+    </database>
+    <database id="6" parent="1" name="EDPVisionRegionGotland">
+      <ObjectId>15</ObjectId>
+      <Collation>Finnish_Swedish_CI_AS</Collation>
+    </database>
+    <database id="7" parent="1" name="EDPVisionRegionGotlandAvlopp">
+      <ObjectId>21</ObjectId>
+      <Collation>Finnish_Swedish_CI_AS</Collation>
+    </database>
+    <database id="8" parent="1" name="EDPVisionRegionGotlandAvloppFiler">
+      <ObjectId>22</ObjectId>
+      <Collation>Finnish_Swedish_CI_AS</Collation>
+    </database>
+    <database id="9" parent="1" name="EDPVisionRegionGotlandFiler">
+      <ObjectId>16</ObjectId>
+      <Collation>Finnish_Swedish_CI_AS</Collation>
+    </database>
+    <database id="10" parent="1" name="EDPVisionRegionGotlandFiler1">
+      <ObjectId>18</ObjectId>
+      <Collation>Finnish_Swedish_CI_AS</Collation>
+    </database>
+    <database id="11" parent="1" name="EDPVisionRegionGotlandFilerSolen">
+      <ObjectId>27</ObjectId>
+      <Collation>Finnish_Swedish_CI_AS</Collation>
+    </database>
+    <database id="12" parent="1" name="EDPVisionRegionGotlandTest">
+      <ObjectId>20</ObjectId>
+      <Collation>Finnish_Swedish_CI_AS</Collation>
+    </database>
+    <database id="13" parent="1" name="EDPVisionRegionGotlandTest2">
+      <ObjectId>29</ObjectId>
+      <Collation>Finnish_Swedish_CI_AS</Collation>
+    </database>
+    <database id="14" parent="1" name="HDB">
+      <ObjectId>11</ObjectId>
+      <Collation>Finnish_Swedish_CI_AS</Collation>
+    </database>
+    <database id="15" parent="1" name="HDB_S001_000001">
+      <ObjectId>30</ObjectId>
+      <Collation>Finnish_Swedish_CI_AS</Collation>
+    </database>
+    <database id="16" parent="1" name="HDB_S001_000002">
+      <ObjectId>31</ObjectId>
+      <Collation>Finnish_Swedish_CI_AS</Collation>
+    </database>
+    <database id="17" parent="1" name="MIA">
+      <ObjectId>12</ObjectId>
+      <Collation>SQL_Latin1_General_CP1_CI_AS</Collation>
+    </database>
+    <database id="18" parent="1" name="MRVISRegionGotland_Konv">
+      <ObjectId>17</ObjectId>
+      <Collation>Finnish_Swedish_CI_AS</Collation>
+    </database>
+    <database id="19" parent="1" name="NetLoan">
+      <ObjectId>28</ObjectId>
+    </database>
+    <database id="20" parent="1" name="SmartSign2">
+      <ObjectId>9</ObjectId>
+      <Collation>Finnish_Swedish_CI_AS</Collation>
+    </database>
+    <database id="21" parent="1" name="VeeamBackup">
+      <ObjectId>7</ObjectId>
+      <Collation>Finnish_Swedish_CI_AS</Collation>
+    </database>
+    <database id="22" parent="1" name="inspgot">
+      <ObjectId>13</ObjectId>
+      <Collation>Finnish_Swedish_CI_AS</Collation>
+    </database>
+    <database id="23" parent="1" name="inspgot_test">
+      <ObjectId>14</ObjectId>
+      <Collation>Finnish_Swedish_CI_AS</Collation>
+    </database>
+    <database id="24" parent="1" name="inspgot_test2">
+      <ObjectId>24</ObjectId>
+      <Collation>Finnish_Swedish_CI_AS</Collation>
+    </database>
+    <database id="25" parent="1" name="master">
+      <ObjectId>1</ObjectId>
+      <Current>1</Current>
+      <Collation>Finnish_Swedish_CI_AS</Collation>
+    </database>
+    <database id="26" parent="1" name="model">
+      <ObjectId>3</ObjectId>
+      <Collation>Finnish_Swedish_CI_AS</Collation>
+    </database>
+    <database id="27" parent="1" name="mrGotland_file">
+      <ObjectId>19</ObjectId>
+      <Collation>Finnish_Swedish_CI_AS</Collation>
+    </database>
+    <database id="28" parent="1" name="msdb">
+      <ObjectId>4</ObjectId>
+      <Collation>Finnish_Swedish_CI_AS</Collation>
+    </database>
+    <database id="29" parent="1" name="ricoh_slnx">
+      <ObjectId>23</ObjectId>
+      <Collation>Finnish_Swedish_CI_AS</Collation>
+    </database>
+    <database id="30" parent="1" name="tempdb">
+      <ObjectId>2</ObjectId>
+      <Collation>Finnish_Swedish_CI_AS</Collation>
+    </database>
+    <database id="31" parent="1" name="uaprod">
+      <ObjectId>5</ObjectId>
+      <Collation>Finnish_Swedish_CI_AS</Collation>
+    </database>
+    <database id="32" parent="1" name="uatest">
+      <ObjectId>6</ObjectId>
+      <Collation>Finnish_Swedish_CI_AS</Collation>
+    </database>
+    <schema id="33" parent="25" name="ADM\sa_dcc">
+      <ObjectId>7</ObjectId>
+    </schema>
+    <schema id="34" parent="25" name="INFORMATION_SCHEMA">
+      <ObjectId>3</ObjectId>
+    </schema>
+    <schema id="35" parent="25" name="db_accessadmin">
+      <ObjectId>16385</ObjectId>
+    </schema>
+    <schema id="36" parent="25" name="db_backupoperator">
+      <ObjectId>16389</ObjectId>
+    </schema>
+    <schema id="37" parent="25" name="db_datareader">
+      <ObjectId>16390</ObjectId>
+    </schema>
+    <schema id="38" parent="25" name="db_datawriter">
+      <ObjectId>16391</ObjectId>
+    </schema>
+    <schema id="39" parent="25" name="db_ddladmin">
+      <ObjectId>16387</ObjectId>
+    </schema>
+    <schema id="40" parent="25" name="db_denydatareader">
+      <ObjectId>16392</ObjectId>
+    </schema>
+    <schema id="41" parent="25" name="db_denydatawriter">
+      <ObjectId>16393</ObjectId>
+    </schema>
+    <schema id="42" parent="25" name="db_owner">
+      <ObjectId>16384</ObjectId>
+    </schema>
+    <schema id="43" parent="25" name="db_securityadmin">
+      <ObjectId>16386</ObjectId>
+    </schema>
+    <schema id="44" parent="25" name="dbo">
+      <ObjectId>1</ObjectId>
+    </schema>
+    <schema id="45" parent="25" name="guest">
+      <ObjectId>2</ObjectId>
+      <Current>1</Current>
+    </schema>
+    <schema id="46" parent="25" name="sys">
+      <ObjectId>4</ObjectId>
+    </schema>
+  </database-model>
+</dataSource>
