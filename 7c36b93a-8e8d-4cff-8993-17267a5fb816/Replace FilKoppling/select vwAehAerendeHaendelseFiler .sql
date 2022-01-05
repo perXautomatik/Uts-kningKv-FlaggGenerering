@@ -1,0 +1,1 @@
+select top 10 * from EDPVisionRegionGotlandTest2.dbo.vwAehAerendeHaendelseFiler order by intRecnum desc
