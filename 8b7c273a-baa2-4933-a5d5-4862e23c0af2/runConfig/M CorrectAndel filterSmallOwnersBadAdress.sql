@@ -30,15 +30,7 @@ with
 
 insert into @Convertion (FNR, org, ANDEL, namn, adress, POSTORT, POSTNR, src, badness, nominator, denominator)
 
-select FNR,
-	org,
-	ANDEL,
-	namn,
-	adress,
-	POSTORT,
-	POSTNR,
-       src,
-       badness,
+select FNR, org, ANDEL, namn, adress, POSTORT, POSTNR, src, badness,
        nominator, denominator
 from preprefardig
 
