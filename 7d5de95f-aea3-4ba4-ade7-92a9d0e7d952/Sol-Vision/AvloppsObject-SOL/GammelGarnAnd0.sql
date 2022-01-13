@@ -1,1 +1,0 @@
-select t.* from dbo.GammelGarnAnd0 t where t.PunkttypER <> '' AND t.AnlF_efR_Koordinater_X_o_Y <> ''

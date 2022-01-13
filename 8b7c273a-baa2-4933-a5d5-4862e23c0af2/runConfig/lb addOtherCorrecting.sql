@@ -6,15 +6,23 @@ begin catch
     print ERROR_line()
 end catch
 ;
+IF EXISTS(SELECT 1 FROM sys.columns
+  WHERE Name = N'namn'
+  AND Object_ID = Object_ID(N'dbo.Agarlista'))
+BEGIN
+begin try
+    with
+     standardiseNull as (SELECT FASTIGHETSNYCKEL Fnr , nullif(PERSONORGANISATIONNR,'<null>')org , null ANDEL , nullif(namn,'<null>')namn ,nullif(adress,'<null>') adress,  nullif(POSTORT ,'<null>') POSTORT ,  nullif(postnummer,'<null>') POSTNR , 'OrginalLista' src from Agarlista)
 
-with
-
- standardiseNull as (SELECT FASTIGHETSNYCKEL Fnr , nullif(PERSONORGANISATIONNR,'<null>')org , null ANDEL , nullif(namn,'<null>')namn ,nullif(adress,'<null>') adress,  nullif(POSTORT ,'<null>') POSTORT ,  nullif(postnummer,'<null>') POSTNR , 'OrginalLista' src from Agarlista)
-
- ,COLUMNPROCESSBADNESSSCORE AS (   SELECT atbc.FNR , agx.org , agx.ANDEL , agx.namn , agx.adress , agx.POSTORT ,  agx.POSTNR , agx.src
-    , ((IIF(agx.namn IS NULL, 1, 0)) + (IIF(agx.postnr IS NULL, 1, 0)) + (IIF(agx.postort IS NULL, 1, 0)) + (IIF(agx.adress IS NULL, 1, 0)) + (IIF(agx.org is NULL, 1, 0))) BADNESS
-	FROM standardiseNull agx inner join addressesToBeCorrected aTBC on agx.fnr = aTBC.fnr)
-select * into FromRaw from COLUMNPROCESSBADNESSSCORE
+     ,COLUMNPROCESSBADNESSSCORE AS (   SELECT atbc.FNR , agx.org , agx.ANDEL , agx.namn , agx.adress , agx.POSTORT ,  agx.POSTNR , agx.src
+	, ((IIF(agx.namn IS NULL, 1, 0)) + (IIF(agx.postnr IS NULL, 1, 0)) + (IIF(agx.postort IS NULL, 1, 0)) + (IIF(agx.adress IS NULL, 1, 0)) + (IIF(agx.org is NULL, 1, 0))) BADNESS
+	    FROM standardiseNull agx inner join addressesToBeCorrected aTBC on agx.fnr = aTBC.fnr)
+    select * into FromRaw from COLUMNPROCESSBADNESSSCORE
+    end try
+begin catch
+    print ERROR_line()
+end catch
+END
 ;
 begin try
     drop table FromUnionedNotFiltered

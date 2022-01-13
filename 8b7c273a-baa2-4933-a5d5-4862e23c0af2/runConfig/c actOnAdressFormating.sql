@@ -1,11 +1,30 @@
 use [tempExcel]
 insert into dbo.resultatRunConf (dnr) values (concat(cast(sysdatetime() as varchar),'begin try1'))
+
 begin try
-    drop table tempExcel.dbo.afterFirstFormating
+    drop table afterFirstFormating
 end try
 begin catch
 end catch
 
+begin try
+
+create table afterFirstFormating (FNR       int,
+				  org       nvarchar(20),
+				  ANDEL     nvarchar(41),
+				  namn      nvarchar(501),
+				  INSKDATUM nvarchar(10),
+				  adress    nvarchar(256),
+				  POSTORT   nvarchar(256),
+				  POSTNR    nvarchar(256),
+				  src       varchar(8) not null,
+				  BADNESS   int
+				  unique (fnr,org,namn,adress,POSTORT,POSTNR,src)
+				  with (ignore_dup_key  = on )
+)
+end try
+begin catch
+end catch
 ;
 with       formatedWithAdresskomma as (
 					select nullif(NAME, '')                                            namn
@@ -44,7 +63,8 @@ with       formatedWithAdresskomma as (
     , ((IIF(namn IS NULL, 1, 0)) + (IIF(postnr IS NULL, 1, 0)) + (IIF(postort IS NULL, 1, 0)) + (IIF(adress IS NULL, 1, 0)) + (IIF(org is NULL, 1, 0))) BADNESS
 	FROM splitPostNrPostAdress)
 
-	    select * into afterFirstFormating from COLUMNPROCESSBADNESSSCORE
+	    insert into afterFirstFormating
+select * from COLUMNPROCESSBADNESSSCORE
 
 
 insert into dbo.resultatRunConf (dnr) values (concat(cast(sysdatetime() as varchar),'end1'));

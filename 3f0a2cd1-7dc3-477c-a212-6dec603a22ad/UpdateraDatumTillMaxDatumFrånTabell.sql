@@ -6,4 +6,4 @@
 update tTTA
 set datFoeregaaendeBesoek = datDatumM
 from (select * from tbTrTillsynsobjekt where recTillsynsobjektID in (select recTillsynsobjektID from tbTrLiLivsmedel)) tTTA --WARNING runs with out this selection
-inner join (select max(datDatum) datDatumM,recTillsynsobjektID from tbTrTillsynsbesoek group by recTillsynsobjektID) obj on obj.recTillsynsobjektID = tTTA.recTillsynsobjektID
+inner join (select max(datDatum) datDatumM,recTillsynsobjektID from tbTrTillsynsbesoek where strSyfte = 'planerad kontroll' group by recTillsynsobjektID) obj on obj.recTillsynsobjektID = tTTA.recTillsynsobjektID

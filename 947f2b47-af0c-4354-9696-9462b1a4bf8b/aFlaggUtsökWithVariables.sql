@@ -16,7 +16,7 @@ insert into @socknar select * from (Select N'Källunge' "socken"
 ;
 
 declare @fastighetsYtor table (SockenX nvarchar(70), FAStighet nvarchar(100), Shape geometry);
-declare @byggs table (Fastighetsbeteckning nvarchar(100), Byggnadstyp nvarchar(100), bygTot int);
+declare @byggs table (Fastighetsbeteckning nvarchar(100), Byggnadstyp nvarchar(100), bygTot int,flagga geometry);
 
 declare @slamz table (statusx nvarchar(30), FAStighet nvarchar(100), Diarienummer nvarchar(100), Fastighet_tillstand nvarchar(150), Beslut_datum datetime, utförddatum datetime, Anteckning nvarchar(254), AnlaggningsPunkt geometry);
 declare @egetomh table (fastighet nvarchar(100), egetOmhändertangandeInfo nvarchar(4000));
@@ -30,7 +30,7 @@ with fastighetsYtor as (select * from  @fastighetsYtor)
  ,byggnad_yta as (select andamal1 Byggnadstyp, Shape from sde_gsd.gng.BYGGNAD),
         q as (Select Byggnadstyp, fastighetsYtor.fastighet Fastighetsbeteckning, byggnad_yta.SHAPE from byggnad_yta
             inner join fastighetsYtor on byggnad_yta.Shape.STWithin(fastighetsYtor.shape) = 1)
-,byggs as (        select Fastighetsbeteckning, Byggnadstyp,bygTot
+,byggs as (        select Fastighetsbeteckning, Byggnadstyp,bygTot,shape
 	from (select *, count(shape) over (partition by Fastighetsbeteckning) bygTot, row_number() over (partition by Fastighetsbeteckning order by Byggnadstyp ) orderz from q) z     where orderz = 1 )
 insert into @byggs select * from byggs
 
@@ -52,7 +52,7 @@ with      fastighetsYtor    as (select * from  @fastighetsYtor)
 
 insert into @slamz select *from slamz
 ;
-select * from @slamz where FAStighet = N'Hörsne nybjärs 1:20'
+--select * from @slamz where FAStighet = N'Hörsne nybjärs 1:20'
 ;
 
    with fastighetsYtor as (select * from  @fastighetsYtor)
@@ -129,24 +129,92 @@ insert into @va
    --where FAStighet = 'DALHEM GANDARVE 1:2'
 ;
 
+declare @grönaFörFlaggskikt  table (
+				 FASTIGHET                                     nvarchar(150),
+				 Fastighet_tillstand                           nvarchar(150),
+				 Arendenummer                                  nvarchar(50),
+				 Beslut_datum                                  datetime2,
+				 Status                                        nvarchar(50),
+				 Utskick_datum                                 datetime2,
+				 Anteckning                                    nvarchar(254),
+				 Utforddatum                                   datetime2,
+				 Slamhamtning                                  nvarchar(100),
+				 Antal_byggnader                               numeric(38, 8),
+				 x						bigint		,
+                                y						bigint
+                                unique (FASTIGHET)
+                                with (ignore_dup_key = on)
+)
+declare @rödaFörFlaggskikt  table (
+				 FASTIGHET                                     nvarchar(150),
+				 Fastighet_tillstand                           nvarchar(150),
+				 Arendenummer                                  nvarchar(50),
+				 Beslut_datum                                  datetime2,
+				 Status                                        nvarchar(50),
+				 Utskick_datum                                 datetime2,
+				 Anteckning                                    nvarchar(254),
+				 Utforddatum                                   datetime2,
+				 Slamhamtning                                  nvarchar(100),
+				 Antal_byggnader                               numeric(38, 8),
+				 x						bigint		,
+                                y						bigint
+)
 
-select distinct
+;--  case when  statusx = 'röd' OR (statusx is null AND Byggnadstyp is not null and typ <> 'Spillvatten:Antaget(spill)' AND typ <> 'Avlopp:Antaget(spill)') then 1 else 0 end included, case when Byggnadstyp is not null then 1 else 0 end Bytyp,case when (isnull(typ,'') <> 'Spillvatten:Antaget(spill)' AND isnull(typ,'') <> 'Avlopp:Antaget(spill)') then 1 else 0 end SpillStat,
+with toTeamVatten as (
+select
               --  case when  statusx = 'röd' OR (statusx is null AND Byggnadstyp is not null and typ <> 'Spillvatten:Antaget(spill)' AND typ <> 'Avlopp:Antaget(spill)') then 1 else 0 end included, case when Byggnadstyp is not null then 1 else 0 end Bytyp,case when (isnull(typ,'') <> 'Spillvatten:Antaget(spill)' AND isnull(typ,'') <> 'Avlopp:Antaget(spill)') then 1 else 0 end SpillStat,
               statusx,SockenX, coalesce(fastighetsYtor.FAStighet, egetOmh.fastighet, va.fastighet, Fastighetsbeteckning,slamz.FAStighet) fastighet,
        Diarienummer, Fastighet_tillstand, nullif(cast(Beslut_datum as date),'1988-01-01') Beslut_datum, nullif(cast(utförddatum as date),'1988-01-01') utförddatum, Anteckning
      , egetOmh.egetOmhändertangandeInfo
      , typ VAantek
-     , Byggnadstyp, bygTot
+     , Byggnadstyp, bygTot,flagga.STPointN(1)  flagga
 from @fastighetsYtor fastighetsYtor
 full outer join @slamz slamz on slamz.FAStighet = fastighetsYtor.FAStighet
 full outer join @egetOmh egetOmh on fastighetsYtor.FAStighet = egetOmh.FAStighet
 full outer join @va va on fastighetsYtor.FAStighet = va.FAStighet
 full outer join @byggs byggs on fastighetsYtor.FAStighet = byggs.Fastighetsbeteckning
 --where fastighetsYtor.FAStighet like '%ekeskogs 1:6' OR fastighetsYtor.FAStighet like '%ekeskogs 1:7'
-where statusx = 'röd' OR (statusx is null AND  Byggnadstyp is not null and (isnull(typ,'') <> 'Spillvatten:Antaget(spill)' AND isnull(typ,'') <> 'Avlopp:Antaget(spill)'))
 
---order by included desc, statusx, SpillStat,Bytyp
-order by statusx desc,fastighet,typ,egetOmhändertangandeInfo
+      --
+      --order by included desc, statusx, SpillStat,Bytyp
+)
+--order by statusx desc,fastighet,typ,egetOmhändertangandeInfo
 --;
 --select count(*) c, 'slam' a from @slamz union select count(*) c, 'egetomh' a  from @egetomh union select count(*) c, 'va' a  from @va union select count(*) c, 'byggs' a  from @byggs
 
+insert into @rödaFörFlaggskikt (FASTIGHET, Fastighet_tillstand, Arendenummer, Beslut_datum, Status, Utskick_datum, Anteckning
+, Utforddatum, Slamhamtning, Antal_byggnader,x,y)
+select
+    left(fastighet,150),
+    left(Fastighet_tillstand,150),
+    left(Diarienummer,50),
+     Beslut_datum,
+     left(iif(statusx='ok','grön',statusx),50), --SockenX,
+       null,
+       left(CASE WHEN len(Anteckning) != 1 THEN anteckning END, 254),
+     utförddatum
+     ,left(concat( egetOmhändertangandeInfo,nullif(concat(' va: ',VAantek),' va: '), nullif(concat(' bygtyp: ' , Byggnadstyp),' bygtyp: ')),100) VAantek
+     , bygTot,flagga.STX flaggax,flagga.STY flaggay
+
+from toTeamVatten
+(statusx = 'röd' OR (statusx is null AND  Byggnadstyp is not null and (isnull(typ,'') <> 'Spillvatten:Antaget(spill)' AND isnull(typ,'') <> 'Avlopp:Antaget(spill)')))
+
+
+insert into @grönaFörFlaggskikt (FASTIGHET, Fastighet_tillstand, Arendenummer, Beslut_datum, Status, Utskick_datum, Anteckning
+, Utforddatum, Slamhamtning, Antal_byggnader,x,y)
+select
+    left(fastighet,150),
+    left(Fastighet_tillstand,150),
+    left(Diarienummer,50),
+     Beslut_datum,
+     left(iif(statusx='ok','grön',statusx),50), --SockenX,
+       null,
+       left(CASE WHEN len(Anteckning) != 1 THEN anteckning END, 254),
+     utförddatum
+     ,left(concat( egetOmhändertangandeInfo,nullif(concat(' va: ',VAantek),' va: '), nullif(concat(' bygtyp: ' , Byggnadstyp),' bygtyp: ')),100) VAantek
+     , bygTot,flagga.STX flaggax,flagga.STY flaggay
+from toTeamVatten
+	where fastighet not in(select fastighet from toTeamVatten where statusx = 'röd') and  Byggnadstyp is not null
+	      and (isnull(typ,'') <> 'Spillvatten:Antaget(spill)' AND isnull(typ,'') <> 'Avlopp:Antaget(spill)')
+select * from @grönaFörFlaggskikt
