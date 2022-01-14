@@ -28,9 +28,11 @@ declare @tbAehHaendelse table
 declare @JustInserted table
 (
  recHaendelseId integer,
- strText nvarchar(max)
+ strText nvarchar(256)
  unique (recHaendelseId,strText)
+ with (ignore_dup_key = on)
  )
+
 insert into @tbAehHaendelse (datHaendelseDatum, strRubrik, 	strText, strRiktning, strKommunikationssaett, recHaendelseTypID, recHaendelseKategoriID, recLastHaendelseStatusLogID, recLastHaendelseSekretessLogID, recDiarieAarsSerieID, intLoepnummer, intDiarieSerieAar, strTillhoerPostlista, recKommunID, recDelprocessID, recAvdelningID, recEnhetID, recFoervaltningID, strPublicering, recRemissutskickID, bolKaensligaPersonuppgifter)
 
 select 			     datHaendelseDatum, strRubrik, concat(dnr,' ',try_cast(format(org,'#############') as nvarchar))  strText, strRiktning, strKommunikationssaett, recHaendelseTypID, recHaendelseKategoriID, recLastHaendelseStatusLogID, recLastHaendelseSekretessLogID, recDiarieAarsSerieID, intLoepnummer, intDiarieSerieAar, strTillhoerPostlista, recKommunID, recDelprocessID, recAvdelningID, recEnhetID, recFoervaltningID, strPublicering, recRemissutskickID, bolKaensligaPersonuppgifter
@@ -53,11 +55,10 @@ order by datHaendelseDatum desc) fgh
 			on tbh.recAerendeID = qw.recAerendeID
  		   		where  qw.strRubrik is null) qwsfasdf
 
-insert into tbAehHaendelse (datHaendelseDatum, strRubrik, strText, strRiktning, strKommunikationssaett, recHaendelseTypID, recHaendelseKategoriID, recLastHaendelseStatusLogID, recLastHaendelseSekretessLogID, intAntalFiler, recDiarieAarsSerieID, intLoepnummer, intDiarieSerieAar, strTillhoerPostlista, recKommunID, recDelprocessID, recAvdelningID, recEnhetID, recFoervaltningID, strPublicering, recRemissutskickID, bolKaensligaPersonuppgifter)
+insert into tbAehHaendelse
+    (		datHaendelseDatum, strRubrik, strText, strRiktning, strKommunikationssaett, recHaendelseTypID, recHaendelseKategoriID, recLastHaendelseStatusLogID, recLastHaendelseSekretessLogID, intAntalFiler, recDiarieAarsSerieID, intLoepnummer, intDiarieSerieAar, strTillhoerPostlista, recKommunID, recDelprocessID, recAvdelningID, recEnhetID, recFoervaltningID, strPublicering, recRemissutskickID, bolKaensligaPersonuppgifter)
     OUTPUT INSERTED.recHaendelseId,INSERTED.strText INTO @JustInserted
-	select datHaendelseDatum, strRubrik, strText, strRiktning, strKommunikationssaett, recHaendelseTypID, recHaendelseKategoriID, recLastHaendelseStatusLogID, recLastHaendelseSekretessLogID, intAntalFiler, recDiarieAarsSerieID, intLoepnummer, intDiarieSerieAar, strTillhoerPostlista, recKommunID, recDelprocessID, recAvdelningID, recEnhetID, recFoervaltningID, strPublicering, recRemissutskickID, bolKaensligaPersonuppgifter
-		from @tbAehHaendelse
+	select 	datHaendelseDatum, strRubrik, strText, strRiktning, strKommunikationssaett, recHaendelseTypID, recHaendelseKategoriID, recLastHaendelseStatusLogID, recLastHaendelseSekretessLogID, intAntalFiler, recDiarieAarsSerieID, intLoepnummer, intDiarieSerieAar, strTillhoerPostlista, recKommunID, recDelprocessID, recAvdelningID, recEnhetID, recFoervaltningID, strPublicering, recRemissutskickID, bolKaensligaPersonuppgifter
+    from @tbAehHaendelse
 
 select * into ##JustInserted from @JustInserted
-
-select * from ##JustInserted
