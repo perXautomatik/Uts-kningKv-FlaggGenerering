@@ -1,3 +1,5 @@
+declare @onskadRubrik nvarchar = 'Påminnelse om åtgärd - 12 månader'
+
 declare @tbAehHaendelse table
 (
 	recHaendelseID int identity primary key,
@@ -25,43 +27,43 @@ declare @tbAehHaendelse table
 	bolKaensligaPersonuppgifter bit default 0 not null
 )
 
-declare @JustInserted table
-(
- recHaendelseId integer,
- strText nvarchar(256)
- unique (recHaendelseId,strText)
- with (ignore_dup_key = on)
- )
+declare @JustInserted table (recHaendelseId integer, strText nvarchar(256) unique (recHaendelseId,strText) with (ignore_dup_key = on))
+;
 
-with StandardHandelse as (select top 1 getdate() datHaendelseDatum, 'Påminnelse om åtgärd - 12 månader' strRubrik, strText, strRiktning, strKommunikationssaett, recHaendelseTypID, recHaendelseKategoriID, recLastHaendelseStatusLogID, recLastHaendelseSekretessLogID, recDiarieAarsSerieID, intLoepnummer, intDiarieSerieAar,  strTillhoerPostlista, recKommunID, recDelprocessID, recAvdelningID, recEnhetID, recFoervaltningID, strPublicering, recRemissutskickID, bolKaensligaPersonuppgifter
+alter table ##fannyUtskick add recAerendeID int
+go
+
+update Fu
+    set Fu.recAerendeID = vAA.recAerendeID
+from  ##fannyUtskick Fu inner join
+    EDPVisionRegionGotlandTest2.dbo.vwAehAerende vAA on vaa.strDiarienummer = fu.dnr
+;
+
+with StandardHandelse as (select top 1 getdate() datHaendelseDatum, @onskadRubrik strRubrik, strText, strRiktning, strKommunikationssaett, recHaendelseTypID, recHaendelseKategoriID, recLastHaendelseStatusLogID, recLastHaendelseSekretessLogID, recDiarieAarsSerieID, intLoepnummer, intDiarieSerieAar,  strTillhoerPostlista, recKommunID, recDelprocessID, recAvdelningID, recEnhetID, recFoervaltningID, strPublicering, recRemissutskickID, bolKaensligaPersonuppgifter
 			    from EDPVisionRegionGotlandTest2.dbo.tbAehHaendelse
 			    where strTillhoerPostlista like 'MBNV%'
 			    order by datHaendelseDatum desc)
-    ,ArendenInUtskick as (select vAA.recAerendeID,fu.dnr,fu.[personnr/Organisationnr] org from ##fannyUtskick fu inner join EDPVisionRegionGotlandTest2.dbo.vwAehAerende vAA on vaa.strDiarienummer = fu.dnr)
+
+   --returns zero if no arende has bin created
+    ,ArendenInUtskick as (select recAerendeID,dnr,[personnr/Organisationnr] org from ##fannyUtskick
+        where recAerendeID is not null)
 
    -- this can't be right, we're creating as long nothing has bin asigned in tbAehArendeHaendelse, which could in theory be every execution.
-    ,tbAehAerendeHaendelseReferens               as (select tbah.*,tbAehAerendeHaendelseReferens.strRubrik from tbAehAerendeHaendelse tbah
-			    inner join tbAehHaendelse qw
-				on tbah.recHaendelseID = tbAehAerendeHaendelseReferens.recHaendelseID
-					  where strRubrik = 'Påminnelse om åtgärd - 12 månader')
-   ,qwsfasdf         as (
-	select distinct ArendenInUtskick.recAerendeID,recHaendelseID,dnr, org  from
-	 ArendenInUtskick
-		left outer join
-		     tbAehAerendeHaendelseReferens
 
-			on ArendenInUtskick.recAerendeID = tbAehAerendeHaendelseReferens.recAerendeID
- 		   		where  tbAehAerendeHaendelseReferens.strRubrik is null)
+    ,IdentifierAsigned as (select distinct concat(dnr,' ',try_cast(format(org,'#############') as nvarchar)) strTextX, ArendenInUtskick.recAerendeID,dnr, org  from
+	 ArendenInUtskick)
 
+   ,filterAlreadyInserted as ( select strTextX, recAerendeID, dnr, org from (select  strTextX, recAerendeID, dnr, org
+					      from IdentifierAsigned ia left outer join tbAehHaendelse ha on ia.strTextX = isnull(ha.strText,'') where strText is null) as ih)
 
 insert into @tbAehHaendelse (datHaendelseDatum, strRubrik, 	strText, strRiktning, strKommunikationssaett, recHaendelseTypID, recHaendelseKategoriID, recLastHaendelseStatusLogID, recLastHaendelseSekretessLogID, recDiarieAarsSerieID, intLoepnummer, intDiarieSerieAar, strTillhoerPostlista, recKommunID, recDelprocessID, recAvdelningID, recEnhetID, recFoervaltningID, strPublicering, recRemissutskickID, bolKaensligaPersonuppgifter)
-select 			     datHaendelseDatum, strRubrik, concat(dnr,' ',try_cast(format(org,'#############') as nvarchar))  strText, strRiktning, strKommunikationssaett, recHaendelseTypID, recHaendelseKategoriID, recLastHaendelseStatusLogID, recLastHaendelseSekretessLogID, recDiarieAarsSerieID, intLoepnummer, intDiarieSerieAar, strTillhoerPostlista, recKommunID, recDelprocessID, recAvdelningID, recEnhetID, recFoervaltningID, strPublicering, recRemissutskickID, bolKaensligaPersonuppgifter
+select 			     datHaendelseDatum, strRubrik,  strTextX, strRiktning, strKommunikationssaett, recHaendelseTypID, recHaendelseKategoriID, recLastHaendelseStatusLogID, recLastHaendelseSekretessLogID, recDiarieAarsSerieID, intLoepnummer, intDiarieSerieAar, strTillhoerPostlista, recKommunID, recDelprocessID, recAvdelningID, recEnhetID, recFoervaltningID, strPublicering, recRemissutskickID, bolKaensligaPersonuppgifter
 
 
 from
  StandardHandelse
    ,
- qwsfasdf
+ filterAlreadyInserted
 
 insert into tbAehHaendelse
     (		datHaendelseDatum, strRubrik, strText, strRiktning, strKommunikationssaett, recHaendelseTypID, recHaendelseKategoriID, recLastHaendelseStatusLogID, recLastHaendelseSekretessLogID, intAntalFiler, recDiarieAarsSerieID, intLoepnummer, intDiarieSerieAar, strTillhoerPostlista, recKommunID, recDelprocessID, recAvdelningID, recEnhetID, recFoervaltningID, strPublicering, recRemissutskickID, bolKaensligaPersonuppgifter)
