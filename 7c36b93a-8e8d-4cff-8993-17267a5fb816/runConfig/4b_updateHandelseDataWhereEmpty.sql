@@ -1,8 +1,4 @@
 
-
-select top 500 tbh.* from tbAehHaendelse tbh inner join tbAehHaendelseData tAAH on tbh.recHaendelseID = tAAH.recHaendelseID
-order by tbh.recHaendelseID desc
-;
 declare @tbAehHaendelseData table
 (
 	recHaendelseID int not null primary key,
@@ -54,11 +50,25 @@ select * from
         isnull((select top 1 strFnrId from tbVisEnstakaFastighet where fastighet = strFastighetsbeteckning and strFnrID !='' AND strFnrID !=0),0) fnr,
         fastighet,88 c from ##fannyUtskick ) asdasda*/
 
+
+--updates regardless of current state, might be destructivly overwriting manual changes.
+with StandardValueAllmanHandling as (select top 1 strHaendelseStatusPresent,strHaendelseStatusLogTyp,strHaendelseStatusLocalizationCode from tbAehHaendelseData where strHaendelseStatusLocalizationCode is not null order by intRecnum desc)
+,InputWithFnrFetchedFromVision as (select distinct [personnr/Organisationnr] org, Dnr dnr2, Postadress, try_cast(POSTNR as nvarchar) POSTNR, POSTORT, Ägare, source, 4 recKontaktRollId,
+
+        isnull((select top 1 strFnrId from tbVisEnstakaFastighet where fastighet = strFastighetsbeteckning and strFnrID !='' AND strFnrID !=0),0) fnr,
+        fastighet,88 c from ##fannyUtskick )
+,inputMatchingJustInserted as (select 	StandardValueAllmanHandling.*,
+			tb.recHaendelseID,
+       			InputWithFnrFetchedFromVision.* from
+		    StandardValueAllmanHandling,
+		    ##justInserted tb inner join
+		    InputWithFnrFetchedFromVision
+on concat(dnr2,' ',try_cast(format(org,'#############') as nvarchar)) = strText)
 update tbhd
     set
-        tbhd.strHaendelseStatusPresent = qwez.strHaendelseStatusPresent,
-        tbhd.strHaendelseStatusLogTyp = qwez.strHaendelseStatusLogTyp,
-        tbhd.strHaendelseStatusLocalizationCode = qwez.strHaendelseStatusLocalizationCode,
+        tbhd.strHaendelseStatusPresent = inputMatchingJustInserted.strHaendelseStatusPresent,
+        tbhd.strHaendelseStatusLogTyp = inputMatchingJustInserted.strHaendelseStatusLogTyp,
+        tbhd.strHaendelseStatusLocalizationCode = inputMatchingJustInserted.strHaendelseStatusLocalizationCode,
 	tbhd.datDatum = getdate(),
         tbhd.strLogKommentar = 'Autogenererat 07012022',
         strGatuadress = Postadress,
@@ -66,22 +76,14 @@ update tbhd
         strPostort = POSTORT,
         strVisasSom = Ägare,
         strRoll = source,
-        recKontaktRollID = qwez.recKontaktRollId,
+        recKontaktRollID = inputMatchingJustInserted.recKontaktRollId,
         strFnrID = fnr,
         strFastighetsbeteckning = fastighet,
         recKommunID = c
 from tbAehHaendelseData tbhd
     inner join
-(select alm.*,tb.recHaendelseID,asda.* from
-
-     (select top 1 strHaendelseStatusPresent,strHaendelseStatusLogTyp,strHaendelseStatusLocalizationCode from tbAehHaendelseData where strHaendelseStatusLocalizationCode is not null order by intRecnum desc) alm,
-     ##justInserted tb inner join
-(select distinct [personnr/Organisationnr] org, Dnr dnr2, Postadress, try_cast(POSTNR as nvarchar) POSTNR, POSTORT, Ägare, source, 4 recKontaktRollId,
-
-        isnull((select top 1 strFnrId from tbVisEnstakaFastighet where fastighet = strFastighetsbeteckning and strFnrID !='' AND strFnrID !=0),0) fnr,
-        fastighet,88 c from ##fannyUtskick ) asda
-on concat(dnr2,' ',try_cast(format(org,'#############') as nvarchar)) = strText) qwez
-on tbhd.recHaendelseID = qwez.recHaendelseID
+ inputMatchingJustInserted
+on tbhd.recHaendelseID = inputMatchingJustInserted.recHaendelseID
 
 --select * from (select strVisasSom,count(*) q,recEnstakaKontaktID from tbAehHaendelseData group by recEnstakaKontaktID,strVisasSom ) asdasd where q > 1
 
