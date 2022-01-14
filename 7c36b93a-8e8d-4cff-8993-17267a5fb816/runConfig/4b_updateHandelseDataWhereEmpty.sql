@@ -53,37 +53,40 @@ select * from
 
 --updates regardless of current state, might be destructivly overwriting manual changes.
 with StandardValueAllmanHandling as (select top 1 strHaendelseStatusPresent,strHaendelseStatusLogTyp,strHaendelseStatusLocalizationCode from tbAehHaendelseData where strHaendelseStatusLocalizationCode is not null order by intRecnum desc)
-,InputWithFnrFetchedFromVision as (select distinct [personnr/Organisationnr] org, Dnr dnr2, Postadress, try_cast(POSTNR as nvarchar) POSTNR, POSTORT, Ägare, source, 4 recKontaktRollId,
 
-        isnull((select top 1 strFnrId from tbVisEnstakaFastighet where fastighet = strFastighetsbeteckning and strFnrID !='' AND strFnrID !=0),0) fnr,
-        fastighet,88 c from ##fannyUtskick )
-,inputMatchingJustInserted as (select 	StandardValueAllmanHandling.*,
+  ,inputMatchingJustInserted as (select 	StandardValueAllmanHandling.*,
 			tb.recHaendelseID,
-       			InputWithFnrFetchedFromVision.* from
+       			fu.* from
 		    StandardValueAllmanHandling,
 		    ##justInserted tb inner join
-		    InputWithFnrFetchedFromVision
-on concat(dnr2,' ',try_cast(format(org,'#############') as nvarchar)) = strText)
+		    ##fannyUtskick fu
+		on concat(dnr,' ',try_cast(format([personnr/Organisationnr],'#############') as nvarchar)) = strText)
+   ,inputProperlyFormated as (
+ select distinct [personnr/Organisationnr] org, Dnr dnr2, Postadress, try_cast(POSTNR as nvarchar) POSTNR, POSTORT, Ägare, source, 4 recKontaktRollId,
+        fastighet,88 c from inputMatchingJustInserted
+ )
+  ,InputWithFnrFetchedFromVision as ( select *, isnull((select top 1 strFnrId from tbVisEnstakaFastighet where fastighet = strFastighetsbeteckning and strFnrID !='' AND strFnrID !=0),0) fnr from inputProperlyFormated)
+
 update tbhd
     set
-        tbhd.strHaendelseStatusPresent = inputMatchingJustInserted.strHaendelseStatusPresent,
-        tbhd.strHaendelseStatusLogTyp = inputMatchingJustInserted.strHaendelseStatusLogTyp,
-        tbhd.strHaendelseStatusLocalizationCode = inputMatchingJustInserted.strHaendelseStatusLocalizationCode,
-	tbhd.datDatum = getdate(),
-        tbhd.strLogKommentar = 'Autogenererat 07012022',
-        strGatuadress = Postadress,
-        strPostnummer = POSTNR,
-        strPostort = POSTORT,
-        strVisasSom = Ägare,
-        strRoll = source,
-        recKontaktRollID = inputMatchingJustInserted.recKontaktRollId,
-        strFnrID = fnr,
-        strFastighetsbeteckning = fastighet,
-        recKommunID = c
+	tbhd.strHaendelseStatusPresent          = ip.strHaendelseStatusPresent,
+	tbhd.strHaendelseStatusLogTyp           = ip.strHaendelseStatusLogTyp,
+	tbhd.strHaendelseStatusLocalizationCode = ip.strHaendelseStatusLocalizationCode,
+	tbhd.datDatum                           = getdate(),
+	tbhd.strLogKommentar                    = 'Autogenererat 07012022',
+	strGatuadress                           = Postadress,
+	strPostnummer                           = POSTNR,
+	strPostort                              = POSTORT,
+	strVisasSom                             = Ägare,
+	strRoll                                 = source,
+	recKontaktRollID                        = ip.recKontaktRollId,
+	strFnrID                                = fnr,
+	strFastighetsbeteckning                 = fastighet,
+	recKommunID                             = c
 from tbAehHaendelseData tbhd
     inner join
- inputMatchingJustInserted
-on tbhd.recHaendelseID = inputMatchingJustInserted.recHaendelseID
+ InputWithFnrFetchedFromVision ip
+on tbhd.recHaendelseID = ip.recHaendelseID
 
 --select * from (select strVisasSom,count(*) q,recEnstakaKontaktID from tbAehHaendelseData group by recEnstakaKontaktID,strVisasSom ) asdasd where q > 1
 
