@@ -1,24 +1,17 @@
-alter table ##fannyUtskick add recHaendelseID int
-go
-
-update Fu
-    set Fu.recHaendelseID = tb.recHaendelseID
-from  ##fannyUtskick Fu inner join
-    ##justInserted tb on concat(fu.dnr,' ',try_cast(format(fu.[personnr/Organisationnr],'#############') as nvarchar)) = tb.strText
-;
-
 with StandardValueAllmanHandling as (select top 1 strHaendelseStatusPresent,strHaendelseStatusLogTyp,strHaendelseStatusLocalizationCode from tbAehHaendelseData where strHaendelseStatusLocalizationCode is not null order by intRecnum desc)
 
-  ,inputMatchingJustInserted as (select 	StandardValueAllmanHandling.*,
-       			fu.* from
-		    StandardValueAllmanHandling,
-		    ##fannyUtskick fu)
-
-   ,inputProperlyFormated as (
+      ,inputProperlyFormated as (
  select distinct [personnr/Organisationnr] org, Dnr dnr2, Postadress, try_cast(POSTNR as nvarchar) POSTNR, POSTORT, Ägare, source, 4 recKontaktRollId,
-        fastighet,88 c from inputMatchingJustInserted
+        fastighet,88 c,recHaendelseID from ##fannyUtskick
  )
-  ,InputWithFnrFetchedFromVision as ( select *, isnull((select top 1 strFnrId from tbVisEnstakaFastighet where fastighet = strFastighetsbeteckning and strFnrID !='' AND strFnrID !=0),0) fnr from inputProperlyFormated)
+
+  ,inputMatchingJustInserted as (select StandardValueAllmanHandling.*, fu.*
+				 from
+		    StandardValueAllmanHandling,
+		    inputProperlyFormated fu)
+
+
+  ,InputWithFnrFetchedFromVision as ( select *, isnull((select top 1 strFnrId from tbVisEnstakaFastighet where fastighet = strFastighetsbeteckning and strFnrID !='' AND strFnrID !=0),0) fnr from inputMatchingJustInserted)
 
 update tbhd
     set

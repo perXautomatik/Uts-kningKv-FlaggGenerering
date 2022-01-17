@@ -44,7 +44,9 @@ GO
 ,'197008017829'
 ,'geosecma')
 */
+
 go
+begin try
 create table ##fannyUtskick
 (
 	Dnr varchar(max),
@@ -57,8 +59,6 @@ create table ##fannyUtskick
 	source varchar(max),
 	STATUSKOMMENTAR varchar(max)
 )
-go
-
 insert into ##fannyUtskick
     values
 (N'MBNV-2020-3705', N'KLINTE LILLA SNÖGRINDE 1:39', N'Leif Johan Lindström', N'NORDINGRÅVÄGEN 19', 87395, N'ULLÅNGER', 196206123256, N'geosecma', null)
@@ -560,3 +560,8 @@ insert into ##fannyUtskick
 ,(N'MBNV-2020-3858', N'HALLA UNSARVE 1:21', N'Tony Kirmo', N'DJURGÅRDSVÄGEN 44', 13246, N'SALTSJÖ-BOO', 197609010215, N'geosecma', null)
 ,(N'MBNV-2020-3687', N'KLINTE HUNNINGE 1:12', N'Kristina Åberg', N'GAMMELUDDSVÄGEN 36', 13246, N'SALTSJÖ-BOO', 196201117626, N'geosecma', null)
 ,(N'MBNV-2020-3687', N'KLINTE HUNNINGE 1:12', N'Lars Rodvaldr', N'GAMMELUDDSVÄGEN 36', 13246, N'SALTSJÖ-BOO', 195610102112, N'geosecma', null)
+
+end try
+begin catch
+    select 'create'
+end catch
