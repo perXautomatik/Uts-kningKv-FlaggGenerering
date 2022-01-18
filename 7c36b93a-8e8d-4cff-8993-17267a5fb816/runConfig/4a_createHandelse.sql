@@ -4,8 +4,8 @@ declare @onskatDatum date = datefromparts(2021,12,08)
 -- om händelse redan skapat smed samma rubrik och datum,samt indexx skapas ingen ny handelse.
 -- should only create one handelse per Ärende, so indexx is to finegrained, we need to eather make index less finegrained or using ärendeid instead of index.
 
-declare @JustInserted table (recHaendelseId integer, indexX integer
- unique (recHaendelseId,indexX) with (ignore_dup_key = on))
+declare @JustInserted table (recHaendelseId integer, recAerendeID integer
+ unique (recHaendelseId,recAerendeID) with (ignore_dup_key = on))
 
 declare @tbAehHaendelse table
 (

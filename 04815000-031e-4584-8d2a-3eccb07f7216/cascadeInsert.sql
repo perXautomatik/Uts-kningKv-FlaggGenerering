@@ -1,4 +1,12 @@
-declare @insertTable table (recHaendelseID integer, inputId integer identity (1,1), strRoll nvarchar(max), bolHuvudkontakt bit, strFoernamn nvarchar(max), strEfternamn nvarchar(max), strFoeretag nvarchar(max), strOrginisationPersonnummer nvarchar(max), strTitel nvarchar(max), strKontaktTyp nvarchar(max), strGatuadress nvarchar(max), strCoadress nvarchar(max), strPostnummer nvarchar(max), strPostort nvarchar(max), strLand nvarchar(max), strVisasSom nvarchar(max), strSammanslagenAdress nvarchar(max), strKommunikationsaettTyp nvarchar(max), strVaerde nvarchar(max), strBeskrivning nvarchar(max))
+declare @insertTable table (recHaendelseID integer, inputId integer identity (1,1),
+                            strRoll nvarchar(max), bolHuvudkontakt bit, strFoernamn nvarchar(max),
+                            strEfternamn nvarchar(max), strFoeretag nvarchar(max),
+                            strOrginisationPersonnummer nvarchar(max), strTitel nvarchar(max),
+                            strKontaktTyp nvarchar(max), strGatuadress nvarchar(max),
+                            strCoadress nvarchar(max), strPostnummer nvarchar(max),
+                            strPostort nvarchar(max), strLand nvarchar(max), strVisasSom nvarchar(max),
+                            strSammanslagenAdress nvarchar(max), strKommunikationsaettTyp nvarchar(max),
+                            strVaerde nvarchar(max), strBeskrivning nvarchar(max))
 
 DECLARE @recHaendelseEnstakaKontaktID TABLE (i INT,inputIdx int)
 
