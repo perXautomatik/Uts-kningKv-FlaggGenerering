@@ -3,9 +3,8 @@ DF as dia-fnr from vision
 
 
 --hämta fastigheter från excel
-kir as kir where status röd from excel
-
-;hämta adresser från
+kir as kir where status röd from excel;
+hämta adresser från
 fir as
     fnr - adress-namn-org-source-andel where beteckning in kir
 

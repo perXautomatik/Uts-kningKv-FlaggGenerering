@@ -1,8 +1,71 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="00bf21e5-7f3d-4f1d-b6b7-708dcdc1ba1b" name="Default Changelist" comment="">
-      <change beforePath="$PROJECT_DIR$/20194årsPåmHändelser.sql" beforeDir="false" />
+    <list default="true" id="b3fb4acf-2e1e-4f50-bee4-47f3ad9ebc97" name="Default Changelist" comment="">
+      <change afterPath="$PROJECT_DIR$/LatestHandelse(harAnsokan)/(LatestHendelse)20194årsPåmHändelser.sql" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/dataSources/2ca40bb3-aca4-412d-a610-84b4e5da6dbe.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/dataSources/2ca40bb3-aca4-412d-a610-84b4e5da6dbe.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/dataSources/5dd5ec07-b71c-48de-8aab-4cfa43540e71.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/dataSources/947f2b47-af0c-4354-9696-9462b1a4bf8b.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/vcs.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/vcs.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/FilterByHendelse/.idea/.gitignore" beforeDir="false" afterPath="$PROJECT_DIR$/FilterByHendelse/.idea/.gitignore" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/FilterByHendelse/.idea/dataSources/2ca40bb3-aca4-412d-a610-84b4e5da6dbe/storage_v2/_staging_/database/tempExcel.Q2MDdA/schema/dbo.sYMBAA/routine/sp_xKonUpgToAdr.HCPS4w.sql" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/FilterByHendelse/FilterByHendelse/(Rebuild)TableTypes.sql" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/FilterByHendelse/FilterByHendelse/CreateFilterArendeWhomHasAnsokan.sql" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/FilterByHendelse/FilterByHendelse/CreateFnrToAdress.sql" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/FilterByHendelse/FilterByHendelse/CreateFnrToAdress2.sql" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/FilterByHendelse/FilterByHendelse/CreateTypeEndastUnikaArenden.sql" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/FilterByHendelse/FilterByHendelse/CreateVisionAdresser.sql" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/FilterByHendelse/FilterByHendelse/InsertIntoFilterArendeWhomHasAnsokan.sql" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/FilterByHendelse/FilterByHendelse/InsertIntoHandelser.sql" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/FilterByHendelse/FilterByHendelse/InsertIntoInputFnr.sql" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/FilterByHendelse/FilterByHendelse/InsertIntoTable3.sql" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/FilterByHendelse/FilterByHendelse/InsertIntoTable4.sql" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/FilterByHendelse/FilterByHendelse/TempfilterArendeWhomHasAnsokan.sql" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/FilterByHendelse/FilterByHendelse/insertIntoFilterArendeWhomHasAnsokan_2.sql" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/FilterByHendelse/SkapaHandelse.sql" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/FilterByHendelse/UpdateFileReference.sql" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/FilterByHendelse/UpdateraHändelser.sql" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/FilterByHendelse/behöverKorrigeras.sql" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/FnrToAdress/.idea/.gitignore" beforeDir="false" afterPath="$PROJECT_DIR$/FnrToAdress/.idea/.gitignore" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/FnrToAdress/20201108ChristofferRknarExcel.sql" beforeDir="false" afterPath="$PROJECT_DIR$/FnrToAdress/RknarExcel.sql" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/LatestHandelse(harAnsokan)/.idea/.gitignore" beforeDir="false" afterPath="$PROJECT_DIR$/LatestHandelse(harAnsokan)/.idea/.gitignore" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/LatestHandelse(harAnsokan)/LatestHendelse/CreateHandelseFilter.sql" beforeDir="false" afterPath="$PROJECT_DIR$/LatestHandelse(harAnsokan)/CreateHandelseFilter.sql" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/LatestHandelse(harAnsokan)/LatestHendelse/CreateOriginalListFIlter.sql" beforeDir="false" afterPath="$PROJECT_DIR$/LatestHandelse(harAnsokan)/CreateOriginalListFIlter.sql" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/LatestHandelse(harAnsokan)/LatestHendelse/Input.sql" beforeDir="false" afterPath="$PROJECT_DIR$/LatestHandelse(harAnsokan)/Input.sql" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/LatestHandelse(harAnsokan)/LatestHendelse/utforandeintygEllerEj.sql" beforeDir="false" afterPath="$PROJECT_DIR$/LatestHandelse(harAnsokan)/utforandeintygEllerEj.sql" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/LatestHandelse(harAnsokan)/hs_err_pid10380.log" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/LatestHandelse(harAnsokan)/hs_err_pid11064.log" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/LatestHandelse(harAnsokan)/hs_err_pid11340.log" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/LatestHandelse(harAnsokan)/hs_err_pid11572.log" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/LatestHandelse(harAnsokan)/hs_err_pid11836.log" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/LatestHandelse(harAnsokan)/hs_err_pid11848.log" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/LatestHandelse(harAnsokan)/hs_err_pid12128.log" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/LatestHandelse(harAnsokan)/hs_err_pid12472.log" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/LatestHandelse(harAnsokan)/hs_err_pid12736.log" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/LatestHandelse(harAnsokan)/hs_err_pid12920.log" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/LatestHandelse(harAnsokan)/hs_err_pid13328.log" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/LatestHandelse(harAnsokan)/hs_err_pid13444.log" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/LatestHandelse(harAnsokan)/hs_err_pid13608.log" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/LatestHandelse(harAnsokan)/hs_err_pid13976.log" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/LatestHandelse(harAnsokan)/hs_err_pid13988.log" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/LatestHandelse(harAnsokan)/hs_err_pid14084.log" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/LatestHandelse(harAnsokan)/hs_err_pid14348.log" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/LatestHandelse(harAnsokan)/hs_err_pid1968.log" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/LatestHandelse(harAnsokan)/hs_err_pid2236.log" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/LatestHandelse(harAnsokan)/hs_err_pid2268.log" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/LatestHandelse(harAnsokan)/hs_err_pid2304.log" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/LatestHandelse(harAnsokan)/hs_err_pid3996.log" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/LatestHandelse(harAnsokan)/hs_err_pid5892.log" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/LatestHandelse(harAnsokan)/hs_err_pid5964.log" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/LatestHandelse(harAnsokan)/hs_err_pid6012.log" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/LatestHandelse(harAnsokan)/hs_err_pid6808.log" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/LatestHandelse(harAnsokan)/hs_err_pid7040.log" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/LatestHandelse(harAnsokan)/hs_err_pid7492.log" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/LatestHandelse(harAnsokan)/hs_err_pid7652.log" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/LatestHandelse(harAnsokan)/hs_err_pid8280.log" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/LatestHandelse(harAnsokan)/hs_err_pid9840.log" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/LatestHandelse(harAnsokan)/log/hs_err_pid11572.log" beforeDir="false" afterPath="$PROJECT_DIR$/LatestHandelse(harAnsokan)/log/hs_err_pid11572.log" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -15,41 +78,156 @@
     <option name="GROUP_SCHEMA" value="true" />
     <option name="GROUP_CONTENTS" value="false" />
     <option name="SORT_POSITIONED" value="false" />
-    <option name="SHOW_EMPTY_GROUPS" value="false" />
+    <option name="SHOW_EMPTY_GROUPS" value="true" />
     <option name="AUTO_SCROLL_FROM_SOURCE" value="false" />
     <option name="HIDDEN_KINDS">
       <set />
     </option>
-    <expand />
+    <expand>
+      <path>
+        <item name="Database" type="3277223f:DatabaseStructure$DbRootGroup" />
+        <item name="EDP" type="cc8827a6:DatabaseStructure$DbGroup" />
+      </path>
+      <path>
+        <item name="Database" type="3277223f:DatabaseStructure$DbRootGroup" />
+        <item name="EDP" type="cc8827a6:DatabaseStructure$DbGroup" />
+        <item name="@admsql04" type="feb32156:DbDataSourceImpl" />
+      </path>
+      <path>
+        <item name="Database" type="3277223f:DatabaseStructure$DbRootGroup" />
+        <item name="EDP" type="cc8827a6:DatabaseStructure$DbGroup" />
+        <item name="EDP-(Testdb)" type="feb32156:DbDataSourceImpl" />
+      </path>
+      <path>
+        <item name="Database" type="3277223f:DatabaseStructure$DbRootGroup" />
+        <item name="EDP" type="cc8827a6:DatabaseStructure$DbGroup" />
+        <item name="EDPFutureGotland" type="feb32156:DbDataSourceImpl" />
+      </path>
+      <path>
+        <item name="Database" type="3277223f:DatabaseStructure$DbRootGroup" />
+        <item name="Gisdb01" type="cc8827a6:DatabaseStructure$DbGroup" />
+      </path>
+      <path>
+        <item name="Database" type="3277223f:DatabaseStructure$DbRootGroup" />
+        <item name="Gisdb01" type="cc8827a6:DatabaseStructure$DbGroup" />
+        <item name="@GISDATA" type="feb32156:DbDataSourceImpl" />
+      </path>
+      <path>
+        <item name="Database" type="3277223f:DatabaseStructure$DbRootGroup" />
+        <item name="Gisdb01" type="cc8827a6:DatabaseStructure$DbGroup" />
+        <item name="BygglovRegister&amp;LantmäterietsByggnadsyta" type="feb32156:DbDataSourceImpl" />
+      </path>
+      <path>
+        <item name="Database" type="3277223f:DatabaseStructure$DbRootGroup" />
+        <item name="Gisdb01" type="cc8827a6:DatabaseStructure$DbGroup" />
+        <item name="FastighetsYta" type="feb32156:DbDataSourceImpl" />
+      </path>
+      <path>
+        <item name="Database" type="3277223f:DatabaseStructure$DbRootGroup" />
+        <item name="Gisdb01" type="cc8827a6:DatabaseStructure$DbGroup" />
+        <item name="SOLENTABELLER" type="feb32156:DbDataSourceImpl" />
+      </path>
+      <path>
+        <item name="Database" type="3277223f:DatabaseStructure$DbRootGroup" />
+        <item name="Gisdb01" type="cc8827a6:DatabaseStructure$DbGroup" />
+        <item name="Va - pipe Och Geopipe" type="feb32156:DbDataSourceImpl" />
+      </path>
+      <path>
+        <item name="Database" type="3277223f:DatabaseStructure$DbRootGroup" />
+        <item name="LocalTempAndEdpCopy" type="feb32156:DbDataSourceImpl" />
+      </path>
+      <path>
+        <item name="Database" type="3277223f:DatabaseStructure$DbRootGroup" />
+        <item name="LocalTempAndEdpCopy" type="feb32156:DbDataSourceImpl" />
+        <item name="EDPVisionRegionGotlandAvlopp: database" type="ccb7ac2a:MsImplModel$Database" />
+      </path>
+    </expand>
     <select />
   </component>
+  <component name="FavoritesManager">
+    <favorites_list name="Unnamed">
+      <favorite_root url="file://$APPLICATION_CONFIG_DIR$/scratches/CallFnrToAdress.sql" type="psiFile" klass="com.intellij.ide.projectView.impl.nodes.PsiFileNode" />
+    </favorites_list>
+  </component>
   <component name="Git.Settings">
-    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$/TillMinaMedelanden" />
   </component>
   <component name="IgnoredFileRootStore">
     <option name="generatedRoots">
       <set>
-        <option value="C:\Users\crbk01\.DataGrip2019.3\config\projects\VisionH-ndelserToEasyRead\.idea" />
+        <option value="C:\Users\crbk01\.DataGrip2019.3\config\projects\FnrToAdress\.idea" />
       </set>
     </option>
   </component>
-  <component name="ProjectId" id="1iShAlUCUKs6pOCpGcA3unX07sv" />
+  <component name="ProjectId" id="1iSgbZdYz9C6otWvL0wulkFTdJq" />
+  <component name="ProjectLevelVcsManager" settingsEditedManually="true">
+    <ConfirmationsSetting value="2" id="Add" />
+  </component>
   <component name="ProjectViewState">
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showExcludedFiles" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
   <component name="PropertiesComponent">
+    <property name="ASKED_ADD_EXTERNAL_FILES" value="true" />
+    <property name="ASKED_SHARE_PROJECT_CONFIGURATION_FILES" value="true" />
     <property name="DBE.Init.BalloonShown" value="true" />
     <property name="RunOnceActivity.ShowReadmeOnStart" value="true" />
-    <property name="last_opened_file_path" value="$USER_HOME$" />
+    <property name="database.data.extractors.current.id" value="Tab-separated (TSV)_id" />
+    <property name="last_opened_file_path" value="$PROJECT_DIR$" />
+    <property name="settings.editor.selected.configurable" value="editor.preferences.tabs" />
+  </component>
+  <component name="RecentsManager">
+    <key name="MoveFile.RECENT_KEYS">
+      <recent name="C:\Users\crbk01\.DataGrip2019.3\config\projects\FnrToAdress" />
+      <recent name="C:\Users\crbk01\.DataGrip2019.3\config\consoles\db\2ca40bb3-aca4-412d-a610-84b4e5da6dbe" />
+      <recent name="C:\Users\crbk01\.DataGrip2019.3\config\scratches" />
+    </key>
   </component>
   <component name="ServiceViewManager">
     <option name="viewStates">
       <list>
         <serviceView>
+          <option name="contentProportion" value="0.029943503" />
           <treeState>
-            <expand />
+            <expand>
+              <path>
+                <item name="services root" type="e789fda9:ObjectUtils$Sentinel" />
+                <item name="EDP" type="7427dc5b:ServiceModel$ServiceGroupNode" />
+              </path>
+              <path>
+                <item name="services root" type="e789fda9:ObjectUtils$Sentinel" />
+                <item name="EDP" type="7427dc5b:ServiceModel$ServiceGroupNode" />
+                <item name="root:@admsql04" type="7427dc5b:ServiceModel$ServiceGroupNode" />
+              </path>
+              <path>
+                <item name="services root" type="e789fda9:ObjectUtils$Sentinel" />
+                <item name="EDP" type="7427dc5b:ServiceModel$ServiceGroupNode" />
+                <item name="root:@admsql04" type="7427dc5b:ServiceModel$ServiceGroupNode" />
+                <item name="com.intellij.database.console.session.MessageBusSession@12e3a6bf" type="9fbbdea:ServiceModel$ServiceNode" />
+              </path>
+              <path>
+                <item name="services root" type="e789fda9:ObjectUtils$Sentinel" />
+                <item name="EDP" type="7427dc5b:ServiceModel$ServiceGroupNode" />
+                <item name="root:@admsql04" type="7427dc5b:ServiceModel$ServiceGroupNode" />
+                <item name="com.intellij.database.console.session.MessageBusSession@400128ec" type="9fbbdea:ServiceModel$ServiceNode" />
+              </path>
+              <path>
+                <item name="services root" type="e789fda9:ObjectUtils$Sentinel" />
+                <item name="EDP" type="7427dc5b:ServiceModel$ServiceGroupNode" />
+                <item name="root:EDP-(Testdb)" type="7427dc5b:ServiceModel$ServiceGroupNode" />
+              </path>
+              <path>
+                <item name="services root" type="e789fda9:ObjectUtils$Sentinel" />
+                <item name="EDP" type="7427dc5b:ServiceModel$ServiceGroupNode" />
+                <item name="root:EDP-(Testdb)" type="7427dc5b:ServiceModel$ServiceGroupNode" />
+                <item name="com.intellij.database.console.session.MessageBusSession@45a2223c" type="9fbbdea:ServiceModel$ServiceNode" />
+              </path>
+              <path>
+                <item name="services root" type="e789fda9:ObjectUtils$Sentinel" />
+                <item name="root:LocalTempAndEdpCopy" type="7427dc5b:ServiceModel$ServiceGroupNode" />
+              </path>
+            </expand>
             <select />
           </treeState>
         </serviceView>
@@ -58,22 +236,45 @@
   </component>
   <component name="TaskManager">
     <task active="true" id="Default" summary="Default task">
-      <changelist id="00bf21e5-7f3d-4f1d-b6b7-708dcdc1ba1b" name="Default Changelist" comment="" />
-      <created>1601906758685</created>
+      <changelist id="b3fb4acf-2e1e-4f50-bee4-47f3ad9ebc97" name="Default Changelist" comment="" />
+      <created>1601906478552</created>
       <option name="number" value="Default" />
       <option name="presentableId" value="Default" />
-      <updated>1601906758685</updated>
+      <updated>1601906478552</updated>
     </task>
+    <task id="LOCAL−00001" summary="firstCommit">
+      <created>1604418356659</created>
+      <option name="number" value="LOCAL−00001" />
+      <option name="presentableId" value="LOCAL−00001" />
+      <updated>1604418356659</updated>
+    </task>
+    <task id="LOCAL−00002" summary="works">
+      <created>1608035834632</created>
+      <option name="number" value="LOCAL−00002" />
+      <option name="presentableId" value="LOCAL−00002" />
+      <updated>1608035834632</updated>
+    </task>
+    <option name="localTasksCounter" value="3" />
     <servers />
   </component>
+  <component name="VcsManagerConfiguration">
+    <option name="ADD_EXTERNAL_FILES_SILENTLY" value="true" />
+    <MESSAGE value="firstCommit" />
+    <MESSAGE value="works" />
+    <option name="LAST_COMMIT_MESSAGE" value="works" />
+  </component>
   <component name="WindowStateProjectService">
-    <state x="702" y="144" key="#com.intellij.execution.impl.EditConfigurationsDialog" timestamp="1616619424431">
+    <state x="802" y="430" key="FileChooserDialogImpl" timestamp="1617712912953">
       <screen x="78" y="0" width="1842" height="1080" />
     </state>
-    <state x="702" y="144" key="#com.intellij.execution.impl.EditConfigurationsDialog/78.0.1842.1080@78.0.1842.1080" timestamp="1616619424431" />
-    <state x="761" y="403" key="com.intellij.ide.util.TipDialog" timestamp="1617701023701">
+    <state x="802" y="430" key="FileChooserDialogImpl/78.0.1842.1080@78.0.1842.1080" timestamp="1617712912953" />
+    <state width="196" height="457" key="HiddenNamespacesPopup" timestamp="1617713367579">
       <screen x="78" y="0" width="1842" height="1080" />
     </state>
-    <state x="761" y="403" key="com.intellij.ide.util.TipDialog/78.0.1842.1080@78.0.1842.1080" timestamp="1617701023701" />
+    <state width="196" height="457" key="HiddenNamespacesPopup/78.0.1842.1080@78.0.1842.1080" timestamp="1617713367579" />
+    <state x="731" y="500" key="com.intellij.ide.util.TipDialog" timestamp="1617712851058">
+      <screen x="78" y="0" width="1842" height="1080" />
+    </state>
+    <state x="731" y="500" key="com.intellij.ide.util.TipDialog/78.0.1842.1080@78.0.1842.1080" timestamp="1617712851058" />
   </component>
 </project>
