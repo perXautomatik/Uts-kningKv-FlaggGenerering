@@ -1,7 +1,7 @@
 select * from sde_miljo_halsoskydd.gng.Flaggskiktet_p_evw order by Beslut_datum desc;
 select status,count(*) antal from sde_miljo_halsoskydd.gng.Flaggskiktet_p_evw group by status
 
-/*
+
 Totalt antal fastigheter med enskilt avlopp: 13 600
 
 Antal gröna och lila flaggor =
@@ -27,4 +27,3 @@ Jag ska försöka vara med på APT på tisdag så då kan vi snacka ikapp oss.
 Allt gott,
 
 Erik
-*/
