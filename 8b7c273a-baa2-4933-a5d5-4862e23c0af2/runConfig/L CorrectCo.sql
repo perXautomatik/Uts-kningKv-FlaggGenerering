@@ -5,32 +5,42 @@ begin catch
 end catch
 ;
 with
-    standardiseNull as (SELECT FNR
-			       , nullif(org, '')     org
-			       , nullif(ANDEL, '')   ANDEL
-			       , nullif(namn, '')    namn
-			       , nullif(co, '')      co
-			       , nullif(adress, '')  adress1
-			       , nullif(ad2, '')     ad2
-			       , nullif(POSTORT, '') POSTORT
-			       , nullif(POSTNR, '')  POSTNR
-			       , src
-			  from FromTaxeringarNlagfartBeforeBadness)
-     ,input as (select
-        		 nullif(ltrim(replace(replace(replace(ltrim(CONCAT(
-							       IIF(postnr IS NULL, co, nullif('c/o ' + co + ', ', 'c/o , ')),
-							       adress1, ' ', ad2, ', ', POSTNR, ' ', POSTORT)), '  ',
-										     ' '), ' , ', ', '),
-								     (', ' + POSTNR + ' ' + POSTORT), '')),'') ADRESS1
-          ,
-            nullif(ltrim(concat(nullif(co + ',', ','), nullif(adress1, ''),
-							      nullif(',' + ad2, ','))), '') Adress2
+    standardiseNull as (SELECT FNR, nullif(org, '')     org, nullif(ANDEL, '')   ANDEL,
+           nullif(namn, '')    namn, nullif(co, '')      co, nullif(adress, '')  adress1,
+           nullif(ad2, '')     ad2, nullif(POSTORT, '') POSTORT, nullif(POSTNR, '')  POSTNR,
+           src from FromTaxeringarNlagfartBeforeBadness)
 
-             , POSTORT
-			   , POSTNR
-			   , src,FNR, org, ANDEL, namn
-		      		from standardiseNull
-         )
+   ,input as (select
+     nullif(ltrim(
+         replace(
+             replace(
+                 replace(
+                     ltrim(
+			 CONCAT(
+			   IIF(postnr IS NULL,
+				   co,
+				   nullif(
+				       'c/o ' + co + ', '
+				       , 'c/o , '
+				       )
+			       ),
+			   adress1,
+			     ' ',
+			     ad2,
+			     ', ',
+			     POSTNR,
+			     ' ',
+			     POSTORT
+			     )
+         		), '  ', ' ') --replace duplicate spaces
+                 ,' , ', ', ') --replace unessesary spacing round commas
+             ,(', ' + POSTNR + ' ' + POSTORT) --replace occurence of postnr and postort
+         , '')
+         ),'') ADRESS1
+,
+nullif(ltrim(concat(nullif(co + ',', ','), nullif(adress1, ''), nullif(',' + ad2, ','))), '') Adress2
+
+             , POSTORT, POSTNR, src,FNR, org, ANDEL, namn from standardiseNull)
 
 select * into FromInputx from input
     ;
