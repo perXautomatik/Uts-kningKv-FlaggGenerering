@@ -10,7 +10,61 @@ with
            nullif(ad2, '')     ad2, nullif(POSTORT, '') POSTORT, nullif(POSTNR, '')  POSTNR,
            src from FromTaxeringarNlagfartBeforeBadness)
 
-   ,input as (select
+select FNR, org, ANDEL, namn, co, coalesce(adress1, ad2) adress, POSTORT, POSTNR, src
+into InsideStandardTable from standardiseNull;
+
+alter table InsideStandardTable
+    ADD
+    HasPost as (case when POSTNR is null OR POSTORT is null then 'false' else 'true' end)
+   ,countCommas as (LEN(adress) - LEN( REPLACE( adress, ',', '' )))
+   ,PostInAdr as (case when charindex(adress,POSTNR)+charindex(adress,POSTORT) > 0 then 'true' else false end)
+;
+
+if count commas = 0
+    then adress
+else
+    countcommas = 1 AND if hasPost = true & PostInAdr = true
+		then adress = left(adress(commaPos))
+
+	countCommas => 2
+
+	    countcommas = 2 & if hasPost = true & PostInAdr = true
+		    then replace(adress,postort), replace(postnr)
+		    trim(adress)
+		    then if right 2 = ',,' or right 3 = ', ,'
+		    adress = trim left len()
+		        -2 Or left len()-3
+
+	    if hasPost is false
+		postnr = right(adress, last comma pos)
+
+
+
+
+
+	else
+	    UseArchicMethod
+
+
+
+if HasPost = 0 and checkIfPostnrPostOrtInAdress then postnrAdr in adress
+    count commas = 1
+
+
+
+	if InsideStandardTable adress has comma, but does not have checkIfPostnrPostOrtInAdress then co in adress OR foriegn
+
+
+
+
+
+
+
+
+
+with
+
+   input as (select
      nullif(ltrim(
          replace(
              replace(
