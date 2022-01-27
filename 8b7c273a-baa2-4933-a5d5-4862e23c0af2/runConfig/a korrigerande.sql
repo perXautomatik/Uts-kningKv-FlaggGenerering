@@ -1,13 +1,9 @@
 use [tempExcel]
 insert into dbo.resultatRunConf (dnr) values (concat(cast(sysdatetime() as varchar),'korrigerade7'))
 
-begin try
-    drop table fromFulaatkorrigera
-end try
-begin catch
-end catch
-begin try
-CREATE TABLE  fromFulaatkorrigera ( Ägare nvarchar(200), Postadress nvarchar(200), POSTNR nvarchar(200), POSTORT nvarchar(200), [personnr/Organisationnr] nvarchar(200), SOURCE varchar(200), Id INTEGER NOT NULL DEFAULT 0 );;if object_id('tempdb..KorrigeringsIndex') is null begin CREATE INDEX KorrigeringsIndex on  fromFulaatkorrigera(Ägare,POSTADRESS,POSTORT,POSTNR,[personnr/Organisationnr],SOURCE,id)end
+begin try drop table fromFulaatkorrigera end try begin catch end catch begin try
+
+    CREATE TABLE  fromFulaatkorrigera ( Ägare nvarchar(200), Postadress nvarchar(200), POSTNR nvarchar(200), POSTORT nvarchar(200), [personnr/Organisationnr] nvarchar(200), SOURCE varchar(200), Id INTEGER NOT NULL DEFAULT 0 );;if object_id('tempdb..KorrigeringsIndex') is null begin CREATE INDEX KorrigeringsIndex on  fromFulaatkorrigera(Ägare,POSTADRESS,POSTORT,POSTNR,[personnr/Organisationnr],SOURCE,id)end
 end try
 begin catch
 end catch

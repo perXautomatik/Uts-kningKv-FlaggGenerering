@@ -6,5 +6,5 @@ end catch
 
 select  * into
     addressesToBeCorrected
-	from afterFirstFormating z WHERE BADNESS > 1;
+	from fromCActOnAdressFormating z WHERE BADNESS > 1;
 

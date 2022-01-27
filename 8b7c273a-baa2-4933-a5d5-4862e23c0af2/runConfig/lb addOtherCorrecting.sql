@@ -21,7 +21,7 @@ with unionedTofilter as ( --the higher the less trusted
 
     select FNR , org , ANDEL, namn , adress ,POSTORT ,  POSTNR, src,badness, 1  trustScore from addressesToBeCorrected
     union all
-    select FNR , org , ANDEL, namn , adress ,POSTORT ,  POSTNR, src,badness, 2  trustScore from fromTaxeringagareNLagfart
+    select FNR , org , ANDEL, namn , adress ,POSTORT ,  POSTNR, src,badness, 2  trustScore from fromLCorrectCo
     union all
     select FNR , org , '1/1' andel, namn , adress ,POSTORT ,  POSTNR, src,badness, 3 trustScore from FromRaw
 )
@@ -51,7 +51,7 @@ with
 
     ,joinWithNoBadness as (
 		     select FNR , org , ANDEL, namn , adress ,POSTORT ,  POSTNR, src,BADNESS from (select FNR , org , ANDEL, namn , adress ,POSTORT ,  POSTNR, src,BADNESS
-												   from afterFirstFormating z WHERE BADNESS <= 1) o
+												   from fromCActOnAdressFormating z WHERE BADNESS <= 1) o
 		     union all
 		     select FNR , org , ANDEL, namn , adress ,POSTORT ,  POSTNR, src,BADNESS from (select FNR , org , ANDEL, namn , adress ,POSTORT ,  POSTNR, src,BADNESS
 										   from withFaith where faith = 1) q

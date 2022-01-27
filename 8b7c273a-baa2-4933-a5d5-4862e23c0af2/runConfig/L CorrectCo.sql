@@ -1,5 +1,5 @@
 begin try
-    drop Table FromInputx
+    drop Table InsideStandardTable
 end try
 begin catch
 end catch
@@ -59,9 +59,14 @@ if HasPost = 0 and checkIfPostnrPostOrtInAdress then postnrAdr in adress
 
 
 
+;
 
-
-
+begin try
+    drop Table InsideCorrectCo
+end try
+begin catch
+end catch
+;
 with
 
    input as (select
@@ -96,23 +101,17 @@ nullif(ltrim(concat(nullif(co + ',', ','), nullif(adress1, ''), nullif(',' + ad2
 
              , POSTORT, POSTNR, src,FNR, org, ANDEL, namn from standardiseNull)
 
-select * into FromInputx from input
+select * into InsideCorrectCo from input
     ;
 
-begin try drop table fromTaxeringagareNLagfart
-end try
-begin catch
-
-end catch
-
-;
+begin try drop table fromLCorrectCo end try begin catch end catch;
 
  with
 
-     mergeAdress as (select FNR, org, ANDEL, namn, coalesce(adress1, ADRESS2) adress, POSTORT, POSTNR, src from FromInputx)
+     mergeAdress as (select FNR, org, ANDEL, namn, coalesce(adress1, ADRESS2) adress, POSTORT, POSTNR, src from InsideCorrectCo)
 
    ,COLUMNPROCESSBADNESSSCORE AS ( select *
     , ((IIF(namn IS NULL, 1, 0)) + (IIF(postnr IS NULL, 1, 0)) + (IIF(postort IS NULL, 1, 0)) + (IIF(adress IS NULL, 1, 0)) + (IIF(org is NULL, 1, 0))) BADNESS
 	FROM mergeAdress)
 
-select * into fromTaxeringagareNLagfart from COLUMNPROCESSBADNESSSCORE
+select * into fromLCorrectCo from COLUMNPROCESSBADNESSSCORE

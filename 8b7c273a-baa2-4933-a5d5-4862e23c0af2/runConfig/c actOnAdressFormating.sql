@@ -1,15 +1,11 @@
 use [tempExcel]
 insert into dbo.resultatRunConf (dnr) values (concat(cast(sysdatetime() as varchar),'begin try1'))
 
-begin try
-    drop table afterFirstFormating
-end try
-begin catch
-end catch
+begin try drop table fromCActOnAdressFormating end try begin catch end catch
 
 begin try
 
-create table afterFirstFormating (FNR       int,
+create table fromCActOnAdressFormating (FNR       int,
 				  org       nvarchar(20),
 				  ANDEL     nvarchar(41),
 				  namn      nvarchar(501),
@@ -21,11 +17,8 @@ create table afterFirstFormating (FNR       int,
 				  BADNESS   int
 				  unique (fnr,org,namn,adress,POSTORT,POSTNR,src)
 				  with (ignore_dup_key  = on )
-)
-end try
-begin catch
-end catch
-;
+)end try begin catch end catch;
+
 with       formatedWithAdresskomma as (
 					select nullif(NAME, '')                                            namn
 					     , nullif(personorganisationnr, '')                            org
@@ -36,7 +29,7 @@ with       formatedWithAdresskomma as (
 					     , NULL                                                        POSTORT
 					     , NULL                                                        POSTNR
 					     , IIF(charindex(',', reverse(ADDRESS)) > 0, len(address) - charindex(',', reverse(ADDRESS)) + 1, 0) adressKomma
-					from rawFir
+					from fromBJoinInfoCurrentOwner
 				    )
   ,       withAdressKommaFinns    	as (select *, IIF(ADRESSKOMMA > 0 AND POSTORT IS NULL AND POSTNR IS NULL, 1, 0) adresskommaFinns
   						from formatedWithAdresskomma)
@@ -63,8 +56,6 @@ with       formatedWithAdresskomma as (
     , ((IIF(namn IS NULL, 1, 0)) + (IIF(postnr IS NULL, 1, 0)) + (IIF(postort IS NULL, 1, 0)) + (IIF(adress IS NULL, 1, 0)) + (IIF(org is NULL, 1, 0))) BADNESS
 	FROM splitPostNrPostAdress)
 
-	    insert into afterFirstFormating
-select * from COLUMNPROCESSBADNESSSCORE
-
+insert into fromCActOnAdressFormating select * from COLUMNPROCESSBADNESSSCORE
 
 insert into dbo.resultatRunConf (dnr) values (concat(cast(sysdatetime() as varchar),'end1'));
