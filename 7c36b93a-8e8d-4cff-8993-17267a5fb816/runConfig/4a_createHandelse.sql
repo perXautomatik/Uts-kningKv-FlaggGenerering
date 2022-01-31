@@ -1,5 +1,8 @@
-declare @onskadRubrik nvarchar = N'Påminnelse om åtgärd - 12 månader'
+declare @onskadRubrik nvarchar (max) = N'Påminnelse om åtgärd - 12 månader'
 declare @onskatDatum date = datefromparts(2021,12,08)
+declare @strRiktning nvarchar(20) = N'Utgående';
+declare @strKommunikationssaett nvarchar(30) = 'e-medelande';
+declare @strText nvarchar(max) = 'Autogenererat den '+ cast(getdate() as varchar);
 
 -- om händelse redan skapat smed samma rubrik och datum,samt indexx skapas ingen ny handelse.
 -- should only create one handelse per Ärende, so indexx is to finegrained, we need to eather make index less finegrained or using ärendeid instead of index.
@@ -35,9 +38,11 @@ declare @tbAehHaendelse table
 
 ;
 
-
-with  StandardHandelse as (select top 1 strRubrik, @onskatDatum as datHaendelseDatum
-				      , strText, strRiktning, strKommunikationssaett,
+with  StandardHandelse as (select top 1 @onskadRubrik strRubrik, @onskatDatum as datHaendelseDatum
+				      , @strText strText
+				      , @strRiktning               strRiktning
+				      , @strKommunikationssaett strKommunikationssaett
+				      ,
 					recHaendelseTypID, recHaendelseKategoriID,
              				recLastHaendelseStatusLogID, recLastHaendelseSekretessLogID,
              				--recDiarieAarsSerieID, intLoepnummer, intDiarieSerieAar,
@@ -68,10 +73,10 @@ with  StandardHandelse as (select top 1 strRubrik, @onskatDatum as datHaendelseD
 
                              --recDiarieAarsSerieID, intLoepnummer, intDiarieSerieAar,
 insert into @tbAehHaendelse ( strRubrik,datHaendelseDatum, strText, strRiktning, strKommunikationssaett, recHaendelseTypID, recHaendelseKategoriID, recLastHaendelseStatusLogID, recLastHaendelseSekretessLogID, strTillhoerPostlista, recKommunID, recDelprocessID, recAvdelningID, recEnhetID, recFoervaltningID, strPublicering, recRemissutskickID, bolKaensligaPersonuppgifter,recAerendeID)
-select 			     sth.strRubrik,sth.datHaendelseDatum, strText, strRiktning, strKommunikationssaett, recHaendelseTypID,
-       			     	recHaendelseKategoriID, recLastHaendelseStatusLogID, recLastHaendelseSekretessLogID,
-       				strTillhoerPostlista, recKommunID, recDelprocessID, recAvdelningID,
-       			     			recEnhetID, recFoervaltningID, strPublicering, recRemissutskickID, bolKaensligaPersonuppgifter,recAerendeID
+select 			     sth.strRubrik,sth.datHaendelseDatum, sth.strText, sth.strRiktning, sth.strKommunikationssaett, sth.recHaendelseTypID,
+       			     	sth.recHaendelseKategoriID, sth.recLastHaendelseStatusLogID, sth.recLastHaendelseSekretessLogID,
+       				sth.strTillhoerPostlista, sth.recKommunID, sth.recDelprocessID, sth.recAvdelningID,
+       			     			sth.recEnhetID, sth.recFoervaltningID, sth.strPublicering, sth.recRemissutskickID, sth.bolKaensligaPersonuppgifter,fai.recAerendeID
 from
  StandardHandelse sth, filterAlreadyInserted fai
 ;
