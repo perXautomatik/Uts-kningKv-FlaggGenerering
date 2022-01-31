@@ -1,6 +1,6 @@
 --SELECT * TOP 3 ANDEL unless noone owns more than 25 then add all
 begin try
-    drop table FromcorrecAndelCo
+    drop table InsideMCorrectAndel
 end try
 begin catch
     print ERROR_line()
@@ -29,11 +29,12 @@ select FNR
      , denominator,slashPos
 from preprefardig;
 
---; select * into Convertion from @convertion;
+--; select * into InsideMCorrectAndel from @convertion;
 
 with
     --atleast one from each, but no max amount, badness always first, and second to that, largest ägare
     --rank1 should be lowestB.HighestAndel, if there is more than 1 with same lowb and high andel, all is selected.
+    --Old methods, solved with rank and rownumber,leCremLimited as (select * from leCrem where rowNum <= Andel/1) --select no more than the number of total ägare. --,filterBadAdress as (select * from (select * from checkUneeded where FNR not in lecrem )Or (RowNum < 4 AND ANDEL >= 0.25 And badness < 2))
     FARDIG
 	 AS (SELECT FNR, org
 		  , format(try_cast(IIF(slashPos > 0, try_cast(nominator AS float) / try_cast(denominator AS float), 0) AS FLOAT), '0.00')                   ANDEL
@@ -43,15 +44,19 @@ with
   , checkUneeded as (select *, rank() over (partition by fnr order by badness,andel desc ) rankNum from FARDIG)
   , leCrem       as (select *, row_number() over (partition by fnr order by fnr desc ) rowNum from checkUneeded)
 
-   --,leCremLimited as (select * from leCrem where rowNum <= Andel/1) --select no more than the number of total ägare.
 
-   --,filterBadAdress as (select * from (select * from checkUneeded where FNR not in lecrem )Or (RowNum < 4 AND ANDEL >= 0.25 And badness < 2))
+select * into InsideMCorrectAndel from lecrem;
 
-select * into Convertion from lecrem;
+begin try
+    drop table FromcorrecAndelCo
+end try
+begin catch
+    print ERROR_line()
+end catch
 
 SELECT *
 into FromcorrecAndelCo
-from Convertion WHERE rankNum = 1
+from InsideMCorrectAndel WHERE rankNum = 1
 
 insert into dbo.resultatRunConf (dnr) values (concat(cast(sysdatetime() as varchar), 'endCorrect'));
 

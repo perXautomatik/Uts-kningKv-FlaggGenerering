@@ -2,7 +2,7 @@ use [tempExcel]
 insert into dbo.resultatRunConf (dnr) values (concat(cast(sysdatetime() as varchar),'correctAdress6'))
 
 	begin try
-	    drop table tempExcel.dbo.FromTaxeringarNlagfartBeforeBadness
+	    drop table tempExcel.dbo.fromKFetchLagFartAndTaxeringar
 	    end try
 	begin catch
 	    print ERROR_line()
@@ -10,7 +10,7 @@ insert into dbo.resultatRunConf (dnr) values (concat(cast(sysdatetime() as varch
 
 begin try
 
-    create table tempExcel.dbo.FromTaxeringarNlagfartBeforeBadness
+    create table tempExcel.dbo.fromKFetchLagFartAndTaxeringar
     (
 	    FNR int  not null,
 	    org varchar(130)  not null,
@@ -63,6 +63,6 @@ WITH
 
     , [3toOneUnion2] as (select FNR, PERSORGNR org, ANDEL, NAMN, FAL_CO co, FAL_UTADR1 adress, FAL_UTADR2 ad2, FAL_POSTNR postnr, FAL_POSTORT postort, src   from t1 union all SELECT * from t2 union all SELECT * from t3 union all select * from s3toOneUnion2)
 
-insert into  FromTaxeringarNlagfartBeforeBadness
+insert into  fromKFetchLagFartAndTaxeringar
   select * from [3toOneUnion2]
 

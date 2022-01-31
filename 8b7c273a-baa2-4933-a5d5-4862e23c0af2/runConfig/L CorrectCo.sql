@@ -1,5 +1,5 @@
 begin try
-    drop Table InsideStandardTable
+    drop Table FromInputx
 end try
 begin catch
 end catch
@@ -10,66 +10,7 @@ with
            nullif(ad2, '')     ad2, nullif(POSTORT, '') POSTORT, nullif(POSTNR, '')  POSTNR,
            src from FromTaxeringarNlagfartBeforeBadness)
 
-select FNR, org, ANDEL, namn, co, coalesce(adress1, ad2) adress, POSTORT, POSTNR, src
-into InsideStandardTable from standardiseNull;
-
-alter table InsideStandardTable
-    ADD
-    HasPost as (case when POSTNR is null OR POSTORT is null then 'false' else 'true' end)
-   ,countCommas as (LEN(adress) - LEN( REPLACE( adress, ',', '' )))
-   ,PostInAdr as (case when charindex(adress,POSTNR)+charindex(adress,POSTORT) > 0 then 'true' else false end)
-;
-
-if count commas = 0
-    then adress
-else
-    countcommas = 1 AND if hasPost = true & PostInAdr = true
-		then adress = left(adress(commaPos))
-
-	countCommas => 2
-
-	    countcommas = 2 & if hasPost = true & PostInAdr = true
-		    then replace(adress,postort), replace(postnr)
-		    trim(adress)
-		    then if right 2 = ',,' or right 3 = ', ,'
-		    adress = trim left len()
-		        -2 Or left len()-3
-
-	    if hasPost is false
-		postnr = right(adress, last comma pos)
-
-
-
-
-
-	else
-	    UseArchicMethod
-
-
-
-if HasPost = 0 and checkIfPostnrPostOrtInAdress then postnrAdr in adress
-    count commas = 1
-
-
-
-	if InsideStandardTable adress has comma, but does not have checkIfPostnrPostOrtInAdress then co in adress OR foriegn
-
-
-
-
-
-
-;
-
-begin try
-    drop Table InsideCorrectCo
-end try
-begin catch
-end catch
-;
-with
-
-   input as (select
+   ,input as (select
      nullif(ltrim(
          replace(
              replace(
@@ -101,17 +42,23 @@ nullif(ltrim(concat(nullif(co + ',', ','), nullif(adress1, ''), nullif(',' + ad2
 
              , POSTORT, POSTNR, src,FNR, org, ANDEL, namn from standardiseNull)
 
-select * into InsideCorrectCo from input
+select * into FromInputx from input
     ;
 
-begin try drop table fromLCorrectCo end try begin catch end catch;
+begin try drop table fromLcorrectCo
+end try
+begin catch
+
+end catch
+
+;
 
  with
 
-     mergeAdress as (select FNR, org, ANDEL, namn, coalesce(adress1, ADRESS2) adress, POSTORT, POSTNR, src from InsideCorrectCo)
+     mergeAdress as (select FNR, org, ANDEL, namn, coalesce(adress1, ADRESS2) adress, POSTORT, POSTNR, src from FromInputx)
 
    ,COLUMNPROCESSBADNESSSCORE AS ( select *
     , ((IIF(namn IS NULL, 1, 0)) + (IIF(postnr IS NULL, 1, 0)) + (IIF(postort IS NULL, 1, 0)) + (IIF(adress IS NULL, 1, 0)) + (IIF(org is NULL, 1, 0))) BADNESS
 	FROM mergeAdress)
 
-select * into fromLCorrectCo from COLUMNPROCESSBADNESSSCORE
+select * into fromLcorrectCo from COLUMNPROCESSBADNESSSCORE

@@ -10,8 +10,8 @@ declare @JustInserted table (recHaendelseId integer, recAerendeID integer
 declare @tbAehHaendelse table
 (
 	recHaendelseID int identity primary key,
-	datHaendelseDatum as @onskatDatum,
-	strRubrik as @onskadRubrik,
+	datHaendelseDatum date ,--default @onskatDatum,
+	strRubrik nvarchar(max) ,--default @onskadRubrik,
 	strText nvarchar(max),
 	strRiktning nvarchar(20),
 	strKommunikationssaett nvarchar(30),
@@ -32,9 +32,11 @@ declare @tbAehHaendelse table
 	bolKaensligaPersonuppgifter bit default 0 not null
 	,recAerendeID int
 )
+
 ;
 
-with  StandardHandelse as (select top 1 strRubrik
+
+with  StandardHandelse as (select top 1 strRubrik, @onskatDatum as datHaendelseDatum
 				      , strText, strRiktning, strKommunikationssaett,
 					recHaendelseTypID, recHaendelseKategoriID,
              				recLastHaendelseStatusLogID, recLastHaendelseSekretessLogID,
@@ -48,8 +50,8 @@ with  StandardHandelse as (select top 1 strRubrik
 			   order by datHaendelseDatum desc) --Kopiera fäljande columner från senaste händelse som matchar postlista.
 
     , IdentifierAsigned as (select
-           recAerendeID,dnr, org,@onskadRubrik strRubrik,@onskatDatum datDatum  from
-	 from ##fannyUtskick
+           recAerendeID,dnr, [personnr/Organisationnr] org,@onskadRubrik strRubrik,@onskatDatum datDatum  from
+	 ##fannyUtskick
         where recAerendeID is not null
         --if previousRunConfig step failed, selects the whole set.
         )
@@ -64,14 +66,10 @@ with  StandardHandelse as (select top 1 strRubrik
    			where ha.recHaendelseID is null -- excluding select
        ) -- this is only the filter deciding handelse generation, adding files and kontakter is upcomming.
 
-insert into @tbAehHaendelse ( strText, strRiktning, strKommunikationssaett, recHaendelseTypID,
-                             	recHaendelseKategoriID, recLastHaendelseStatusLogID, recLastHaendelseSekretessLogID,
                              --recDiarieAarsSerieID, intLoepnummer, intDiarieSerieAar,
-                             strTillhoerPostlista, recKommunID, recDelprocessID, recAvdelningID,
-                             			recEnhetID, recFoervaltningID, strPublicering, recRemissutskickID, bolKaensligaPersonuppgifter,recAerendeID)
-select 			     strText, strRiktning, strKommunikationssaett, recHaendelseTypID,
+insert into @tbAehHaendelse ( strRubrik,datHaendelseDatum, strText, strRiktning, strKommunikationssaett, recHaendelseTypID, recHaendelseKategoriID, recLastHaendelseStatusLogID, recLastHaendelseSekretessLogID, strTillhoerPostlista, recKommunID, recDelprocessID, recAvdelningID, recEnhetID, recFoervaltningID, strPublicering, recRemissutskickID, bolKaensligaPersonuppgifter,recAerendeID)
+select 			     sth.strRubrik,sth.datHaendelseDatum, strText, strRiktning, strKommunikationssaett, recHaendelseTypID,
        			     	recHaendelseKategoriID, recLastHaendelseStatusLogID, recLastHaendelseSekretessLogID,
-       				--recDiarieAarsSerieID, intLoepnummer, intDiarieSerieAar,
        				strTillhoerPostlista, recKommunID, recDelprocessID, recAvdelningID,
        			     			recEnhetID, recFoervaltningID, strPublicering, recRemissutskickID, bolKaensligaPersonuppgifter,recAerendeID
 from
