@@ -13,8 +13,8 @@ declare @JustInserted table (recHaendelseId integer, recAerendeID integer
 declare @tbAehHaendelse table
 (
 	recHaendelseID int identity primary key,
-	datHaendelseDatum date ,--default @onskatDatum,
-	strRubrik nvarchar(max) ,--default @onskadRubrik,
+	datHaendelseDatum date not null,--default @onskatDatum,
+	strRubrik nvarchar(max) not null,--default @onskadRubrik,
 	strText nvarchar(max),
 	strRiktning nvarchar(20),
 	strKommunikationssaett nvarchar(30),
@@ -61,8 +61,7 @@ with  StandardHandelse as (select top 1 @onskadRubrik strRubrik, @onskatDatum as
         --if previousRunConfig step failed, selects the whole set.
         )
 
-   ,  filterAlreadyInserted as ( select
-       			    recAerendeID, dnr, org
+   ,  filterAlreadyInserted as ( select recAerendeID, dnr, org
 			       from IdentifierAsigned ia
 				left outer join tbAehHaendelse ha --to harsh, if 1 handelse match this, it gonna match that against each handelse.
 			 on ia.strRubrik = isnull(ha.strRubrik,'') --@onskadRubrik
@@ -82,20 +81,16 @@ from
 ;
 
 
-insert into tbAehHaendelse
-    (		datHaendelseDatum, strRiktning, strKommunikationssaett, recHaendelseTypID, recHaendelseKategoriID,
-     			recLastHaendelseStatusLogID, recLastHaendelseSekretessLogID, intAntalFiler,
-     --recDiarieAarsSerieID, intLoepnummer, intDiarieSerieAar,
-     				strTillhoerPostlista, recKommunID, recDelprocessID, recAvdelningID,
-     					recEnhetID, recFoervaltningID, strPublicering, recRemissutskickID, bolKaensligaPersonuppgifter)
+insert into tbAehHaendelse (
+                                datHaendelseDatum, strRubrik, strText, strRiktning, strKommunikationssaett, recHaendelseTypID, recHaendelseKategoriID,
+       recLastHaendelseStatusLogID, recLastHaendelseSekretessLogID, intAntalFiler, strTillhoerPostlista, recKommunID, recDelprocessID,
+       recAvdelningID, recEnhetID, recFoervaltningID, strPublicering, recRemissutskickID, bolKaensligaPersonuppgifter         )
     OUTPUT
-           INSERTED.recHaendelseId,cast(INSERTED.strPublicering as integer) INTO @JustInserted select
-           	-- Index placed in strPublicering, might not be the best place, we only need it for the output insert, so we could populate any field
-                  datHaendelseDatum, strRiktning, strKommunikationssaett, recHaendelseTypID, recHaendelseKategoriID,
-			recLastHaendelseStatusLogID, recLastHaendelseSekretessLogID, intAntalFiler,
-                  	--recDiarieAarsSerieID, intLoepnummer, intDiarieSerieAar,
-                  		strTillhoerPostlista, recKommunID, recDelprocessID, recAvdelningID,
-					recEnhetID, recFoervaltningID, cast(recAerendeID as nvarchar), recRemissutskickID, bolKaensligaPersonuppgifter
-    from @tbAehHaendelse tbah
+           INSERTED.recHaendelseId,cast(INSERTED.strPublicering as integer) INTO @JustInserted
+select           	-- Index placed in strPublicering, might not be the best place, we only need it for the output insert, so we could populate any field
+    datHaendelseDatum, strRubrik, strText, strRiktning, strKommunikationssaett, recHaendelseTypID, recHaendelseKategoriID,
+       recLastHaendelseStatusLogID, recLastHaendelseSekretessLogID, intAntalFiler, strTillhoerPostlista, recKommunID, recDelprocessID,
+       recAvdelningID, recEnhetID, recFoervaltningID, cast(recAerendeID as varchar), recRemissutskickID, bolKaensligaPersonuppgifter
+from @tbAehHaendelse tbah
 
 select * into ##JustInserted from @JustInserted
