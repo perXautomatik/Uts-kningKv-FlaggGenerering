@@ -1,5 +1,7 @@
 <component name="ProjectRunConfigurationManager">
   <configuration default="false" name="UpdateraHändelserOchKopplaFiler" type="DatabaseScript">
+    <script-file value="$APPLICATION_CONFIG_DIR$/consoles/db/7c36b93a-8e8d-4cff-8993-17267a5fb816/runConfig/Cleanup/select latest arende.sql" />
+    <script-file value="$APPLICATION_CONFIG_DIR$/consoles/db/7c36b93a-8e8d-4cff-8993-17267a5fb816/runConfig/Cleanup/select Handelse 10 senaste.sql" />
     <script-file value="$APPLICATION_CONFIG_DIR$/consoles/db/7c36b93a-8e8d-4cff-8993-17267a5fb816/runConfig/1_readFromCsv.sql" />
     <script-file value="$APPLICATION_CONFIG_DIR$/consoles/db/7c36b93a-8e8d-4cff-8993-17267a5fb816/runConfig/1a_SplittDnr.sql" />
     <script-file value="$APPLICATION_CONFIG_DIR$/consoles/db/7c36b93a-8e8d-4cff-8993-17267a5fb816/runConfig/1b_selectÄrendenThatsRelevant.sql" />

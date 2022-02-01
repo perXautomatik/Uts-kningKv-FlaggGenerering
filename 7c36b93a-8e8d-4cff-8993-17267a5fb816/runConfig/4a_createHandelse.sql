@@ -61,7 +61,7 @@ with  StandardHandelse as (select top 1 @onskadRubrik strRubrik, @onskatDatum as
         --if previousRunConfig step failed, selects the whole set.
         )
 
-   ,  filterAlreadyInserted as ( select recAerendeID, dnr, org
+   ,  filterAlreadyInserted as ( select distinct recAerendeID, dnr --, org
 			       from IdentifierAsigned ia
 				left outer join tbAehHaendelse ha --to harsh, if 1 handelse match this, it gonna match that against each handelse.
 			 on ia.strRubrik = isnull(ha.strRubrik,'') --@onskadRubrik
