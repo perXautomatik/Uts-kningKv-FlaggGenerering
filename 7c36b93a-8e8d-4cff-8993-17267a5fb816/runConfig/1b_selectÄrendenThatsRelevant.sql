@@ -27,20 +27,35 @@ declare @InsertAehAerende table
 		with (ignore_dup_key = on)
 )
 ;
-with fu as
-    (select distinct try_cast(right(dnr,len(dnr)-len('mbnv-2020-')) as int) intDiarienummerLoepNummer from
-         (select fu.dnr from
+with
+    filterALreadyInserted as (select fu.dnr from
          ##fannyUtskick fu
+         left outer join EDPVisionRegionGotlandTest2.dbo.tbAehAerende vAA
+             on isnull(vaa.intDiarienummerLoepNummer,'') = cast(right(dnr,len(dnr)-len('mbnv-2020-')) as int)
+    		and vaa.recDiarieAarsSerieID =58 and strDiarienummerSerie = 'mbnv'
+         where vAA.recAerendeID is null and fu.dnr is not null),
+    onlyDiarieLoepNr as (select distinct try_cast(right(dnr,len(dnr)-len('mbnv-2020-')) as int) intDiarienummerLoepNummer from filterALreadyInserted)
+
+insert into @InsertAehAerende (intDiarienummerLoepNummer, recDiarieAarsSerieID, strDiarienummerSerie, strAerendemening, strSoekbegrepp, strAerendeKommentar, recFoervaltningID, recEnhetID, recAvdelningID, recExterntID, recAerendetypID, recProjektID, strPublicering, recLastHaendelseBeslutID, datInkomDatum, datMoetesDatum, recExternTjaenstID, recKommunID)
+select * from onlyDiarieLoepNr,
+    (select top 1 	       recDiarieAarsSerieID, strDiarienummerSerie, strAerendemening, strSoekbegrepp, strAerendeKommentar, recFoervaltningID, recEnhetID, recAvdelningID, recExterntID, recAerendetypID, recProjektID, strPublicering, recLastHaendelseBeslutID, getdate() datInkomDatum, datMoetesDatum, recExternTjaenstID, recKommunID
+    from tbAehAerende where strAerendemening like '%klart%vatten%'
+    --      and strDiarienummerSerie = 'MBNV'
+    order by recAerendeID desc) ref
+
+;
+
+drop table dbo.cbrRessults
+select * into dbo.cbrRessults from
+        ##fannyUtskick fu
          left outer join EDPVisionRegionGotlandTest2.dbo.vwAehAerende vAA
              on isnull(vaa.strDiarienummer,'') = fu.dnr
-         where vAA.strDiarienummer is null)fu)
-select * from fu,
-(select top 1 						 recDiarieAarsSerieID, strDiarienummerSerie, strAerendemening, strSoekbegrepp, strAerendeKommentar, recFoervaltningID, recEnhetID, recAvdelningID, recExterntID, recAerendetypID, recProjektID, strPublicering, recLastHaendelseBeslutID, getdate() datInkomDatum, datMoetesDatum, recExternTjaenstID, recKommunID
-from tbAehAerende where strAerendemening like '%klart%vatten%' and strDiarienummerSerie = 'MBNV' order by recAerendeID desc) ref
+         where vAA.recAerendeID is null and fu.dnr is not null
+;
+
 
 insert into  tbAehAerende (	recDiarieAarsSerieID, intDiarienummerLoepNummer, strDiarienummerSerie, strAerendemening, strSoekbegrepp, strAerendeKommentar, recFoervaltningID, recEnhetID, recAvdelningID, recExterntID, recAerendetypID, recProjektID, strPublicering, recLastHaendelseBeslutID, datInkomDatum, datMoetesDatum, recExternTjaenstID, recKommunID)
 select 				recDiarieAarsSerieID, intDiarienummerLoepNummer, strDiarienummerSerie, strAerendemening, strSoekbegrepp, strAerendeKommentar, recFoervaltningID, recEnhetID, recAvdelningID, recExterntID, recAerendetypID, recProjektID, strPublicering, recLastHaendelseBeslutID, datInkomDatum, datMoetesDatum, recExternTjaenstID, recKommunID
 from @InsertAehAerende
-
-select top 1 * from tbAehAerende order by recAerendeID desc
+;
 

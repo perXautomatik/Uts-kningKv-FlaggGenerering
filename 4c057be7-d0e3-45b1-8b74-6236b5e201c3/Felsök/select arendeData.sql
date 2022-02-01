@@ -1,0 +1,1 @@
+select top 1000 * from EDPVisionRegionGotlandTest2.dbo.tbAehAerendeData order by recAerendeID desc

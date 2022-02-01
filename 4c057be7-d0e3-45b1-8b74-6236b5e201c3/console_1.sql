@@ -1,0 +1,1 @@
+värt att göra en dynamisk tsql som hämtar alla kolumner för att sedan ge en summering av antal null i varje?

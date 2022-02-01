@@ -1,0 +1,9 @@
+<component name="ProjectRunConfigurationManager">
+  <configuration default="false" name="CreateArenden" type="DatabaseScript">
+    <script-file value="$APPLICATION_CONFIG_DIR$/consoles/db/7c36b93a-8e8d-4cff-8993-17267a5fb816/runConfig/1_readFromCsv.sql" />
+    <script-file value="$APPLICATION_CONFIG_DIR$/consoles/db/7c36b93a-8e8d-4cff-8993-17267a5fb816/runConfig/1b_selectÄrendenThatsRelevant.sql" />
+    <script-mode>FILE</script-mode>
+    <data-source id="7c36b93a-8e8d-4cff-8993-17267a5fb816" />
+    <method v="2" />
+  </configuration>
+</component>

@@ -34,18 +34,17 @@ declare @AerendeData table
 	intRecnum as [recAerendeID],
 	guidFastighetUuid uniqueidentifier
 )
+;
+with
+    refArende as (select top 1 intDiarieAar, intSerieStartVaerde, recDiarieSerieID, strDiarieSerieKod, strDiarienummer, recLastAerendeStatusLogID, getdate() datDatum, strLocalizationCode, strAerendeStatusPresent, strLogKommentar, datKomplett, recLastAerendeSekretessLogID, strSekretess, strBegraensa, strSekretessMyndighet, datSekretessDatum, intUserID, strSignature, recFastighetID, strFnrID, strFastighetsbeteckning, recAerendeEnstakaKontaktID, strRoll, recEnstakaKontaktID, strVisasSom, strGatuadress, strPostnummer, strPostort, recKontaktRollID, guidFastighetUuid
+	    from tbAehAerendeData where recLastAerendeStatusLogID is not null and intUserID is null order by recAerendeID desc)
+    ,alreadyINserted as (select distinct vAA.recAerendeID,recLastAerendeStatusLogID from ##fannyUtskick fu
+	    left outer join EDPVisionRegionGotlandTest2.dbo.vwAehAerende vAA on vaa.strDiarienummer = fu.dnr)
+    ,filteredArendeId as (select recAerendeId from alreadyINserted where recLastAerendeStatusLogID is null and recAerendeID is not null)
 
 insert into @AerendeData (recAerendeID, intDiarieAar, intSerieStartVaerde, recDiarieSerieID, strDiarieSerieKod, strDiarienummer, recLastAerendeStatusLogID, datDatum, strLocalizationCode, strAerendeStatusPresent, strLogKommentar, datKomplett, recLastAerendeSekretessLogID, strSekretess, strBegraensa, strSekretessMyndighet, datSekretessDatum, intUserID, strSignature, recFastighetID, strFnrID, strFastighetsbeteckning, recAerendeEnstakaKontaktID, strRoll, recEnstakaKontaktID, strVisasSom, strGatuadress, strPostnummer, strPostort, recKontaktRollID, guidFastighetUuid)
-
-    select recAerendeID, intDiarieAar, intSerieStartVaerde, recDiarieSerieID, strDiarieSerieKod, strDiarienummer, recLastAerendeStatusLogID, datDatum, strLocalizationCode, strAerendeStatusPresent, strLogKommentar, datKomplett, recLastAerendeSekretessLogID, strSekretess, strBegraensa, strSekretessMyndighet, datSekretessDatum, intUserID, strSignature, recFastighetID, strFnrID, strFastighetsbeteckning, recAerendeEnstakaKontaktID, strRoll, recEnstakaKontaktID, strVisasSom, strGatuadress, strPostnummer, strPostort, recKontaktRollID, guidFastighetUuid
-    from
-	(select top 1 intDiarieAar, intSerieStartVaerde, recDiarieSerieID, strDiarieSerieKod, strDiarienummer, recLastAerendeStatusLogID, getdate() datDatum, strLocalizationCode, strAerendeStatusPresent, strLogKommentar, datKomplett, recLastAerendeSekretessLogID, strSekretess, strBegraensa, strSekretessMyndighet, datSekretessDatum, intUserID, strSignature, recFastighetID, strFnrID, strFastighetsbeteckning, recAerendeEnstakaKontaktID, strRoll, recEnstakaKontaktID, strVisasSom, strGatuadress, strPostnummer, strPostort, recKontaktRollID, guidFastighetUuid
-	    from tbAehAerendeData where recLastAerendeStatusLogID is not null and intUserID is null order by recAerendeID desc) qesad
-	    ,
-	    (select tba.recAerendeId from tbAehAerendeData tba inner join
-		 (select distinct vAA.recAerendeID from ##fannyUtskick fu inner join EDPVisionRegionGotlandTest2.dbo.vwAehAerende vAA on vaa.strDiarienummer = fu.dnr) q
-			on q.recAerendeID = tba.recAerendeID
-			    where recLastAerendeStatusLogID is null) twerdfs
+		    select filteredArendeId.recAerendeID, intDiarieAar, intSerieStartVaerde, recDiarieSerieID, strDiarieSerieKod, strDiarienummer, recLastAerendeStatusLogID, datDatum, strLocalizationCode, strAerendeStatusPresent, strLogKommentar, datKomplett, recLastAerendeSekretessLogID, strSekretess, strBegraensa, strSekretessMyndighet, datSekretessDatum, intUserID, strSignature, recFastighetID, strFnrID, strFastighetsbeteckning, recAerendeEnstakaKontaktID, strRoll, recEnstakaKontaktID, strVisasSom, strGatuadress, strPostnummer, strPostort, recKontaktRollID, guidFastighetUuid
+    from refArende, filteredArendeId
 
 
 
