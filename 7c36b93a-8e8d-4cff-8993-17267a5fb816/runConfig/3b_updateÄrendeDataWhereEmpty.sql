@@ -1,4 +1,4 @@
-declare @strLogKommentar varchar = 'Autogenererade070122';
+declare @strLogKommentar varchar (max) = 'Autogenererade070122';
 declare @AerendeData table
 (
 	recAerendeID int not null
@@ -39,12 +39,12 @@ declare @AerendeData table
 with
     refArende as (select top 1 intDiarieAar, intSerieStartVaerde, recDiarieSerieID, strDiarieSerieKod, strDiarienummer, recLastAerendeStatusLogID, getdate() datDatum, strLocalizationCode, strAerendeStatusPresent, strLogKommentar, datKomplett, recLastAerendeSekretessLogID, strSekretess, strBegraensa, strSekretessMyndighet, datSekretessDatum, intUserID, strSignature, recFastighetID, strFnrID, strFastighetsbeteckning, recAerendeEnstakaKontaktID, strRoll, recEnstakaKontaktID, strVisasSom, strGatuadress, strPostnummer, strPostort, recKontaktRollID, guidFastighetUuid
 	    from tbAehAerendeData where recLastAerendeStatusLogID is not null and intUserID is null order by recAerendeID desc)
-    ,alreadyINserted as (select distinct vAA.recAerendeID,recLastAerendeStatusLogID from ##fannyUtskick fu
+    ,alreadyINserted as (select distinct vAA.recAerendeID,recLastAerendeStatusLogID,fastighet from ##fannyUtskick fu
 	    left outer join EDPVisionRegionGotlandTest2.dbo.vwAehAerende vAA on vaa.strDiarienummer = fu.dnr)
-    ,filteredArendeId as (select recAerendeId from alreadyINserted where recLastAerendeStatusLogID is null and recAerendeID is not null)
+    ,filteredArendeId as (select recAerendeId,fastighet from alreadyINserted where recLastAerendeStatusLogID is null and recAerendeID is not null)
 
-insert into @AerendeData (recAerendeID, intDiarieAar, intSerieStartVaerde, recDiarieSerieID, strDiarieSerieKod, strDiarienummer, recLastAerendeStatusLogID, datDatum, strLocalizationCode, strAerendeStatusPresent, strLogKommentar, datKomplett, recLastAerendeSekretessLogID, strSekretess, strBegraensa, strSekretessMyndighet, datSekretessDatum, intUserID, strSignature, recFastighetID, strFnrID, strFastighetsbeteckning, recAerendeEnstakaKontaktID, strRoll, recEnstakaKontaktID, strVisasSom, strGatuadress, strPostnummer, strPostort, recKontaktRollID, guidFastighetUuid)
-		    select filteredArendeId.recAerendeID, intDiarieAar, intSerieStartVaerde, recDiarieSerieID, strDiarieSerieKod, strDiarienummer, recLastAerendeStatusLogID, datDatum, strLocalizationCode, strAerendeStatusPresent, strLogKommentar, datKomplett, recLastAerendeSekretessLogID, strSekretess, strBegraensa, strSekretessMyndighet, datSekretessDatum, intUserID, strSignature, recFastighetID, strFnrID, strFastighetsbeteckning, recAerendeEnstakaKontaktID, strRoll, recEnstakaKontaktID, strVisasSom, strGatuadress, strPostnummer, strPostort, recKontaktRollID, guidFastighetUuid
+insert into @AerendeData (			recAerendeID, recLastAerendeStatusLogID, datDatum, strLocalizationCode, strAerendeStatusPresent,strFastighetsbeteckning)
+		    select filteredArendeId.	recAerendeID, recLastAerendeStatusLogID, getdate(), strLocalizationCode, strAerendeStatusPresent,fastighet
     from refArende, filteredArendeId
 
 
@@ -54,10 +54,11 @@ SET
     tbhAd.datDatum = addr.datDatum,
     tbhAd.strLocalizationCode = addr.strLocalizationCode,
     tbhAd.strAerendeStatusPresent = addr.strAerendeStatusPresent,
-    tbhAd.strLogKommentar = @strLogKommentar
+    tbhAd.strLogKommentar = @strLogKommentar,
+    tbhad.strFastighetsbeteckning = addr.strFastighetsbeteckning
 FROM tbAehAerendeData tbhAd
 INNER JOIN
-(select recAerendeID, recLastAerendeStatusLogID, datDatum, strLocalizationCode, strAerendeStatusPresent from @AerendeData) Addr
+(select recAerendeID, recLastAerendeStatusLogID, datDatum, strLocalizationCode, strAerendeStatusPresent,strFastighetsbeteckning from @AerendeData) Addr
 ON Addr.recAerendeID = tbhAd.recAerendeID
 
 
