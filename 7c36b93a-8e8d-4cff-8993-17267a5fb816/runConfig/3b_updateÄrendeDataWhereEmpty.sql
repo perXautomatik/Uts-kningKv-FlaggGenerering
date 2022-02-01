@@ -1,3 +1,4 @@
+declare @strLogKommentar varchar = 'Autogenererade070122';
 declare @AerendeData table
 (
 	recAerendeID int not null
@@ -47,14 +48,13 @@ insert into @AerendeData (recAerendeID, intDiarieAar, intSerieStartVaerde, recDi
     from refArende, filteredArendeId
 
 
-
 UPDATE tbhAd
 SET
     tbhAd.recLastAerendeStatusLogID = addr.recLastAerendeStatusLogID,
     tbhAd.datDatum = addr.datDatum,
     tbhAd.strLocalizationCode = addr.strLocalizationCode,
     tbhAd.strAerendeStatusPresent = addr.strAerendeStatusPresent,
-    tbhAd.strLogKommentar = 'Autogenererade070122'
+    tbhAd.strLogKommentar = @strLogKommentar
 FROM tbAehAerendeData tbhAd
 INNER JOIN
 (select recAerendeID, recLastAerendeStatusLogID, datDatum, strLocalizationCode, strAerendeStatusPresent from @AerendeData) Addr
@@ -62,3 +62,6 @@ ON Addr.recAerendeID = tbhAd.recAerendeID
 
 
 
+drop table dbo.cbrRessults
+select * into dbo.cbrRessults from ##fannyUtskick fu
+    left outer join EDPVisionRegionGotlandTest2.dbo.vwAehAerende vAA on isnull(vaa.strDiarienummer,'') = fu.dnr where vAA.recAerendeID is null and fu.dnr is not null;

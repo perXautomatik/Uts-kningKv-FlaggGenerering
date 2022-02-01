@@ -45,13 +45,7 @@ select * from onlyDiarieLoepNr,
 
 ;
 
-drop table dbo.cbrRessults
-select * into dbo.cbrRessults from
-        ##fannyUtskick fu
-         left outer join EDPVisionRegionGotlandTest2.dbo.vwAehAerende vAA
-             on isnull(vaa.strDiarienummer,'') = fu.dnr
-         where vAA.recAerendeID is null and fu.dnr is not null
-;
+--drop table dbo.cbrRessults select * into dbo.cbrRessults from ##fannyUtskick fu left outer join EDPVisionRegionGotlandTest2.dbo.vwAehAerende vAA on isnull(vaa.strDiarienummer,'') = fu.dnr where vAA.recAerendeID is null and fu.dnr is not null;
 
 
 insert into  tbAehAerende (	recDiarieAarsSerieID, intDiarienummerLoepNummer, strDiarienummerSerie, strAerendemening, strSoekbegrepp, strAerendeKommentar, recFoervaltningID, recEnhetID, recAvdelningID, recExterntID, recAerendetypID, recProjektID, strPublicering, recLastHaendelseBeslutID, datInkomDatum, datMoetesDatum, recExternTjaenstID, recKommunID)

@@ -2,10 +2,9 @@
   <configuration default="false" name="UpdateraHändelserOchKopplaFiler" type="DatabaseScript">
     <script-file value="$APPLICATION_CONFIG_DIR$/consoles/db/7c36b93a-8e8d-4cff-8993-17267a5fb816/runConfig/1_readFromCsv.sql" />
     <script-file value="$APPLICATION_CONFIG_DIR$/consoles/db/7c36b93a-8e8d-4cff-8993-17267a5fb816/runConfig/1b_selectÄrendenThatsRelevant.sql" />
-    <script-file value="$APPLICATION_CONFIG_DIR$/consoles/db/7c36b93a-8e8d-4cff-8993-17267a5fb816/runConfig/3a_createÄrendeIfnotexisting.sql" />
     <script-file value="$APPLICATION_CONFIG_DIR$/consoles/db/7c36b93a-8e8d-4cff-8993-17267a5fb816/runConfig/3b_updateÄrendeDataWhereEmpty.sql" />
-    <script-file value="$APPLICATION_CONFIG_DIR$/consoles/db/7c36b93a-8e8d-4cff-8993-17267a5fb816/runConfig/4aaa_alter.sql" />
-    <script-file value="$APPLICATION_CONFIG_DIR$/consoles/db/7c36b93a-8e8d-4cff-8993-17267a5fb816/runConfig/4aa_alter.sql" />
+    <script-file value="$APPLICATION_CONFIG_DIR$/consoles/db/7c36b93a-8e8d-4cff-8993-17267a5fb816/runConfig/1c_alterAddColumns.sql" />
+    <script-file value="$APPLICATION_CONFIG_DIR$/consoles/db/7c36b93a-8e8d-4cff-8993-17267a5fb816/runConfig/2_alterWithArendeId.sql" />
     <script-file value="$APPLICATION_CONFIG_DIR$/consoles/db/7c36b93a-8e8d-4cff-8993-17267a5fb816/runConfig/4a_createHandelse.sql" />
     <script-file value="$APPLICATION_CONFIG_DIR$/consoles/db/7c36b93a-8e8d-4cff-8993-17267a5fb816/runConfig/4baa_alter.sql" />
     <script-file value="$APPLICATION_CONFIG_DIR$/consoles/db/7c36b93a-8e8d-4cff-8993-17267a5fb816/runConfig/4ba_alter.sql" />
