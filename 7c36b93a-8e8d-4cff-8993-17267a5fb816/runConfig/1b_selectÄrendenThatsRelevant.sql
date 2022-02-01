@@ -1,8 +1,11 @@
 
+declare @datInkomDatum date = getdate();
+declare @strAerendeMeningLike varchar(max) = '%klart%vatten%';
+
 declare @InsertAehAerende table
 (
-	recAerendeID int identity primary key,
-	recDiarieAarsSerieID int,
+	recDiarieAarsSerieID int --not null
+	,
 	intDiarienummerLoepNummer int not null,
 	strDiarienummerSerie nvarchar(6) not null,
 	strAerendemening nvarchar(255),
@@ -27,29 +30,42 @@ declare @InsertAehAerende table
 		with (ignore_dup_key = on)
 )
 ;
-with
-    filterALreadyInserted as (select fu.dnr from
-         ##fannyUtskick fu
-         left outer join EDPVisionRegionGotlandTest2.dbo.tbAehAerende vAA
-             on isnull(vaa.intDiarienummerLoepNummer,'') = cast(right(dnr,len(dnr)-len('mbnv-2020-')) as int)
-    		and vaa.recDiarieAarsSerieID =58 and strDiarienummerSerie = 'mbnv'
-         where vAA.recAerendeID is null and fu.dnr is not null),
-    onlyDiarieLoepNr as (select distinct try_cast(right(dnr,len(dnr)-len('mbnv-2020-')) as int) intDiarienummerLoepNummer from filterALreadyInserted)
+--drop table dbo.cbrRessults select * into dbo.cbrRessults from ##fannyUtskick fu left outer join (select  recDiarieAarsSerieID,intDiarieAar from dbo.tbAehDiarieAarsSerie) diaS on cast(substring(dnr,charindex('-',dnr)+1, @arLenght) as integer) = dias.intDiarieAar
+;
 
-insert into @InsertAehAerende (intDiarienummerLoepNummer, recDiarieAarsSerieID, strDiarienummerSerie, strAerendemening, strSoekbegrepp, strAerendeKommentar, recFoervaltningID, recEnhetID, recAvdelningID, recExterntID, recAerendetypID, recProjektID, strPublicering, recLastHaendelseBeslutID, datInkomDatum, datMoetesDatum, recExternTjaenstID, recKommunID)
-select * from onlyDiarieLoepNr,
-    (select top 1 	       recDiarieAarsSerieID, strDiarienummerSerie, strAerendemening, strSoekbegrepp, strAerendeKommentar, recFoervaltningID, recEnhetID, recAvdelningID, recExterntID, recAerendetypID, recProjektID, strPublicering, recLastHaendelseBeslutID, getdate() datInkomDatum, datMoetesDatum, recExternTjaenstID, recKommunID
-    from tbAehAerende where strAerendemening like '%klart%vatten%'
+with
+    filterALreadyInserted as (select fu.dnr,coalesce(vaa.intDiarienummerLoepNummer,fu.intDiarienummerLoepNummer) intDiarienummerLoepNummer,
+           coalesce(dias.recDiarieAarsSerieID,fu.intDiarieAar) recDiarieAarsSerieID,coalesce(vaa.strDiarienummerSerie,fu.strDiarienummerSerie) strDiarienummerSerie from
+
+        (select dnr,
+               intDiarienummerLoepNummer,
+               intDiarieAar
+              , strDiarienummerSerie
+        from
+         ##fannyUtskick) fu
+                left outer join (select  recDiarieAarsSerieID,intDiarieAar from dbo.tbAehDiarieAarsSerie) diaS
+                    on fu.intDiarieAar = dias.intDiarieAar
+         left outer join dbo.tbAehAerende vAA
+             on isnull(vaa.intDiarienummerLoepNummer,'') = fu.intDiarienummerLoepNummer
+    		and vaa.recDiarieAarsSerieID = dias.recDiarieAarsSerieID
+                and vaa.strDiarienummerSerie = fu.strDiarienummerSerie
+         where vAA.recAerendeID is null and fu.dnr is not null)
+   ,
+    onlyDnr as (select distinct * from filterALreadyInserted)
+,   RefArende as (select top 1 	       strAerendemening, strSoekbegrepp, strAerendeKommentar, recFoervaltningID, recEnhetID, recAvdelningID, recExterntID, recAerendetypID, recProjektID, strPublicering, recLastHaendelseBeslutID, @datInkomDatum datInkomDatum, datMoetesDatum, recExternTjaenstID, recKommunID
+    from tbAehAerende where strAerendemening like @strAerendeMeningLike
     --      and strDiarienummerSerie = 'MBNV'
-    order by recAerendeID desc) ref
+    order by recAerendeID desc)
+insert into @InsertAehAerende (intDiarienummerLoepNummer, recDiarieAarsSerieID, strDiarienummerSerie, strAerendemening, strSoekbegrepp, strAerendeKommentar, recFoervaltningID, recEnhetID, recAvdelningID, recExterntID, recAerendetypID, recProjektID, strPublicering, recLastHaendelseBeslutID, datInkomDatum, datMoetesDatum, recExternTjaenstID, recKommunID)
+select 				intDiarienummerLoepNummer, onlyDnr.recDiarieAarsSerieID, strDiarienummerSerie, strAerendemening, strSoekbegrepp, strAerendeKommentar, recFoervaltningID, recEnhetID, recAvdelningID, recExterntID, recAerendetypID, recProjektID, strPublicering, recLastHaendelseBeslutID, datInkomDatum, datMoetesDatum, recExternTjaenstID, recKommunID
+from onlyDnr,
+     RefArende
 
 ;
 
---drop table dbo.cbrRessults select * into dbo.cbrRessults from ##fannyUtskick fu left outer join EDPVisionRegionGotlandTest2.dbo.vwAehAerende vAA on isnull(vaa.strDiarienummer,'') = fu.dnr where vAA.recAerendeID is null and fu.dnr is not null;
+--drop table dbo.cbrRessult; select * into dbo.cbrRessult from @InsertAehAerende
 
 
-insert into  tbAehAerende (	recDiarieAarsSerieID, intDiarienummerLoepNummer, strDiarienummerSerie, strAerendemening, strSoekbegrepp, strAerendeKommentar, recFoervaltningID, recEnhetID, recAvdelningID, recExterntID, recAerendetypID, recProjektID, strPublicering, recLastHaendelseBeslutID, datInkomDatum, datMoetesDatum, recExternTjaenstID, recKommunID)
-select 				recDiarieAarsSerieID, intDiarienummerLoepNummer, strDiarienummerSerie, strAerendemening, strSoekbegrepp, strAerendeKommentar, recFoervaltningID, recEnhetID, recAvdelningID, recExterntID, recAerendetypID, recProjektID, strPublicering, recLastHaendelseBeslutID, datInkomDatum, datMoetesDatum, recExternTjaenstID, recKommunID
-from @InsertAehAerende
+insert into  tbAehAerende (	recDiarieAarsSerieID, intDiarienummerLoepNummer, strDiarienummerSerie, strAerendemening, strSoekbegrepp, strAerendeKommentar, recFoervaltningID, recEnhetID, recAvdelningID, recExterntID, recAerendetypID, recProjektID, strPublicering, recLastHaendelseBeslutID, datInkomDatum, datMoetesDatum, recExternTjaenstID, recKommunID)select 				recDiarieAarsSerieID, intDiarienummerLoepNummer, strDiarienummerSerie, strAerendemening, strSoekbegrepp, strAerendeKommentar, recFoervaltningID, recEnhetID, recAvdelningID, recExterntID, recAerendetypID, recProjektID, strPublicering, recLastHaendelseBeslutID, datInkomDatum, datMoetesDatum, recExternTjaenstID, recKommunID from @InsertAehAerende
 ;
 

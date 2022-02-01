@@ -61,7 +61,5 @@ INNER JOIN
 ON Addr.recAerendeID = tbhAd.recAerendeID
 
 
-
 drop table dbo.cbrRessults
-select * into dbo.cbrRessults from ##fannyUtskick fu
-    left outer join EDPVisionRegionGotlandTest2.dbo.vwAehAerende vAA on isnull(vaa.strDiarienummer,'') = fu.dnr where vAA.recAerendeID is null and fu.dnr is not null;
+select recAerendeID into dbo.cbrRessults from ##fannyUtskick fu
