@@ -1,5 +1,5 @@
-declare @f varchar = 'Företag';
-declare @p varchar = 'Person';
+declare @f varchar(max) ='Företag';
+declare @p varchar(max) ='Person';
 
 SELECT *from va WHERE strFastighetsbeteckning = 'Follingbo Klinte 1:36' or strFastighetsbeteckning = 'Follingbo Klinte 1:54'
 

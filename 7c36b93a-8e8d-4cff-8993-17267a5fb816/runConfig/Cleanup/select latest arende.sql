@@ -6,7 +6,7 @@ declare @toDelete table
 ;
 insert into @toDelete
 select recAerendeID from tbAehAerende
-where recAerendeID >= 120310 AND intDiarienummerLoepNummer > 9990
+where recAerendeID >= 120660
       --and strAerendemening = 'Klart vatten - information om avlopp' and datInkomDatum > datefromparts(2021,01,01)
 
 delete from tbAehAerendeHaendelse where recAerendeID in ( select recAerendeID from @toDelete)

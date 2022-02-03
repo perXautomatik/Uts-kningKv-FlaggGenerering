@@ -67,7 +67,7 @@ select TjansteNrAndTjanst.datStoppdatum slamAnteckning,anlaggning.strFastBeteckn
 	ON strFastBeteckningHel = fastighetspunkterSlam.strFastBeteckningHelX
 --   group by datStoppdatum, strFastBeteckningHel, fastighetspunkterSlam.decAnlXKoordinat, fastighetspunkterSlam.decAnlYkoordinat
 ;
-declare @sockenStrang varchar = N'Källunge,Vallstena,Hörsne,Bara,Norrlanda,Stenkyrka'; --STRING_SPLIT(N'Källunge,Vallstena,Hörsne,Bara,Norrlanda,Stenkyrka', ','))
+declare @sockenStrang varchar(max) =N'Källunge,Vallstena,Hörsne,Bara,Norrlanda,Stenkyrka'; --STRING_SPLIT(N'Källunge,Vallstena,Hörsne,Bara,Norrlanda,Stenkyrka', ','))
 
 SELECT TOP 501 t.* FROM dbo.vwFakturaRaderMedTaxansNuvarandePris t
 
