@@ -68,10 +68,19 @@ IF (OBJECT_ID(N'tempdb..#Socken_tillstånd') IS NULL)
           select FAStighet,
                  Diarienummer,
                  q            "Fastighet_tillstand",
-                 Beslut_datum,
-                 Utford_datum "utförddatum",
+                 FORMAT(nullif(Beslut_datum, smalldatetimefromparts(1900, 01, 01, 00, 00)),
+			  'yyyy-MM-dd')                                                       Beslut_datum,
+                 FORMAT(nullif(Utford_datum, smalldatetimefromparts(1900, 01, 01, 00, 00)),
+			  'yyyy-MM-dd')                                                        "utförddatum",
                  Anteckning,
                  anlShape     AnlaggningsPunkt
+           , (case when not (
+			isnull(Beslut_datum, DATETIME2FROMPARTS(1988, 1, 1, 1, 1, 1, 1, 1)) >
+			(select DATETIME2FROMPARTS(2003, 1, 1, 1, 1, 1, 1, 1) datum) and
+			isnull(Utford_datum, DATETIME2FROMPARTS(1988, 1, 1, 1, 1, 1, 1, 1)) >
+			(select DATETIME2FROMPARTS(2003, 1, 1, 1, 1, 1, 1, 1) datum)) then N'röd'
+										      else N'grön'
+					    end) fstatus
           into #Socken_tillstånd
 from OnePerFastighet 
 
