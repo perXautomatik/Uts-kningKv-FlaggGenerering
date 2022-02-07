@@ -155,7 +155,6 @@ go
        	       TRY_CONVERT(DateTime, Utford_datum,102) Utford_datum,
        	       Anteckning, anlShape, z.q fastighet from
        	      z inner join socknarOfinterest x on x.socken = z.socken)
-
              , slamz	as (select IIF(
        			(
        			  IIF(Beslut_datum < rodDatum, 1, 0) +	IIF(Utford_datum < rodDatum, 1, 0) +
@@ -170,27 +169,24 @@ go
 
 	,withRownr as (select *, row_number() over (partition by fastighet order  by coalesce(utförddatum,Beslut_datum) desc) as x from slamz)
 
-        ,OnePerFastighet as (select statusx, FAStighet, Diarienummer, Fastighet_tillstand q, Beslut_datum, utförddatum Utford_datum, Anteckning, AnlaggningsPunkt anlShape
-			     from withRownr where x = 1)
-
           select FAStighet,
                  Diarienummer,
-                 q            "Fastighet_tillstand",
+                 Fastighet_tillstand,
                  FORMAT(Beslut_datum,
 			  'yyyy-MM-dd')                                                       Beslut_datum,
-                 FORMAT(Utford_datum,
+                 FORMAT(utförddatum,
 			  'yyyy-MM-dd')                                                        "utförddatum",
                  Anteckning,
-                 anlShape     AnlaggningsPunkt
+                 AnlaggningsPunkt
            , (case when not (
 			isnull(Beslut_datum, DATETIME2FROMPARTS(1988, 1, 1, 1, 1, 1, 1, 1)) >
 			(select (select top 1 rodDatum from #settingTable) datum) and
-			isnull(Utford_datum, DATETIME2FROMPARTS(1988, 1, 1, 1, 1, 1, 1, 1)) >
+			isnull(utförddatum, DATETIME2FROMPARTS(1988, 1, 1, 1, 1, 1, 1, 1)) >
 			(select (select top 1 rodDatum from #settingTable) datum)) then N'röd'
 										      else N'grön'
 					    end) fstatus
           into #Socken_tillstånd
-from OnePerFastighet 
+from withRownr where x = 1
 
     INSERT INTO #statusTable select N'rebuilt#Socken_tillstånd',CURRENT_TIMESTAMP,@@ROWCOUNT end
 else
@@ -219,15 +215,7 @@ fastighetsYtor as (select *
 		from sde_miljo_halsoskydd.gng.MoH_Slam_Lokalt_p_evw LOKALT_SLAM_P
               )
 
-           ,noShapeLikeMatch as (select Diarienr
-				   , fy.Fastighet
-				   , Fastighet_
-				   , Fastighe00
-				   , Lokalt_omh
-				   , Anteckning
-				   , Beslutsdat
-				   , Eget_omhän
-				   , fy.shape
+           ,noShapeLikeMatch as (select Diarienr, fy.Fastighet, Fastighet_, Fastighe00, Lokalt_omh, Anteckning, Beslutsdat, Eget_omhän, fy.shape
 			      from LOKALT_SLAM_P wf
 				  left outer join fastighetsYtor fY
 				  on wf.Fastighet like '%' + fy.FAStighet + '%')
@@ -381,9 +369,12 @@ IF OBJECT_ID(N'tempdb..#Röd') is null -- OR @rebuiltStatus2 = 1
 				    from #Socken_tillstånd)
 
 	  , toTeamVatten        as (
-	    select coalesce(byggNader.FAStighet, anlaggningar.FAStighet, egetOmh.fastighet, va.fastighet,
-			    fastigheterX.fastighet)                                           fastighet
-	         , Fastighet_tillstand, Diarienummer, Beslut_datum, utförddatum, Anteckning, Byggnadstyp
+
+	    select fastigheterX.socken,
+	           coalesce(byggNader.FAStighet, anlaggningar.FAStighet, egetOmh.fastighet, va.fastighet, fastigheterX.fastighet)
+	               fastighet
+	         ,Fastighet_tillstand,
+	           Diarienummer, Beslut_datum, utförddatum, Anteckning, Byggnadstyp
 		 , vatyp                                                                       vaPlan
 		 , anlaggningar.fstatus                                                       fstatus
 		 , LocaltOmH , ''                                                                         slam--(select top 1 datStoppdatum from slam where attUtsokaFran.fastighet = slam.strFastBeteckningHel)
@@ -402,19 +393,26 @@ IF OBJECT_ID(N'tempdb..#Röd') is null -- OR @rebuiltStatus2 = 1
 			on byggNader.FAStighet = fastigheterX.fastighet
 	)
 
-	    , flaggKorrigering as (select (case when fstatus = N'röd'
-						    then (case when (
-		    vaPlan is null
-		    and LocaltOmH is null) then N'röd'
-					   else (case when VaPlan is not null
-							  then 'KomV?'
-							  else (case when null is not null
-									 then 'gem'
-									 else '?'
-								end)end)end)
-						    else fstatus
-					   end) Fstatus
-					, fastighet, Fastighet_tillstand, Beslut_datum, utförddatum, Anteckning, LocaltOmH, Byggnadstyp, VaPlan, flagga, slam, bygTot
+	    , flaggKorrigering as (select
+	           			(case when fstatus = N'röd' or FSTATUS is null
+						then
+						    (case when (
+							vaPlan is null
+								and LocaltOmH is null) then N'röd'
+						     else case when VaPlan is not null
+							 then 'KomV?'
+						    else case when LocaltOmH is not null then 'Lokalt' end
+						      --else (case when null is not null then 'gem' else '?' end)
+        					end end)
+					    else coalesce(fstatus,'?') end
+					   ) status
+	         			, socken
+	         			, fastighet
+	           			,Diarienummer
+	           			,Fastighet_tillstand
+	         			,Beslut_datum
+	         			,utförddatum
+	         			,Anteckning, LocaltOmH egetOmhändertagandeInfo, Byggnadstyp, VaPlan [Va-Spill], flagga, bygTot
 				   from toTeamVatten)
 	select *
 	into #röd
@@ -425,8 +423,17 @@ IF OBJECT_ID(N'tempdb..#Röd') is null -- OR @rebuiltStatus2 = 1
     end else INSERT INTO #statusTable select N'preloading#Röd', CURRENT_TIMESTAMP, @@ROWCOUNT;
 
 select * from #statusTable
+;
+with q as (select distinct status,'' handläggare,socken,fastighet, Diarienummer,Fastighet_tillstand,Beslut_datum,utförddatum,Anteckning,egetOmhändertagandeInfo egetOmhändertangandeInfo,[Va-Spill],Byggnadstyp,bygTot from #röd)
+    ,z as (select *,row_number() over (order by status,fastighet) rwnr from q)
 
-select * from #röd order by Fstatus desc
+select top 4000 status, handläggare, socken, fastighet, Diarienummer, Fastighet_tillstand, Beslut_datum, utförddatum, Anteckning, egetOmhändertangandeInfo, [Va-Spill], Byggnadstyp, bygTot
+from z
+	where rwnr > 500
+	order by status desc
+
+
+
 --select * from #röd where left(fastighet, len('Björke')) = 'Björke';
 --select * from #röd where left(fastighet, len('Dalhem')) = 'Dalhem';
 --select * from #röd where left(fastighet, len('Fröjel')) = 'Fröjel';
