@@ -1,4 +1,8 @@
---drop table #settingTable
+begin try
+	drop table #settingTable
+end try begin catch
+    select ''
+end catch
 
 create Table #settingTable (
 rodDatum datetime
@@ -6,4 +10,4 @@ rodDatum datetime
 )
 
 insert into #settingTable (rodDatum, RebuildStatus)
-select DATETIME2FROMPARTS(2006, 10, 1, 1, 1, 1, 1, 1),  1
+select DATETIME2FROMPARTS(2006, 10, 1, 1, 1, 1, 1, 1),  0

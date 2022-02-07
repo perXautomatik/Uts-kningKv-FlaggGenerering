@@ -25,8 +25,9 @@ IF OBJECT_ID(N'tempdb..#ByggnadPÂFastighetISocken') is null
 	  from ByggnadPaFastighetISocken )
    , OnlyOnePerFastighet as (        select FAStighet, Byggnadstyp,bygTot,shape
 	from  withRownr     where orderz = 1 )
-select * into #ByggnadPÂFastighetISocken
- from OnlyOnePerFastighet
+    select FAStighet, Byggnadstyp, bygTot, shape
+    into #ByggnadPÂFastighetISocken
+    from OnlyOnePerFastighet
 
     ;
          INSERT INTO #statusTable select  N'rebuilt#ByggnadPÂFastighetISocken',CURRENT_TIMESTAMP,@@ROWCOUNT

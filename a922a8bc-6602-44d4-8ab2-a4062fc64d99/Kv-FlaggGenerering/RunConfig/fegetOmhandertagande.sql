@@ -1,6 +1,6 @@
 IF OBJECT_ID(N'tempdb..#egetOmhändertagande') is null --OR (select top 1 RebuildStatus from #SettingTable) = 1
     begin BEGIN TRY DROP TABLE #egetOmhändertagande END TRY BEGIN CATCH select 1 END CATCH
-    ;with
+    ; with
 fastighetsYtor as (select *
 	  from #FastighetsYtor)
 
@@ -46,9 +46,10 @@ fastighetsYtor as (select *
 	    FROM egetOmh
 	    WHERE (egetOmh.FAStighet = r.FAStighet)
 	    FOR XML PATH(''),TYPE).value('(./text())[1]','VARCHAR(MAX)')
-	  ,1,2,'') AS vaTyp from egetOmh r)
+	  ,1,2,'') AS  LocaltOmH from egetOmh r)
 
-select * into #egetOmhändertagande from egetOmhy where nr = 1  ;
+      select fastighet, shape, LocaltOmH
+      into #egetOmhändertagande from egetOmhy where nr = 1  ;
 
     INSERT INTO #statusTable select N'rebuilt#egetOmhändertagande',CURRENT_TIMESTAMP,@@ROWCOUNT END else
         INSERT INTO #statusTable select N'preloading#egetOmhändertagande',CURRENT_TIMESTAMP,@@ROWCOUNT
