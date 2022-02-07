@@ -1,15 +1,10 @@
 IF OBJECT_ID('tempdb..#statusTable') IS not null
         drop table #statusTable;
-
 	create table #statusTable (one NVARCHAR(max),start datetime,rader integer);
-
-    declare @rebuiltStatus1 as binary = 0;
-    declare @rebuiltStatus2 as binary = 0;
 go
 
 IF OBJECT_ID('tempdb..#settingTable') IS not NULL
     drop table #settingTable;
-
    begin try
     create Table #settingTable (
     rodDatum datetime
@@ -17,22 +12,10 @@ IF OBJECT_ID('tempdb..#settingTable') IS not NULL
     );
 
     insert into #settingTable (rodDatum, RebuildStatus)
-    select DATETIME2FROMPARTS(2006, 10, 1, 1, 1, 1, 1, 1),  0
+    select DATETIME2FROMPARTS(2006, 10, 1, 1, 1, 1, 1, 1),  1
 -- dropTabels?
 	end try begin catch select '' end catch
 go
-
-if (select null) IS NULL BEGIN TRY Drop table #FastighetsYtor end try begin catch select '' end catch
-if (select null) IS NULL BEGIN TRY Drop table #ByggnadPåFastighetISocken end try begin catch select '' end catch
-if (select null) IS NULL BEGIN TRY Drop table #Socken_tillstånd end try begin catch select '' end catch
-if (select null) IS NULL BEGIN TRY Drop table #egetOmhändertagande end try begin catch select '' end catch
-if (select null) IS NULL BEGIN TRY Drop table #spillvatten end try begin catch select '' end catch
-if (select null) IS NULL BEGIN TRY Drop table #taxekod end try begin catch select '' end catch
-if (select null) IS NULL BEGIN TRY Drop table #röd end try begin catch select '' end catch
-go
-
-declare @socknar table (socken nvarchar(70))
-
 
 IF OBJECT_ID('tempdb..#socknarOfInterest') IS not NULL
     drop table #socknarOfInterest;
@@ -41,7 +24,8 @@ IF OBJECT_ID('tempdb..#socknarOfInterest') IS not NULL
 
 insert into #socknarOfInterest
 select SOCKEN,Shape from
-          STRING_SPLIT(N'Björke,Dalhem,Fröjel,Ganthem,Halla,Klinte,Roma', ',')
+          STRING_SPLIT(N'Eksta,Hemse,Hablingbo,Havdhem,grötlingbo,Fide,Öja'
+              , ',')
 	   socknarOfIntresse
           inner join
               sde_regionstyrelsen.gng.nyko_socknar_y_evw
@@ -53,40 +37,15 @@ select SOCKEN,Shape from
 go
 
 TableInitiate:
-IF OBJECT_ID('tempdb..#FastighetsYtor') IS not NULL --goto FastighetsYtor else
- INSERT INTO #statusTable
-        select 'preloading#FastighetsYtor'
-             ,CURRENT_TIMESTAMP,(select count(*) from #FastighetsYtor)
-;
-IF OBJECT_ID('tempdb..#ByggnadPåFastighetISocken') IS not NULL --goto ByggnadPåFastighetISocken else
- INSERT INTO #statusTable
-        select 'preloading#ByggnadPåFastighetISocken'
-             ,CURRENT_TIMESTAMP,(select count(*) from #ByggnadPåFastighetISocken)
-;
-IF OBJECT_ID('tempdb..#Socken_tillstånd') IS not NULL --goto Socken_tillstånd else
- INSERT INTO #statusTable
-        select 'preloading#Socken_tillstånd'
-             ,CURRENT_TIMESTAMP,(select count(*) from #Socken_tillstånd)
-;
-IF OBJECT_ID('tempdb..#egetOmhändertagande') IS not NULL --goto egetOmhändertagande else
- INSERT INTO #statusTable
-        select 'preloading#egetOmhändertagande'
-             ,CURRENT_TIMESTAMP,(select count(*) from #egetOmhändertagande)
-;
-IF OBJECT_ID('tempdb..#spillvatten') IS not NULL --goto spillvatten else
- INSERT INTO #statusTable
-        select 'preloading#spillvatten'
-             ,CURRENT_TIMESTAMP,(select count(*) from #spillvatten)
-;
-IF OBJECT_ID('tempdb..#taxekod') IS not NULL --goto taxekod else
- INSERT INTO #statusTable
-        select 'preloading#taxekod'
-             ,CURRENT_TIMESTAMP,(select count(*) from #taxekod)
-;
-IF OBJECT_ID('tempdb..#röd') IS not NULL --goto röd;
- INSERT INTO #statusTable
-        select 'preloading#röd'
-             ,CURRENT_TIMESTAMP,(select count(*) from #röd)
+-- dropTabels?
+
+if (select null) IS NULL BEGIN TRY Drop table #FastighetsYtor end try begin catch select '' end catch
+if (select null) IS NULL BEGIN TRY Drop table #ByggnadPåFastighetISocken end try begin catch select '' end catch
+if (select null) IS NULL BEGIN TRY Drop table #Socken_tillstånd end try begin catch select '' end catch
+if (select '') IS NULL BEGIN TRY Drop table #egetOmhändertagande end try begin catch select '' end catch
+if (select '') IS NULL BEGIN TRY Drop table #spillvatten end try begin catch select '' end catch
+if (select '') IS NULL BEGIN TRY Drop table #taxekod end try begin catch select '' end catch
+if (select null) IS NULL BEGIN TRY Drop table #röd end try begin catch select '' end catch
 ;
 go
 
@@ -137,17 +96,15 @@ IF OBJECT_ID(N'tempdb..#ByggnadPåFastighetISocken') is null
 	count(shape) over (partition by FAStighet) bygTot,
 	   row_number() over (partition by FAStighet order by Byggnadstyp ) orderz
 	  from ByggnadPaFastighetISocken )
-   , OnlyOnePerFastighet as (        select FAStighet, Byggnadstyp,bygTot,shape
-	from  withRownr     where orderz = 1 )
+
     select FAStighet, Byggnadstyp, bygTot, shape
     into #ByggnadPåFastighetISocken
-    from OnlyOnePerFastighet
+    from withRownr  where orderz = 1
 
     ;
          INSERT INTO #statusTable select  N'rebuilt#ByggnadPåFastighetISocken',CURRENT_TIMESTAMP,@@ROWCOUNT
         END
     else INSERT INTO #statusTable select  N'preloading#ByggnadPåFastighetISocken',CURRENT_TIMESTAMP,@@ROWCOUNT
-
 
 ----goto TableInitiate
 go
@@ -155,8 +112,6 @@ go
 	IF (OBJECT_ID(N'tempdb..#Socken_tillstånd') IS NULL) OR (select top 1 RebuildStatus from #SettingTable) = 1
 	begin
 	    begin try drop table #Socken_tillstånd end try begin catch select '' end catch;
-
-
           with
     socknarOfinterest as (select socken from #socknarOfInterest)
 
@@ -196,8 +151,8 @@ go
 
           , z as (select * from allaAv union all select * from geoAv)
        	, SammanSlagna as (select Diarienummer, q "Fastighet_tillstand",
-       	       isnull(TRY_CONVERT(DateTime, Beslut_datum,102), DATETIME2FROMPARTS(1988, 1, 1, 1, 1, 1, 1, 1)) Beslut_datum,
-       	       isnull(TRY_CONVERT(DateTime, Utford_datum,102), DATETIME2FROMPARTS(1988, 1, 1, 1, 1, 1, 1, 1)) Utford_datum,
+       	       TRY_CONVERT(DateTime, Beslut_datum,102) Beslut_datum,
+       	       TRY_CONVERT(DateTime, Utford_datum,102) Utford_datum,
        	       Anteckning, anlShape, z.q fastighet from
        	      z inner join socknarOfinterest x on x.socken = z.socken)
 
@@ -221,17 +176,17 @@ go
           select FAStighet,
                  Diarienummer,
                  q            "Fastighet_tillstand",
-                 FORMAT(nullif(Beslut_datum, smalldatetimefromparts(1900, 01, 01, 00, 00)),
+                 FORMAT(Beslut_datum,
 			  'yyyy-MM-dd')                                                       Beslut_datum,
-                 FORMAT(nullif(Utford_datum, smalldatetimefromparts(1900, 01, 01, 00, 00)),
+                 FORMAT(Utford_datum,
 			  'yyyy-MM-dd')                                                        "utförddatum",
                  Anteckning,
                  anlShape     AnlaggningsPunkt
            , (case when not (
 			isnull(Beslut_datum, DATETIME2FROMPARTS(1988, 1, 1, 1, 1, 1, 1, 1)) >
-			(select DATETIME2FROMPARTS(2003, 1, 1, 1, 1, 1, 1, 1) datum) and
+			(select (select top 1 rodDatum from #settingTable) datum) and
 			isnull(Utford_datum, DATETIME2FROMPARTS(1988, 1, 1, 1, 1, 1, 1, 1)) >
-			(select DATETIME2FROMPARTS(2003, 1, 1, 1, 1, 1, 1, 1) datum)) then N'röd'
+			(select (select top 1 rodDatum from #settingTable) datum)) then N'röd'
 										      else N'grön'
 					    end) fstatus
           into #Socken_tillstånd
@@ -407,7 +362,6 @@ IF OBJECT_ID(N'tempdb..#Taxekod')  is null  -- OR @rebuiltStatus2 = 1
 ----goto TableInitiate
 
 end
-
     go
     ;
 röd:
@@ -429,21 +383,19 @@ IF OBJECT_ID(N'tempdb..#Röd') is null -- OR @rebuiltStatus2 = 1
 	  , toTeamVatten        as (
 	    select coalesce(byggNader.FAStighet, anlaggningar.FAStighet, egetOmh.fastighet, va.fastighet,
 			    fastigheterX.fastighet)                                           fastighet
-
 	         , Fastighet_tillstand, Diarienummer, Beslut_datum, utförddatum, Anteckning, Byggnadstyp
 		 , vatyp                                                                       vaPlan
 		 , anlaggningar.fstatus                                                       fstatus
 		 , LocaltOmH , ''                                                                         slam--(select top 1 datStoppdatum from slam where attUtsokaFran.fastighet = slam.strFastBeteckningHel)
 		 , byggnader.bygTot
 		 , coalesce(AnlaggningsPunkt, egetOmh.shape, byggnader.ByggShape).STPointN(1) flagga
-
 	    from byggnader
-		full outer join anlaggningar
+		left outer join anlaggningar
 		    on anlaggningar.FAStighet = byggNader.FAStighet
 
-		    full outer join egetOmhandertagande egetOmh
+		    left outer join egetOmhandertagande egetOmh
 		    on byggNader.FAStighet = egetOmh.FAStighet
-		    full outer join vaPlan va
+		    left outer join vaPlan va
 		    on byggNader.FAStighet = va.FAStighet
 
 	            inner join fastigheterX
@@ -474,7 +426,7 @@ IF OBJECT_ID(N'tempdb..#Röd') is null -- OR @rebuiltStatus2 = 1
 
 select * from #statusTable
 
-select * from #röd
+select * from #röd order by Fstatus desc
 --select * from #röd where left(fastighet, len('Björke')) = 'Björke';
 --select * from #röd where left(fastighet, len('Dalhem')) = 'Dalhem';
 --select * from #röd where left(fastighet, len('Fröjel')) = 'Fröjel';
