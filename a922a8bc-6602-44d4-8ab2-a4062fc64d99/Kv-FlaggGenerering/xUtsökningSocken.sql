@@ -1,93 +1,44 @@
-IF (OBJECT_ID(N'tempdb..#Socken_tillstånd') IS NULL)
-       OR (select top 1 RebuildStatus from #SettingTable) = 1
-begin try
-	drop table #settingTable
-end try begin catch
-    select ''
-end catch
+IF OBJECT_ID('tempdb..#statusTable') IS not null
+        drop table #statusTable;
 
-create Table #settingTable (
-rodDatum datetime
-,RebuildStatus integer
-)
+	create table #statusTable (one NVARCHAR(max),start datetime,rader integer);
 
-insert into #settingTable (rodDatum, RebuildStatus)
-select DATETIME2FROMPARTS(2006, 10, 1, 1, 1, 1, 1, 1),  0
+    declare @rebuiltStatus1 as binary = 0;
+    declare @rebuiltStatus2 as binary = 0;
+go
+
+IF OBJECT_ID('tempdb..#settingTable') IS not NULL
+    drop table #settingTable;
+
+   begin try
+    create Table #settingTable (
+    rodDatum datetime
+    ,RebuildStatus integer
+    );
+
+    insert into #settingTable (rodDatum, RebuildStatus)
+    select DATETIME2FROMPARTS(2006, 10, 1, 1, 1, 1, 1, 1),  0
 -- dropTabels?
-create table #statusTable (one NVARCHAR(max),start datetime,rader integer);
-declare @rebuiltStatus1 as binary = 0;
-declare @rebuiltStatus2 as binary = 0;
+	end try begin catch select '' end catch
+go
 
-
-if (select null) IS NULL
-    BEGIN TRY
-	Drop table #FastighetsYtor
-
-    end try begin catch
-	select ''
-    end catch
-
-
-
-
-
-if (select null) IS NULL
-    BEGIN TRY
-Drop table #ByggnadPåFastighetISocken
-
-    end try begin catch
-	select ''
-    end catch
-
-
-if (select null) IS NULL
-    BEGIN TRY
-	Drop table #Socken_tillstånd
-
-    end try begin catch
-	select ''
-    end catch
-
-if (select null) IS NULL
-    BEGIN TRY
-	Drop table #egetOmhändertagande
-
-    end try begin catch
-	select ''
-    end catch
-
-
-if (select null) IS NULL
-    BEGIN TRY
-Drop table #spillvatten
-
-    end try begin catch
-	select ''
-    end catch
-
-
-if (select null) IS NULL
-    BEGIN TRY
-Drop table #taxekod
-
-    end try begin catch
-	select ''
-    end catch
-
-
-if (select null) IS NULL
-    BEGIN TRY
-Drop table #röd
-
-    end try begin catch
-	select ''
-    end catch
-
-
-
+if (select null) IS NULL BEGIN TRY Drop table #FastighetsYtor end try begin catch select '' end catch
+if (select null) IS NULL BEGIN TRY Drop table #ByggnadPåFastighetISocken end try begin catch select '' end catch
+if (select null) IS NULL BEGIN TRY Drop table #Socken_tillstånd end try begin catch select '' end catch
+if (select null) IS NULL BEGIN TRY Drop table #egetOmhändertagande end try begin catch select '' end catch
+if (select null) IS NULL BEGIN TRY Drop table #spillvatten end try begin catch select '' end catch
+if (select null) IS NULL BEGIN TRY Drop table #taxekod end try begin catch select '' end catch
+if (select null) IS NULL BEGIN TRY Drop table #röd end try begin catch select '' end catch
+go
 
 declare @socknar table (socken nvarchar(70))
-create table #socknarOfInterest (Socken nvarchar (100) not null , shape geometry)
+
+
+IF OBJECT_ID('tempdb..#socknarOfInterest') IS not NULL
+    drop table #socknarOfInterest;
+
+    create table #socknarOfInterest (Socken nvarchar (100) not null , shape geometry);
+
 insert into #socknarOfInterest
 select SOCKEN,Shape from
           STRING_SPLIT(N'Björke,Dalhem,Fröjel,Ganthem,Halla,Klinte,Roma', ',')
@@ -96,47 +47,48 @@ select SOCKEN,Shape from
               sde_regionstyrelsen.gng.nyko_socknar_y_evw
                   on SOCKEN = value
 
-select * from #statustable
+       INSERT INTO #statusTable
+        select '',CURRENT_TIMESTAMP,@@ROWCOUNT
 ;
-
+go
 
 TableInitiate:
-IF OBJECT_ID('tempdb..#FastighetsYtor') IS NULL goto FastighetsYtor else
+IF OBJECT_ID('tempdb..#FastighetsYtor') IS not NULL --goto FastighetsYtor else
  INSERT INTO #statusTable
         select 'preloading#FastighetsYtor'
              ,CURRENT_TIMESTAMP,(select count(*) from #FastighetsYtor)
 ;
-IF OBJECT_ID('tempdb..#ByggnadPåFastighetISocken') IS NULL goto ByggnadPåFastighetISocken else
+IF OBJECT_ID('tempdb..#ByggnadPåFastighetISocken') IS not NULL --goto ByggnadPåFastighetISocken else
  INSERT INTO #statusTable
         select 'preloading#ByggnadPåFastighetISocken'
              ,CURRENT_TIMESTAMP,(select count(*) from #ByggnadPåFastighetISocken)
 ;
-IF OBJECT_ID('tempdb..#Socken_tillstånd') IS NULL goto Socken_tillstånd else
+IF OBJECT_ID('tempdb..#Socken_tillstånd') IS not NULL --goto Socken_tillstånd else
  INSERT INTO #statusTable
         select 'preloading#Socken_tillstånd'
              ,CURRENT_TIMESTAMP,(select count(*) from #Socken_tillstånd)
 ;
-IF OBJECT_ID('tempdb..#egetOmhändertagande') IS NULL goto egetOmhändertagande else
+IF OBJECT_ID('tempdb..#egetOmhändertagande') IS not NULL --goto egetOmhändertagande else
  INSERT INTO #statusTable
         select 'preloading#egetOmhändertagande'
              ,CURRENT_TIMESTAMP,(select count(*) from #egetOmhändertagande)
 ;
-IF OBJECT_ID('tempdb..#spillvatten') IS NULL goto spillvatten else
+IF OBJECT_ID('tempdb..#spillvatten') IS not NULL --goto spillvatten else
  INSERT INTO #statusTable
         select 'preloading#spillvatten'
              ,CURRENT_TIMESTAMP,(select count(*) from #spillvatten)
 ;
-IF OBJECT_ID('tempdb..#taxekod') IS NULL goto taxekod else
+IF OBJECT_ID('tempdb..#taxekod') IS not NULL --goto taxekod else
  INSERT INTO #statusTable
         select 'preloading#taxekod'
              ,CURRENT_TIMESTAMP,(select count(*) from #taxekod)
 ;
-IF OBJECT_ID('tempdb..#röd') IS NULL goto röd;
- else
+IF OBJECT_ID('tempdb..#röd') IS not NULL --goto röd;
  INSERT INTO #statusTable
         select 'preloading#röd'
              ,CURRENT_TIMESTAMP,(select count(*) from #röd)
 ;
+go
 
  FastighetsYtor:
 IF OBJECT_ID('tempdb..#FastighetsYtor') IS NULL
@@ -157,7 +109,8 @@ IF OBJECT_ID('tempdb..#FastighetsYtor') IS NULL
     --set @rebuiltStatus1 = 1
         end
     else INSERT INTO #statusTable select 'preloading#FastighetsYtor',CURRENT_TIMESTAMP,@@ROWCOUNT
---goto TableInitiate;
+----goto TableInitiate;
+ go
 ByggnadPåFastighetISocken:
 IF OBJECT_ID(N'tempdb..#ByggnadPåFastighetISocken') is null
        OR (select top 1 RebuildStatus from #SettingTable) = 1
@@ -196,11 +149,14 @@ IF OBJECT_ID(N'tempdb..#ByggnadPåFastighetISocken') is null
     else INSERT INTO #statusTable select  N'preloading#ByggnadPåFastighetISocken',CURRENT_TIMESTAMP,@@ROWCOUNT
 
 
---goto TableInitiate
-
+----goto TableInitiate
+go
 ;Socken_tillstånd:
-    begin
-          BEGIN TRY DROP TABLE #Socken_tillstånd  END TRY BEGIN CATCH select 1 END CATCH;
+	IF (OBJECT_ID(N'tempdb..#Socken_tillstånd') IS NULL) OR (select top 1 RebuildStatus from #SettingTable) = 1
+	begin
+	    begin try drop table #Socken_tillstånd end try begin catch select '' end catch;
+
+
           with
     socknarOfinterest as (select socken from #socknarOfInterest)
 
@@ -237,8 +193,6 @@ IF OBJECT_ID(N'tempdb..#ByggnadPåFastighetISocken') is null
              , geoAv as (select SockenX socken, Diarienummer, fy.FAStighet, Beslut_datum, Utford_datum, Anteckning, anlShape from
 	      	UtanSocken inner join
 	         fastighetsYtor fY on anlShape.STIntersects(fy.Shape) = 1)
-
-
 
           , z as (select * from allaAv union all select * from geoAv)
        	, SammanSlagna as (select Diarienummer, q "Fastighet_tillstand",
@@ -283,9 +237,11 @@ IF OBJECT_ID(N'tempdb..#ByggnadPåFastighetISocken') is null
           into #Socken_tillstånd
 from OnePerFastighet 
 
-    INSERT INTO #statusTable select N'rebuilt#Socken_tillstånd',CURRENT_TIMESTAMP,@@ROWCOUNT end else
+    INSERT INTO #statusTable select N'rebuilt#Socken_tillstånd',CURRENT_TIMESTAMP,@@ROWCOUNT end
+else
         INSERT INTO #statusTable select N'preloading#Socken_tillstånd',CURRENT_TIMESTAMP,@@ROWCOUNT
---goto TableInitiate
+----goto TableInitiate
+go
 ;egetOmhändertagande:
 IF OBJECT_ID(N'tempdb..#egetOmhändertagande') is null --OR (select top 1 RebuildStatus from #SettingTable) = 1
     begin BEGIN TRY DROP TABLE #egetOmhändertagande END TRY BEGIN CATCH select 1 END CATCH
@@ -342,7 +298,8 @@ fastighetsYtor as (select *
 
     INSERT INTO #statusTable select N'rebuilt#egetOmhändertagande',CURRENT_TIMESTAMP,@@ROWCOUNT END else
         INSERT INTO #statusTable select N'preloading#egetOmhändertagande',CURRENT_TIMESTAMP,@@ROWCOUNT
---goto TableInitiate */
+----goto TableInitiate */
+        go
 ;spillvatten:
 IF OBJECT_ID('tempdb..#spillvatten')is null OR (select top 1 RebuildStatus from #settingtable) = 1-- OR @rebuiltStatus1 = 1
     begin BEGIN TRY DROP TABLE #spillvatten END TRY BEGIN CATCH select 1 END CATCH
@@ -391,12 +348,19 @@ IF OBJECT_ID('tempdb..#spillvatten')is null OR (select top 1 RebuildStatus from 
     INSERT INTO #statusTable select 'rebuilt#spillvatten',CURRENT_TIMESTAMP,@@ROWCOUNT END
     else INSERT INTO #statusTable select 'preloading#spillvatten',
            CURRENT_TIMESTAMP,@@ROWCOUNT
---goto TableInitiate
+----goto TableInitiate
+    go
+
 ;taxekod:
 IF OBJECT_ID(N'tempdb..#Taxekod')  is null  -- OR @rebuiltStatus2 = 1
     begin BEGIN TRY DROP TABLE #Taxekod END TRY BEGIN CATCH select 1 END CATCH;
 
-        select 2 a into #taxekod;
+        select null q2z
+			  , null strDelprodukt
+			  , null strTaxebenamning
+			  , null strFastBeteckningHel
+			  , null decAnlXKoordinat
+			  , null decAnlYkoordinat into #taxekod;
 
     BEGIN TRY DROP TABLE #slam END TRY BEGIN CATCH select 1 END CATCH declare @internalStatus table (one NVARCHAR(max), start datetime);;
 
@@ -435,16 +399,16 @@ IF OBJECT_ID(N'tempdb..#Taxekod')  is null  -- OR @rebuiltStatus2 = 1
 					 FOR XML PATH ('')), 1, 1, '')
 				    from slamm q
 				    group by strFastBeteckningHel)
-select * from slam
+	select * from #taxekod
 
 
       -- select * into #taxekod from openquery(admsql01,'with anlaggning as (select strAnlnr,strAnlaggningsKategori,strFastBeteckningHel,case when nullif(decAnlYkoordinat, 0) is not null then nullif(decAnlXKoordinat, 0) end decAnlXKoordinat,case when nullif(decAnlXKoordinat, 0) is not null then nullif(decAnlYkoordinat, 0) end decAnlYkoordinat from (select left(strFastBeteckningHel, case when charindex('' '', strFastBeteckningHel) = 0 then len(strFastBeteckningHel) + 1 else charindex('' '', strFastBeteckningHel) end - 1) strSocken,strAnlnr,strAnlaggningsKategori,strFastBeteckningHel,decAnlXKoordinat,decAnlYkoordinat from (select strAnlnr, strAnlaggningsKategori, strFastBeteckningHel, decAnlXKoordinat, decAnlYkoordinat from (select anlaggning.* from EDPFutureGotland.dbo.vwAnlaggning anlaggning inner join EDPFutureGotland.dbo.vwTjanst tjanst on anlaggning.strAnlnr = tjanst.strAnlnr) t) vwAnlaggning) x inner join (select ''Roma'' "socken" union select N''Björke'' union select ''Dalhem'' union select ''Halla'' union select ''Sjonhem'' union select ''Ganthem'' union select N''Hörsne'' union select ''Bara'' union select N''Källunge'' union select ''Vallstena'' union select ''Norrlanda'' union select ''Klinte'' union select N''Fröjel'' union select ''Eksta'') fastighetsfilter on strSocken = fastighetsfilter.socken) , FilteredTjanste as (select strTaxekod, intTjanstnr, strAnlOrt, q2, strTaxebenamning, strDelprodukt, strAnlnr from (select strTaxekod,intTjanstnr,strAnlOrt,isnull(datStoppdatum, smalldatetimefromparts(1900, 01, 01, 00, 00)) q2,strTaxebenamning,vwRenhTjanstStatistik.strDelprodukt,strAnlnr from (select formated.strTaxekod,formated.intTjanstnr,formated.strAnlOrt,datStoppdatum,formated.strTaxebenamning,formated.strDelprodukt,strAnlnr from EDPFutureGotland.dbo.vwRenhTjanstStatistik formated inner join EDPFutureGotland.dbo.vwTjanst tjanst on tjanst.intTjanstnr = formated.intTjanstnr where formated.intTjanstnr is not null and formated.intTjanstnr != 0 and formated.intTjanstnr != '''' ) vwRenhTjanstStatistik left outer join (select N''DEPO'' "strDelprodukt" union select N''CONT'' union select N''GRUNDR'' union select N''ÖVRTRA'' union select N''ÖVRTRA'' union select ''HUSH'' union select N''ÅVCTR'') q on vwRenhTjanstStatistik.strDelprodukt = q.strDelprodukt where q.strDelprodukt is null) p where strTaxekod != ''BUDSM'' AND left(strTaxekod, ''4'') != ''HYRA'' and coalesce(strDelprodukt,strTaxebenamning) is not null) , formated as (select intTjanstnr, strDelprodukt, strTaxebenamning, max(q2) q2z,max(strAnlnr) strAnlnrx from FilteredTjanste group by strTaxekod, intTjanstnr, strAnlOrt, strDelprodukt, strTaxebenamning) select strFastBeteckningHel, decAnlXKoordinat, decAnlYkoordinat, intTjanstnr, strDelprodukt, strTaxebenamning, q2z from anlaggning inner join formated on anlaggning.strAnlnr = formated.strAnlnrx');
     --INSERT INTO #statusTable select N'rebuilt#Taxekod',CURRENT_TIMESTAMP,@@ROWCOUNT end else INSERT INTO #statusTable select N'preloading#Taxekod',CURRENT_TIMESTAMP,@@ROWCOUNT
---goto TableInitiate
-
-
+----goto TableInitiate
 
 end
+
+    go
     ;
 röd:
 repport:
