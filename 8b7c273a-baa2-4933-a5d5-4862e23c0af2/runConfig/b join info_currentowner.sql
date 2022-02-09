@@ -8,11 +8,8 @@ begin try drop table fromBJoinInfoCurrentOwner end try begin catch end catch
 
 begin try
 
-
-
 with
     	x as (select dia,fnr,org from toInsert)
-
 	,inputJoinedByFnrInfo_current_owner as (
 	    SELECT *from [gisdata].SDE_GEOFIR_GOTLAND.GNG.INFO_CURRENTOWNER q INNER JOIN  x on x.FNR = q.REALESTATEKEY)
 

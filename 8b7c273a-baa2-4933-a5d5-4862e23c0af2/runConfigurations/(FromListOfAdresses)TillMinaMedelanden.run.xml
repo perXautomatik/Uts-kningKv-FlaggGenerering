@@ -1,9 +1,9 @@
 <component name="ProjectRunConfigurationManager">
-  <configuration default="false" name="(FromListOfAdresses)TillMinaMedelanden" type="DatabaseScript">
+  <configuration default="false" name="TillMinaMedelanden(FromListOfAdresses)" type="DatabaseScript">
     <script-file value="$APPLICATION_CONFIG_DIR$/consoles/db/8b7c273a-baa2-4933-a5d5-4862e23c0af2/runConfig/a excluded.sql" />
-    <script-file value="$APPLICATION_CONFIG_DIR$/consoles/db/8b7c273a-baa2-4933-a5d5-4862e23c0af2/runConfig/withBulkInsert GenerateInput.sql" />
-    <script-file value="$APPLICATION_CONFIG_DIR$/consoles/db/8b7c273a-baa2-4933-a5d5-4862e23c0af2/runConfig/with ##excluded create ##toInsert.sql" />
     <script-file value="$APPLICATION_CONFIG_DIR$/consoles/db/8b7c273a-baa2-4933-a5d5-4862e23c0af2/runConfig/a korrigerande.sql" />
+    <script-file value="$APPLICATION_CONFIG_DIR$/consoles/db/8b7c273a-baa2-4933-a5d5-4862e23c0af2/runConfig/aBulkInsertInput.sql" />
+    <script-file value="$APPLICATION_CONFIG_DIR$/consoles/db/8b7c273a-baa2-4933-a5d5-4862e23c0af2/runConfig/abFilterInsertAgainstExcluded.sql" />
     <script-file value="$APPLICATION_CONFIG_DIR$/consoles/db/8b7c273a-baa2-4933-a5d5-4862e23c0af2/runConfig/b join info_currentowner.sql" />
     <script-file value="$APPLICATION_CONFIG_DIR$/consoles/db/8b7c273a-baa2-4933-a5d5-4862e23c0af2/runConfig/c actOnAdressFormating.sql" />
     <script-file value="$APPLICATION_CONFIG_DIR$/consoles/db/8b7c273a-baa2-4933-a5d5-4862e23c0af2/runConfig/d SingleOutBad.sql" />

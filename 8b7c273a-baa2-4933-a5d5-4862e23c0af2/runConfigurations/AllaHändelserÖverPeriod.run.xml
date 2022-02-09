@@ -1,0 +1,9 @@
+<component name="ProjectRunConfigurationManager">
+  <configuration default="false" name="AllaHändelserÖverPeriod" type="DatabaseScript">
+    <script-file value="$APPLICATION_CONFIG_DIR$/consoles/db/8cc23256-e02c-43ea-8477-e740c4580b62/modular/1Strangar.sql" />
+    <script-file value="$APPLICATION_CONFIG_DIR$/consoles/db/8cc23256-e02c-43ea-8477-e740c4580b62/modular/2AllaHändelserÖverPeriod.sql" />
+    <script-mode>FILE</script-mode>
+    <data-source id="8cc23256-e02c-43ea-8477-e740c4580b62" namespace="database/&quot;EDPVisionRegionGotland&quot;" />
+    <method v="2" />
+  </configuration>
+</component>
