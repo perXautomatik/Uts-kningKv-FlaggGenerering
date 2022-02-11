@@ -1,7 +1,0 @@
-<component name="ProjectRunConfigurationManager">
-  <configuration default="false" name="clearTable" type="DatabaseScript">
-    <data-source id="8b7c273a-baa2-4933-a5d5-4862e23c0af2" />
-    <script-text>delete from tempExcel.dbo.resultatRunConf where 1=1</script-text>
-    <method v="2" />
-  </configuration>
-</component>

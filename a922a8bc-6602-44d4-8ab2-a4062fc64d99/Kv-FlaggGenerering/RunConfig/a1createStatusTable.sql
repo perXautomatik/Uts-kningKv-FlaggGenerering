@@ -1,1 +1,0 @@
-create table #statusTable (one NVARCHAR(max),start datetime,rader integer);

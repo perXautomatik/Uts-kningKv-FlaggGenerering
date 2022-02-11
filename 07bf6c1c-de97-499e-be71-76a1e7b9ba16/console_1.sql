@@ -1,1 +1,0 @@
-select day, hour, seconds_active, path from application_active_hour

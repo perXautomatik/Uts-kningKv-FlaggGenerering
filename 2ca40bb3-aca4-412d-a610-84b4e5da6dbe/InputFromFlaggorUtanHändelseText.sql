@@ -1,1 +1,0 @@
-select * into #input from tempExcel.dbo.FlaggorUtanHändelseText
