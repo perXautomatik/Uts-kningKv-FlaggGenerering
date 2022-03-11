@@ -1,0 +1,1 @@
+select trail from JsonUnfold_toUnest group by trail

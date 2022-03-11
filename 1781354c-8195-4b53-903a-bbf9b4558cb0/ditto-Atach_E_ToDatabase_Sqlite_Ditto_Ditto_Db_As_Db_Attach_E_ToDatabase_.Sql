@@ -1,0 +1,16 @@
+attach 'E:\ToDatabase\Sqlite\Ditto\Ditto.db' as Db0;
+attach 'E:\ToDatabase\Sqlite\Ditto\Ditto_1 (2).db' as Db1;
+attach 'E:\ToDatabase\Sqlite\Ditto\Ditto_1 (3).db' as Db2;
+attach 'E:\ToDatabase\Sqlite\Ditto\Ditto_1.db' as Db3;
+attach 'E:\ToDatabase\Sqlite\Ditto\Ditto_1_BAD.db' as Db4;
+attach 'E:\ToDatabase\Sqlite\Ditto\Ditto_1-5CG84229D5 (2).db' as Db5;
+attach 'E:\ToDatabase\Sqlite\Ditto\Ditto_1-5CG84229D5.db' as Db6;
+attach 'E:\ToDatabase\Sqlite\Ditto\Ditto-5CG84229D5.db' as Db7;
+attach 'E:\ToDatabase\Sqlite\Ditto\DittoDatabase.db' as Db8;
+attach 'E:\ToDatabase\Sqlite\Ditto\DittoDatabase_BAD (2).db' as Db9;
+attach 'E:\ToDatabase\Sqlite\Ditto\DittoDatabase_BAD.db' as Db10;
+attach 'E:\ToDatabase\Sqlite\Ditto\DittoDatabase-5CG84229D5.db' as Db11;
+attach 'E:\ToDatabase\Sqlite\Ditto\1ditto.dto' as Db12;
+attach 'E:\ToDatabase\Sqlite\Ditto\2ditto.dto' as Db13;
+attach 'E:\ToDatabase\Sqlite\Ditto\3ditto.dto' as Db14;
+attach 'E:\ToDatabase\Sqlite\Ditto\4ditto.dto' as Db15;

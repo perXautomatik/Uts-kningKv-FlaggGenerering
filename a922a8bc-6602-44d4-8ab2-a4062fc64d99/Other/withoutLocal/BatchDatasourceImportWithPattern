@@ -1,0 +1,31 @@
+--original
+#DataSourceSettings#
+#LocalDataSource: SOLENTABELLER
+#BEGIN#
+<data-source source="LOCAL" name="SOLENTABELLER"
+    uuid="947f2b47-af0c-4354-9696-9462b1a4bf8b"><database-info product="Microsoft SQL Server" version="13.00.5102" jdbc-version="4.2" driver-name="Microsoft JDBC Driver 7.4 for SQL Server" driver-version="7.4.1.0" dbms="MSSQL" exact-version="13.0.5102" exact-driver-version="7.4"><extra-name-characters>$#@</extra-name-characters><identifier-quote-string>&quot;</identifier-quote-string></database-info><case-sensitivity plain-identifiers="mixed" quoted-identifiers="mixed"/><driver-ref>sqlserver.ms</driver-ref><synchronize>true</synchronize><jdbc-driver>com.microsoft.sqlserver.jdbc.SQLServerDriver</jdbc-driver><jdbc-url>jdbc:sqlserver://gisdb01;database=sde_miljo_halsoskydd</jdbc-url><secret-storage>master_key</secret-storage><domain-auth>true</domain-auth><schema-mapping><introspection-scope><node negative="1">
+        <node kind="database">
+        <name qname="sde_extern"/>
+        <name qname="sde_miljo_halsoskydd"/>
+        <node kind="schema" qname="gng"/>
+        </node><node kind="database" qname="sde_geodata"><node kind="schema" qname="sde"/></node><node kind="database">
+        <name qname="sde_geopipe"/>
+        <name qname="sde_gotland"/>
+        <name qname="sde_pipe"/>
+        <name qname="sde_regionstyrelsen"/>
+        </node></node></introspection-scope></schema-mapping>
+        <table-pattern>table:-(a102|a103|a104|a105|a106|a107|a108|a109|a110|a111|a112|a113|a114|a115|a116|a117|a118|a119|a12|a13|a28|a29|a30|a31|a32|a33|a34|a35|a37|a38|a39|a41|a62|a63|a65|a66|a67|D102|D103|D104|D105|D106|D107|D108|D109|D110|D111|D112|D113|D114|D115|D116|D117|D118|D119|D12|D13|D28|D29|D30|D31|D32|D33|D34|D35|D37|D38|D39|D41|D62|D63|D65|D66|D67|GDB_CONFLI|GDB_LOCKS|GDB_REPLIC|i10|i102|i103|i104|i105|i106|i107|i108|i109|i110|i111|i112|i113|i114|i115|i116|i117|i118|i119|i12|i121|i13|i28|i29|i30|i31|i32|i33|i34|i35|i37|i38|i39|i41|i62|i63|i65|i66|i67|i7|i71|i8|i82|i9|MOH_PROVPU|SDE_archiv|SDE_branch|SDE_branch|SDE_layer_|SDE_layer_|SDE_locato|SDE_logfil|SDE_metada|SDE_multib|SDE_mvtabl|SDE_object|SDE_raster|SDE_versio|SDE_versio|SDE_xml_co|SDE_xml_in|SDE_xml_in|UTSLAPPSFO)</table-pattern></data-source>
+#END#
+--
+
+#DataSourceSettings#
+#LocalDataSource: sde_extern
+#BEGIN#
+<data-source source="LOCAL" name="sde_extern"
+    uuid="947f2b47-af0c-4354-9696-9462b1a4bf8b"><database-info product="Microsoft SQL Server" version="13.00.5102" jdbc-version="4.2" driver-name="Microsoft JDBC Driver 7.4 for SQL Server" driver-version="7.4.1.0" dbms="MSSQL" exact-version="13.0.5102" exact-driver-version="7.4"><extra-name-characters>$#@</extra-name-characters><identifier-quote-string>&quot;</identifier-quote-string></database-info><case-sensitivity plain-identifiers="mixed" quoted-identifiers="mixed"/><driver-ref>sqlserver.ms</driver-ref><synchronize>true</synchronize><jdbc-driver>com.microsoft.sqlserver.jdbc.SQLServerDriver</jdbc-driver><jdbc-url>jdbc:sqlserver://gisdb01;database=sde_miljo_halsoskydd</jdbc-url><secret-storage>master_key</secret-storage><domain-auth>true</domain-auth><schema-mapping><introspection-scope><node negative="1">
+        <node kind="database">
+        <name qname="sde_extern"/>
+        <node kind="schema" qname="gng"/>
+        </node></node></introspection-scope></schema-mapping>
+        <table-pattern>tables:-(ARBPLATSOM|BASLINJE_P|CABLE_PIPE|FLYGBULLER|FLYGPLATS_|FLYGPLATS_|FLYGPLATS_|FLYGPLATS_|FLYGPLATS_|FLYGSANDDY|FM_INFLUEN|FM_RI_INFL|FM_RI_INFL|FM_RI_INFL|FM_RI_MILI|FM_RI_MSA_|FM_RI_OMRÅ|FM_RI_SAMR|FM_RI_SJÖÖ|FM_RI_STOP|FM_RI_STOP|FM_STOPPOM|FÖRORENING|GDB_CONFLI|GDB_ITEMRE|GDB_ITEMTY|GDB_LOCKS|GDB_REPLIC|GDB_TABLES|HAMNAR_HEL|HANDELSTRA|HUVUDAVRIN|HUVUDAVRIN|i10|i100|i101|i102|i103|i104|i105|i106|i107|i108|i109|i110|i111|i112|i113|i114|i115|i116|i117|i118|i119|i120|i121|i122|i123|i124|i125|i126|i127|i128|i129|i13|i130|i132|i133|i134|i135|i136|i137|i138|i139|i140|i141|i142|i143|i144|i145|i146|i147|i148|i15|i152|i154|i156|i157|i158|i159|i160|i161|i164|i165|i166|i167|i168|i169|i170|i171|i172|i173|i174|i175|i176|i178|i179|i18|i180|i181|i182|i183|i184|i185|i186|i187|i188|i189|i19|i190|i191|i192|i193|i194|i195|i20|i201|i202|i203|i204|i205|i206|i207|i208|i209|i210|i211|i212|i213|i214|i215|i216|i217|i218|i219|i220|i221|i222|i223|i224|i225|i226|i230|i231|i232|i234|i235|i236|i237|i238|i239|i24|i240|i241|i242|i243|i244|i245|i246|i247|i248|i249|i250|i30|i31|i32|i33|i34|i35|i36|i37|i38|i39|i40|i41|i42|i43|i44|i45|i46|i47|i48|i49|i5|i50|i51|i52|i53|i54|i55|i56|i57|i6|i7|i8|i81|i82|i83|i84|i85|i86|i87|i88|i89|i9|i90|i91|i92|i93|i94|i95|i96|i97|i98|i99|JORDARTSKA|JORDARTSKA|JORDARTSKA|JORDARTSKA|JORDARTSKA|JORDARTSKA|KARST_1_Y|KARST_2_Y|KODIOXIDLA|KOLDIOXIDL|KULTURRESE|KYRKOR_P|MSA_OMRÅDE|NATIONALPA|NATURRESER|OFFSHORESP|OMRÅDE_AV_|OMRÅDE_MED|PÅVERKANSO|PÅVERKANSO|PÅVERKANSO|RI_INFLUEN|RI_INFLUEN|RI_VARDEFU|RIKSINTRES|RIKSINTRES|RIKSINTRES|RIKSINTRES|RIKSINTRES|RIKSINTRES|RIKSINTRES|RIKSINTRES|RIKSINTRES|RIKSINTRES|RIKSINTRES|RIKSINTRES|RIKSINTRES|RIKSINTRES|RIKSINTRES|RIKSINTRES|RIKSINTRES|RIKSINTRES|RIKSINTRES|SANDUTVINN|SDE_archiv|SDE_branch|SDE_branch|SDE_compre|SDE_GEOMET|SDE_layer_|SDE_layer_|SDE_lineag|SDE_locato|SDE_logfil|SDE_metada|SDE_multib|SDE_mvtabl|SDE_object|SDE_object|SDE_proces|SDE_raster|SDE_server|SDE_spatia|SDE_state_|SDE_state_|SDE_states|SDE_tables|SDE_versio|SDE_versio|SDE_xml_co|SDE_xml_in|SDE_xml_in|SMAORT_201|SMAORTER_2|SMAORTER_2|SPAWNINGNU|SRKSTATION|STOPPOMRÅD|STOPPOMRÅD|STRANDEROS|STRANDSKYD|STRANDSKYD|STRANDSKYD|TATORT_201|TATORTANNO|TATORTER_2|TILLSTÅNDS|TRALNINGSO|TÄTORTER_2|UNDANTAG_S|UNDANTAG_S|UPPHAVDA_S|VISBY_FLYG|VISBY_FLYG|VISBY_FLYG|VISBY_FLYG)</table-pattern></data-source>
+#END#
