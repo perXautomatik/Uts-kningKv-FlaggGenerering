@@ -23,13 +23,11 @@ IF OBJECT_ID('tempdb..#socknarOfInterest') IS not NULL
     create table #socknarOfInterest (Socken nvarchar (100) not null , shape geometry);
 
 insert into #socknarOfInterest
-select SOCKEN,Shape from
-          STRING_SPLIT(N'Eksta,Hemse,Hablingbo,Havdhem,grötlingbo,Fide,Öja'
-              , ',')
-	   socknarOfIntresse
+select coalesce(value,SOCKEN) SOCKEN,Shape
+    from STRING_SPLIT(N'Källunge,Stenkyrka,Bara,Hörsne,Stenkyrka,Vallstena,Norrlanda', ',') socknarOfIntresse
           inner join
               sde_regionstyrelsen.gng.nyko_socknar_y_evw
-                  on SOCKEN = value
+                  on SOCKEN like '%' + value + '%'
 
        INSERT INTO #statusTable
         select '',CURRENT_TIMESTAMP,@@ROWCOUNT
@@ -39,12 +37,12 @@ go
 TableInitiate:
 -- dropTabels?
 
-if (select null) IS NULL BEGIN TRY Drop table #FastighetsYtor end try begin catch select '' end catch
+if (select '') IS NULL BEGIN TRY Drop table #FastighetsYtor end try begin catch select '' end catch
 if (select null) IS NULL BEGIN TRY Drop table #ByggnadPåFastighetISocken end try begin catch select '' end catch
 if (select null) IS NULL BEGIN TRY Drop table #Socken_tillstånd end try begin catch select '' end catch
-if (select '') IS NULL BEGIN TRY Drop table #egetOmhändertagande end try begin catch select '' end catch
-if (select '') IS NULL BEGIN TRY Drop table #spillvatten end try begin catch select '' end catch
-if (select '') IS NULL BEGIN TRY Drop table #taxekod end try begin catch select '' end catch
+if (select null) IS NULL BEGIN TRY Drop table #egetOmhändertagande end try begin catch select '' end catch
+if (select null) IS NULL BEGIN TRY Drop table #spillvatten end try begin catch select '' end catch
+if (select null) IS NULL BEGIN TRY Drop table #taxekod end try begin catch select '' end catch
 if (select null) IS NULL BEGIN TRY Drop table #röd end try begin catch select '' end catch
 ;
 go
@@ -59,10 +57,11 @@ IF OBJECT_ID('tempdb..#FastighetsYtor') IS NULL
      ,fasInnomSocken as (
     	    	SELECT BETECKNING FAStighet, x.Shape,so.socken, fnr Fnr_FDS
     		from  fasWithShape x
-             inner join #socknarOfInterest so on x.Shape.STIntersects(so.shape) = 1
+             inner join #socknarOfInterest so on left(x.BETECKNING,len(Socken)) = socken
 	)
-    select * INTO #FastighetsYtor 
-	from fasInnomSocken;
+    select *
+    INTO #FastighetsYtor
+	from fasInnomSocken
 
     INSERT INTO #statusTable select 'rebuilt#FastighetsYtor',CURRENT_TIMESTAMP,@@ROWCOUNT
     --set @rebuiltStatus1 = 1
@@ -85,9 +84,9 @@ IF OBJECT_ID(N'tempdb..#ByggnadPåFastighetISocken') is null
 			     (Select Byggnadstyp, so.socken, byggnad_yta.SHAPE
 			     from byggnad_yta
 					inner join #socknarOfInterest so on
-				    byggnad_yta.
-					shape.STIntersects(
-				    so.shape) = 1)
+				    so.
+					shape.STContains(
+				    byggnad_yta.shape) = 1)
    ,ByggnadPaFastighetISocken as (  select  sy.FAStighet,sy.Fnr_FDS, bis.*  from fastighetsYtor sy
        inner join byggnaderISocken bIS on bis.Shape.STIntersects(sy.Shape) = 1)
 
@@ -96,10 +95,10 @@ IF OBJECT_ID(N'tempdb..#ByggnadPåFastighetISocken') is null
 	count(shape) over (partition by FAStighet) bygTot,
 	   row_number() over (partition by FAStighet order by Byggnadstyp ) orderz
 	  from ByggnadPaFastighetISocken )
-
+	, OnlyOnePerFastighet 	as (  select FAStighet, Byggnadstyp,bygTot,shape from  withRownr     where orderz = 1 )
     select FAStighet, Byggnadstyp, bygTot, shape
     into #ByggnadPåFastighetISocken
-    from withRownr  where orderz = 1
+				      from OnlyOnePerFastighet
 
     ;
          INSERT INTO #statusTable select  N'rebuilt#ByggnadPåFastighetISocken',CURRENT_TIMESTAMP,@@ROWCOUNT
@@ -112,69 +111,144 @@ go
 	IF (OBJECT_ID(N'tempdb..#Socken_tillstånd') IS NULL) OR (select top 1 RebuildStatus from #SettingTable) = 1
 	begin
 	    begin try drop table #Socken_tillstånd end try begin catch select '' end catch;
-          with
-    socknarOfinterest as (select socken from #socknarOfInterest)
+          --with
+		declare @soIndexed table (indexI int identity, socken nvarchar (40), fastighet nvarchar(200), Diarienummer varchar(100), Fastighet_tillstand nvarchar(200),Beslut_datum date,Utford_datum date, Anteckning nvarchar(max), Shape geometry
+			  unique (indexI,socken,fastighet,Beslut_datum,Utford_datum)
+			)
+			;with DateStandardisation as(select
+			       left(IIF(charindex(':', Fastighet_tillstand) > 0, Fastighet_tillstand, IIF(charindex(':', fastighet_rening) > 0, fastighet_rening, case when charindex(':', Anteckning) > 0 then Anteckning end)), 200)
+			           as fastighet,
+			       OBJECTID, left(Diarienummer,100) Diarienummer, left(Fastighet_tillstand,200) Fastighet_tillstand,
+			       TRY_CONVERT(Date, Beslut_datum,102) Beslut_datum, TRY_CONVERT(Date, Utford_datum,102) Utford_datum -- input is a datetimeColumn, so can never contain bogus info
+			     , Anteckning, Shape
+			--Typ_byggnad, Antal_hushall_tillstand, Fastighet_rening, Typ_slamavskiljare, Storlek_m3, Typ_rening, Storlek_m2, Typ_sluten_tank, Storlek_m, Avgift, Tillstand_giltigt_tom, alltidsant, GDB_GEOMATTR_DATA, skapad_datum, andrad_datum,
+				   from  sde_miljo_halsoskydd.gng.ENSKILT_AVLOPP_sodra_P) 
+			insert into @soIndexed (socken, fastighet, Diarienummer, Fastighet_tillstand, Beslut_datum, Utford_datum, Anteckning, Shape)
+			select
+			   left(left(fastighet, IIF(charindex(' ', fastighet) = 0, len(fastighet) + 1, charindex(' ', fastighet)) - 1),40) socken, fastighet
+			       , Diarienummer, Fastighet_tillstand,beslut_datum,Utford_datum,
+					    left( concat(
+					        case when
+						    (try_cast(isnull(beslut_datum, DateFromParts(1988,1,1)) as nvarchar) <> try_cast(isnull(nullif(ltrim(Beslut_datum),''), DateFromParts(1987,1,1)) as nvarchar)
+						     AND nullif(bda,'') is not null)
+						    then concat('bes: ', bda) end ,
+						case when
+						    (try_cast(isnull(Utford_datum, DateFromParts(1988,1,1)) as nvarchar) <> try_cast(isnull(nullif(ltrim(Utford_datum),''), DateFromParts(1987,1,1)) as nvarchar)
+						    AND nullif(uda,'') is not null)
+						    then concat(' utf: ', uda)end
+			                  ,ltrim(Anteckning)),300) Anteckning
+			     ,Shape anlShape
+			       from (select *,ltrim(try_cast(Beslut_datum as nvarchar)) bda,ltrim(try_cast(Utford_datum as nvarchar)) uda from DateStandardisation) q
 
-    , fastighetsYtor
-	      as (select socken SockenX, FAStighet, Shape 
-	      from #FastighetsYtor)
+			;
+		declare @NoIndexed table (indexI              int identity, socken              nvarchar(40), fastighet           nvarchar(200), Diarienummer        nvarchar(30), Fastighet_tillstand nvarchar(150), Beslut_datum        date, Utford_datum        date, Anteckning          nvarchar(300), Shape               geometry
+			  unique (indexI,socken,fastighet,Beslut_datum,Utford_datum)
+			)
+			;with DateStandardisation as(select OBJECTID, Diarienummer, Fastighet_tillstand, Typ_byggnad, Antal_hushall_tillstand, Fastighet_rening, Typ_slamavskiljare, Storlek_m3, Typ_rening, Storlek_m2, Typ_sluten_tank, Storlek_m,
+			       TRY_CONVERT(Date, Beslut_datum,102) Beslut_datum, TRY_CONVERT(Date, Utford_datum,102) Utford_datum, Avgift, Tillstand_giltigt_tom, Anteckning, alltidsant, Shape, GDB_GEOMATTR_DATA, skapad_datum, andrad_datum
+				   from
+			        sde_miljo_halsoskydd.gng.ENSKILT_AVLOPP_Norra_P)
+insert into @NoIndexed
+						select
+			   left(left(fastighet, IIF(charindex(' ', fastighet) = 0, len(fastighet) + 1, charindex(' ', fastighet)) - 1),40) socken,*
+			       from (select left(IIF(charindex(':', Fastighet_tillstand) > 0, Fastighet_tillstand,
+						     IIF(charindex(':', fastighet_rening) > 0, fastighet_rening,
+							 case when charindex(':', Anteckning) > 0 then Anteckning
+							 end)), 200) as fastighet,
+							 left(Diarienummer,100) Diarienummer,left(Fastighet_tillstand,200)
+							 Fastighet_tillstand,
 
-        , AnSoMedSocken     as (select left(fastighet, IIF(charindex(' ', fastighet) = 0, len(fastighet) + 1, charindex(' ', fastighet)) - 1) socken,*
-               from (select (case when charindex(':', Fastighet_tillstand) > 0 then Fastighet_tillstand
-               else case when charindex(':', fastighet_rening) > 0 then fastighet_rening
-               else case when charindex(':', Anteckning) > 0 then Anteckning
-               end end end) as fastighet,    Diarienummer,Fastighet_tillstand z,Beslut_datum,Utford_datum,Anteckning,Shape anlShape from  sde_miljo_halsoskydd.gng.ENSKILT_AVLOPP_sodra_P) q)
-        , AnNoMedSocken   as (select left(fastighet, IIF(charindex(' ', fastighet) = 0, len(fastighet) + 1, charindex(' ', fastighet)) - 1) socken,*
-               from (select (case when charindex(':', Fastighet_tillstand) > 0 then Fastighet_tillstand
-               else case when charindex(':', fastighet_rening) > 0 then fastighet_rening
-               else case when charindex(':', Anteckning) > 0 then Anteckning
-               end end end) as fastighet,    Diarienummer,Fastighet_tillstand z,Beslut_datum,Utford_datum,Anteckning,Shape anlShape from  sde_miljo_halsoskydd.gng.ENSKILT_AVLOPP_Norra_P) q)
-        , AnMeMedSocken as (select left(fastighet, IIF(charindex(' ', fastighet) = 0, len(fastighet) + 1, charindex(' ', fastighet)) - 1) socken,*
-               from (select (case when charindex(':', Fastighet_tilstand) > 0 then Fastighet_tilstand
-               else case when charindex(':', fastighet_rening) > 0 then fastighet_rening
-               else case when charindex(':', Anteckning) > 0 then Anteckning
-               end end end) as fastighet,    Diarienummer,Fastighet_tilstand z,Beslut_datum,Utford_datum,Anteckning,Shape anlShape from  sde_miljo_halsoskydd.gng.ENSKILT_AVLOPP_MELLERSTA_P) q)
+							 beslut_datum,Utford_datum,
+					    left(
+					    concat( case when
+						(try_cast(isnull(beslut_datum, DateFromParts(1988,1,1)) as nvarchar) <> try_cast(isnull(nullif(ltrim(Beslut_datum),''), DateFromParts(1987,1,1)) as nvarchar)
 
-       , sodra_p as (select Diarienummer, z q, Beslut_datum, Utford_datum, Anteckning, AllaAvlopp.anlShape, FFast.FAStighet,FFast.sockenX from AnSoMedSocken AllaAvlopp inner join
-	   fastighetsytor FFast on AllaAvlopp.socken = ffast.SockenX and AllaAvlopp.anlShape.STIntersects(FFast.Shape) = 1)
-	, Norra_p as (select Diarienummer, z q, Beslut_datum, Utford_datum, Anteckning, AllaAvlopp.anlShape, FFast.FAStighet,FFast.sockenX from AnNoMedSocken AllaAvlopp inner join
-	   fastighetsytor FFast on AllaAvlopp.socken = ffast.SockenX and AllaAvlopp.anlShape.STIntersects(FFast.Shape) = 1)
-	, Mellersta_p as (select Diarienummer, z q, Beslut_datum, Utford_datum, Anteckning, AllaAvlopp.anlShape, FFast.FAStighet,FFast.sockenX from AnMeMedSocken AllaAvlopp inner join
-	   fastighetsytor FFast on AllaAvlopp.socken = ffast.SockenX and AllaAvlopp.anlShape.STIntersects(FFast.Shape) = 1)
+						 AND nullif(ltrim(try_cast(Beslut_datum as nvarchar)),'') is not null)
+						then concat('bes: ', ltrim(try_cast(Beslut_datum as nvarchar))) end
+					    ,
+						case when
+						(try_cast(isnull(Utford_datum, DateFromParts(1988,1,1)) as nvarchar)  <> try_cast(isnull(nullif(ltrim(Utford_datum),''), DateFromParts(1987,1,1)) as nvarchar)
 
-	, allaAv as (select sockenX socken, Diarienummer, q, Beslut_datum, Utford_datum, Anteckning, anlShape from  (select * from sodra_p union all select *from norra_p union all select *from mellersta_p) a)
-	, utanSocken as (select *from allaAv where socken is null)
+						AND nullif(ltrim(try_cast(Utford_datum as nvarchar)),'') is not null)
+						then concat(' utf: ', ltrim(try_cast(Utford_datum as nvarchar)))end
+			                  ,ltrim(Anteckning)),300)
+					        Anteckning,Shape                        anlShape
 
-	 , geoAv as (select SockenX socken, Diarienummer, fy.FAStighet, Beslut_datum, Utford_datum, Anteckning, anlShape from
-	    UtanSocken inner join
-	     fastighetsYtor fY on anlShape.STIntersects(fy.Shape) = 1)
+			   from DateStandardisation ) q
+			;
+declare @MeIndexed table (indexI              int identity, socken              nvarchar(40), fastighet           nvarchar(200), Diarienummer        nvarchar(30), Fastighet_tillstand nvarchar(150), Beslut_datum        date, Utford_datum        date, Anteckning          nvarchar(300), Shape               geometry
+			      unique (indexI, socken, fastighet, Beslut_datum, Utford_datum)
+)
+;with DateStandardisation as(select OBJECTID, Diarienummer, Fastighet_tilstand, Typ_byggnad, Antal_hushall_tillstand, Fastighet_rening, Typ_slamavskiljare, Storlek_m3, Typ_rening, Storlek_m2, Typ_sluten_tank, Storlek_m,
+			       TRY_CONVERT(Date, Beslut_datum,102) Beslut_datum, TRY_CONVERT(Date, Utford_datum,102) Utford_datum, Avgift, Tillstand_giltigt_tom, Anteckning, alltidsant, Shape, GDB_GEOMATTR_DATA, skapad_datum, andrad_datum
+				   
+			   from  sde_miljo_halsoskydd.gng.ENSKILT_AVLOPP_MELLERSTA_P) 
+			insert into @MeIndexed
+						select
+			   left(left(fastighet, IIF(charindex(' ', fastighet) = 0, len(fastighet) + 1, charindex(' ', fastighet)) - 1),40) socken,*
+			       from (select left(IIF(charindex(':', Fastighet_tilstand) > 0, Fastighet_tilstand,
+						     IIF(charindex(':', fastighet_rening) > 0, fastighet_rening,
+							 case when charindex(':', Anteckning) > 0 then Anteckning
+ 							end)), 200) as fastighet,
+			              left(Diarienummer,100) Diarienummer,left(Fastighet_tilstand,200) Fastighet_tillstand,beslut_datum, Utford_datum Utford_datum,
+					    left(concat(
+					          case when
+						(try_cast(isnull(beslut_datum, DateFromParts(1988,1,1)) as nvarchar) <> try_cast(isnull(nullif(ltrim(Beslut_datum),''), DateFromParts(1987,1,1)) as nvarchar) AND nullif(ltrim(try_cast(Beslut_datum as nvarchar)),'') is not null)
+						then concat('bes: ', ltrim(try_cast(Beslut_datum as nvarchar))) end
+					    ,
+					            case when
+						(try_cast(isnull(Utford_datum, DateFromParts(1988,1,1)) as nvarchar)  <> try_cast(isnull(nullif(ltrim(Utford_datum),''), DateFromParts(1987,1,1)) as nvarchar) AND nullif(ltrim(try_cast(Utford_datum as nvarchar)),'') is not null)
+						then concat(' utf: ', ltrim(try_cast(Utford_datum as nvarchar)))end
+			                  ,ltrim(Anteckning)),300)
+					        Anteckning,Shape                        anlShape
+			       from DateStandardisation ) q
+			;
 
-	,SammanSlagna as (select * from allaAv union all select * from geoAv)
+	    declare @AllIndexed table (indexI int identity, socken nvarchar (40), fastighet nvarchar(200), Diarienummer varchar(100), Fastighet_tillstand nvarchar(200),Beslut_datum date,Utford_datum date, Anteckning nvarchar(max), Shape geometry unique (indexI,socken,fastighet,Beslut_datum,Utford_datum))
+	;
+	if exists(select zxxc.*,soi.Socken from (select socken,count(*) c from @soIndexed group by socken) zxxc inner join #socknarOfInterest soi on zxxc.socken = soi.Socken)
+		begin insert into @AllIndexed select socken, fastighet, Diarienummer, Fastighet_tillstand, Beslut_datum, Utford_datum, Anteckning, Shape from @soIndexed end
+	if exists(select zxxc.*,soi.Socken from (select socken,count(*) c from @NoIndexed group by socken) zxxc inner join #socknarOfInterest soi on zxxc.socken = soi.Socken)
+		begin insert into @AllIndexed select socken, fastighet, Diarienummer, Fastighet_tillstand, Beslut_datum, Utford_datum, Anteckning, Shape from @NoIndexed end
+	if exists(select zxxc.*,soi.Socken from (select socken,count(*) c from @meIndexed group by socken) zxxc inner join #socknarOfInterest soi on zxxc.socken = soi.Socken)
+		begin insert into @AllIndexed select socken, fastighet, Diarienummer, Fastighet_tillstand, Beslut_datum, Utford_datum, Anteckning, Shape from @MeIndexed end
+	; with
+	    socknarOfinterest as (select socken from #socknarOfInterest)
+  	  , fastighetsYtor as (select socken SockenX, FAStighet, Shape from #FastighetsYtor)
+	    , withSocken     as (select so.* from @AllIndexed so left outer join socknarOfinterest sOI2 on sOI2.Socken = so.socken where sOI2.Socken is not null),
+    		withoutSocken   as (select so.* from @AllIndexed so left outer join socknarOfinterest sOI2 on sOI2.Socken = so.socken where sOI2.Socken is null)
+      	 , MatchedSocken as (select Diarienummer, Fastighet_tillstand, Beslut_datum, Utford_datum, Anteckning, so.Shape,
+              FFast.FAStighet  fastighetx,so.fastighet, FFast.sockenX, so.socken from withSocken so left outer join fastighetsytor FFast on so.fastighet = ffast.FAStighet)
+   	, geoIndexed as (select Diarienummer, Fastighet_tillstand, Beslut_datum, Utford_datum, Anteckning, no.Shape,
+	       FFast.FAStighet  fastighetx,no.fastighet, FFast.sockenX, no.socken
+	from
+	     (select *from (select socken, fastighet, Diarienummer, Fastighet_tillstand, Beslut_datum, Utford_datum, Anteckning, Shape from MatchedSocken where fastighetx is null) qq union all select socken, fastighet, Diarienummer, Fastighet_tillstand, Beslut_datum, Utford_datum, Anteckning, Shape from withoutSocken)
+	         no
+	         inner join
+	   fastighetsytor FFast on no.Shape.STIntersects(FFast.Shape) = 1)
 
-            ,filtreradeEfterSocken as (select Diarienummer, q "Fastighet_tillstand",
-       	       TRY_CONVERT(DateTime, Beslut_datum,102) Beslut_datum,
-       	       TRY_CONVERT(DateTime, Utford_datum,102) Utford_datum,
-       	       Anteckning, anlShape, SammanSlagna.q fastighet from
-       	      SammanSlagna inner join socknarOfinterest x on x.socken = SammanSlagna.socken)
+	   ,allaAv as (select coalesce(sockenX,socken) socken, coalesce(fastighetx,fastighet) fastighet,Diarienummer, Fastighet_tillstand, Beslut_datum, Utford_datum, Anteckning,
+		Shape from (select * from (select * from MatchedSocken where fastighetx is not null) matchedFastighet union all select *from geoIndexed) unionedX)
 
-             , WithSatus as
-                 	(select
-			IIF(
-			    (IIF(isnull(Beslut_datum,
-			    DATETIME2FROMPARTS(1988, 1, 1, 1, 1, 1, 1, 1)) < rodDatum, 1, 0) + IIF(isnull(Utford_datum,
-			    DATETIME2FROMPARTS(1988, 1, 1, 1, 1, 1, 1, 1)) < rodDatum, 1, 0) + IIF(Utford_datum is null, 1, 0)) > 0
-			    , N'röd', null) statusx,
-			    FAStighet,Diarienummer,Fastighet_tillstand,Beslut_datum,Utford_datum "utförddatum", Anteckning,anlShape AnlaggningsPunkt
-			    from filtreradeEfterSocken,#settingTable
-                 	)
-	,withRownr as (select *, row_number() over (partition by fastighet order  by statusx desc) as x from WithSatus) --null is first, ressulting in non-red first
+   	, slamz	as (select
+		    IIF(	(IIF(isnull(Beslut_datum, DateFromParts(1988,1,1)) < rodDatum, 1, 0)
+			     + IIF(isnull(Utford_datum, DateFromParts(1988,1,1)) < rodDatum, 1, 0) +
+			    IIF(Utford_datum is null, 1, 0)) > 0 , N'röd', 'ok') statusx,
 
-          select FAStighet, Diarienummer, Fastighet_tillstand,
-                 FORMAT(Beslut_datum, 'yyyy-MM-dd')                                                       Beslut_datum,
-                 FORMAT(utförddatum, 'yyyy-MM-dd')                                                        "utförddatum",
-                 Anteckning, AnlaggningsPunkt, 	statusx fstatus
-          into #Socken_tillstånd
-from withRownr where x = 1
+			    FAStighet,Diarienummer,Fastighet_tillstand,Beslut_datum,Utford_datum "utförddatum",
+			    Anteckning,Shape AnlaggningsPunkt
+			    from
+				 allaAv,#settingTable)
+	,withRownr as (select *, row_number() over (partition by fastighet order  by coalesce(utförddatum,Beslut_datum) desc) as x from slamz)
+        ,OnePerFastighet as (select statusx, FAStighet, Diarienummer, Fastighet_tillstand, Beslut_datum, utförddatum Utford_datum, Anteckning, AnlaggningsPunkt
+			     from withRownr where x = 1)
+  select FAStighet, Diarienummer, Fastighet_tillstand
+       , FORMAT(Beslut_datum, 'yyyy-MM-dd') Beslut_datum
+       , FORMAT(Utford_datum, 'yyyy-MM-dd') "utförddatum"
+       , Anteckning, AnlaggningsPunkt
+       , statusx                            fstatus
+  into #Socken_tillstånd
+  from OnePerFastighet
 
     INSERT INTO #statusTable select N'rebuilt#Socken_tillstånd',CURRENT_TIMESTAMP,@@ROWCOUNT end
 else
@@ -239,25 +313,23 @@ IF OBJECT_ID('tempdb..#spillvatten')is null OR (select top 1 RebuildStatus from 
         fastighetsYtor as (select socken SockenX, FAStighet, Shape from #FastighetsYtor)
     	,planOmr as   (select shape,dp_i_omr,planprog,planansokn from sde_VA.gng.Va_planomraden_171016),
 
-	spillAvtalGemPlanAnsok as (
-	    select shape, concat(typkod,':',status,'(spill)') typ
-		from sde_VA.gng.VO_Spillvatten VO_Spillvatten
-	    union all
-	    select shape, 'AVTALSABONNENT [Tabell_ObjID: ]' as c
-		from sde_VA.gng.AVTALSABONNENTER AVTALSABONNENTER
-	    union all
-	    select shape, concat('GEMENSAMHETSANLAGGNING: ',GEMENSAMHETSANLAGGNINGAR.GA) as c2
-		from sde_VA.gng.GEMENSAMHETSANLAGGNINGAR GEMENSAMHETSANLAGGNINGAR
-		union all
-		select shape,
-		    isnull(coalesce(
-		    nullif(concat('dp_i_omr:',dp_i_omr) ,'dp_i_omr:'),
-		    nullif(concat('planprog:',planprog) ,'planprog:'),
-		    nullif(concat('planansokn:',planansokn) ,'planansokn:')),
-	    	N'okändStatus') as i
-	    from planOmr
-	    )
-      , vax as (select distinct syt.fastighet, q.typ  from fastighetsYtor sYt inner join spillAvtalGemPlanAnsok q on sYt.shape.STIntersects(q.Shape) = 1)
+    spillAvtalGemPlanAnsok as (
+				    select shape, concat(typkod,':',status,'(spill)') typ
+					from sde_VA.gng.VO_Spillvatten					union all
+					select shape, 'AVTALSABONNENT [Tabell_ObjID: ]' as c
+					    from sde_VA.gng.AVTALSABONNENTER					union all
+					select shape, concat('GEMENSAMHETSANLAGGNING: ',GEMENSAMHETSANLAGGNINGAR.GA) as c2
+					    from sde_VA.gng.GEMENSAMHETSANLAGGNINGAR					    union all
+					    select shape,
+					    isnull(coalesce(
+					    nullif(concat('dp_i_omr:',dp_i_omr) ,'dp_i_omr:'),
+					    nullif(concat('planprog:',planprog) ,'planprog:'),
+					    nullif(concat('planansokn:',planansokn) ,'planansokn:')),
+					N'okändStatus') as i
+					from planOmr)
+      , vax as (select distinct syt.fastighet, q.typ 
+       from fastighetsYtor sYt
+        inner join spillAvtalGemPlanAnsok q on sYt.shape.STIntersects(q.Shape) = 1)
 ,va as (
       select row_number() over (partition by FAStighet order by typ) nr,
              fastighet
@@ -279,68 +351,22 @@ IF OBJECT_ID('tempdb..#spillvatten')is null OR (select top 1 RebuildStatus from 
     go
 
 ;taxekod:
-IF OBJECT_ID(N'tempdb..#Taxekod')  is null  -- OR @rebuiltStatus2 = 1
+IF OBJECT_ID(N'tempdb..#Taxekod')  is null and (select null) is not null
     begin BEGIN TRY DROP TABLE #Taxekod END TRY BEGIN CATCH select 1 END CATCH;
-
-        select null q2z
-			  , null strDelprodukt
-			  , null strTaxebenamning
-			  , null strFastBeteckningHel
-			  , null decAnlXKoordinat
-			  , null decAnlYkoordinat into #taxekod;
-
-    BEGIN TRY DROP TABLE #slam END TRY BEGIN CATCH select 1 END CATCH declare @internalStatus table (one NVARCHAR(max), start datetime);;
-
-	    with
-		taxekod as (select * from #taxekod)
-	      , slam    as
-		    (select null q2z
-			  , null strDelprodukt
-			  , null strTaxebenamning
-			  , null strFastBeteckningHel
-			  , null decAnlXKoordinat
-			  , null decAnlYkoordinat)
-		--  ( select max(q2z) q2z,strDelprodukt, strTaxebenamning,strFastBeteckningHel, decAnlXKoordinat, decAnlYkoordinat from taxekod q group by strDelprodukt, strTaxebenamning,strFastBeteckningHel,decAnlXKoordinat,decAnlYkoordinat)
-	    select *into #slam from slam
-
-	INSERT INTO #statusTable (One,start,rader) select N'(slam,taxekod)#Röd', CURRENT_TIMESTAMP,0;
-;
-    with slamm               as (select strFastBeteckningHel
-					 , strDelprodukt
-					 , z2 = STUFF((SELECT distinct ',' + concat(nullif(x.strTaxebenamning, ''),
-					nullif(concat(' Avbrutet:', FORMAT(
-						nullif(x.q2z, smalldatetimefromparts(1900, 01, 01, 00, 00)),
-						'yyyy-MM-dd')),
-					       ' Avbrutet:'))
-				       FROM #slam x
-				       where q.strFastBeteckningHel = x.strFastBeteckningHel
-				       FOR XML PATH ('')), 1, 1, '')
-				    FROM #slam q
-				    group by strFastBeteckningHel, strDelprodukt)
-
-	  , slam                as (select strFastBeteckningHel
-					 , datStoppdatum =STUFF(
-					(SELECT distinct ',' + nullif(strDelprodukt + '|', '|') + z2
-					 FROM slamm x
-					 where q.strFastBeteckningHel = x.strFastBeteckningHel
-					 FOR XML PATH ('')), 1, 1, '')
-				    from slamm q
-				    group by strFastBeteckningHel)
-	select * from #taxekod
-
-
-      -- select * into #taxekod from openquery(admsql01,'with anlaggning as (select strAnlnr,strAnlaggningsKategori,strFastBeteckningHel,case when nullif(decAnlYkoordinat, 0) is not null then nullif(decAnlXKoordinat, 0) end decAnlXKoordinat,case when nullif(decAnlXKoordinat, 0) is not null then nullif(decAnlYkoordinat, 0) end decAnlYkoordinat from (select left(strFastBeteckningHel, case when charindex('' '', strFastBeteckningHel) = 0 then len(strFastBeteckningHel) + 1 else charindex('' '', strFastBeteckningHel) end - 1) strSocken,strAnlnr,strAnlaggningsKategori,strFastBeteckningHel,decAnlXKoordinat,decAnlYkoordinat from (select strAnlnr, strAnlaggningsKategori, strFastBeteckningHel, decAnlXKoordinat, decAnlYkoordinat from (select anlaggning.* from EDPFutureGotland.dbo.vwAnlaggning anlaggning inner join EDPFutureGotland.dbo.vwTjanst tjanst on anlaggning.strAnlnr = tjanst.strAnlnr) t) vwAnlaggning) x inner join (select ''Roma'' "socken" union select N''Björke'' union select ''Dalhem'' union select ''Halla'' union select ''Sjonhem'' union select ''Ganthem'' union select N''Hörsne'' union select ''Bara'' union select N''Källunge'' union select ''Vallstena'' union select ''Norrlanda'' union select ''Klinte'' union select N''Fröjel'' union select ''Eksta'') fastighetsfilter on strSocken = fastighetsfilter.socken) , FilteredTjanste as (select strTaxekod, intTjanstnr, strAnlOrt, q2, strTaxebenamning, strDelprodukt, strAnlnr from (select strTaxekod,intTjanstnr,strAnlOrt,isnull(datStoppdatum, smalldatetimefromparts(1900, 01, 01, 00, 00)) q2,strTaxebenamning,vwRenhTjanstStatistik.strDelprodukt,strAnlnr from (select formated.strTaxekod,formated.intTjanstnr,formated.strAnlOrt,datStoppdatum,formated.strTaxebenamning,formated.strDelprodukt,strAnlnr from EDPFutureGotland.dbo.vwRenhTjanstStatistik formated inner join EDPFutureGotland.dbo.vwTjanst tjanst on tjanst.intTjanstnr = formated.intTjanstnr where formated.intTjanstnr is not null and formated.intTjanstnr != 0 and formated.intTjanstnr != '''' ) vwRenhTjanstStatistik left outer join (select N''DEPO'' "strDelprodukt" union select N''CONT'' union select N''GRUNDR'' union select N''ÖVRTRA'' union select N''ÖVRTRA'' union select ''HUSH'' union select N''ÅVCTR'') q on vwRenhTjanstStatistik.strDelprodukt = q.strDelprodukt where q.strDelprodukt is null) p where strTaxekod != ''BUDSM'' AND left(strTaxekod, ''4'') != ''HYRA'' and coalesce(strDelprodukt,strTaxebenamning) is not null) , formated as (select intTjanstnr, strDelprodukt, strTaxebenamning, max(q2) q2z,max(strAnlnr) strAnlnrx from FilteredTjanste group by strTaxekod, intTjanstnr, strAnlOrt, strDelprodukt, strTaxebenamning) select strFastBeteckningHel, decAnlXKoordinat, decAnlYkoordinat, intTjanstnr, strDelprodukt, strTaxebenamning, q2z from anlaggning inner join formated on anlaggning.strAnlnr = formated.strAnlnrx');
-    --INSERT INTO #statusTable select N'rebuilt#Taxekod',CURRENT_TIMESTAMP,@@ROWCOUNT end else INSERT INTO #statusTable select N'preloading#Taxekod',CURRENT_TIMESTAMP,@@ROWCOUNT
-----goto TableInitiate
-
+select '' status into #taxekod
 end
-    go
-    ;
+    go;
 röd:
-repport:
 IF OBJECT_ID(N'tempdb..#Röd') is null
     begin
 	BEGIN TRY DROP TABLE #Röd END TRY BEGIN CATCH select 1 END CATCH
+;
+	declare @rod table
+	(
+		fastighet nvarchar(200), Fastighet_tillstand nvarchar(200), Diarienummer nvarchar(100), Beslut_datum nvarchar(40), utförddatum nvarchar(40), Anteckning nvarchar(max), Byggnadstyp nvarchar(100), vaPlan varchar(max), fstatus nvarchar(30), LocaltOmH varchar(max), slam varchar, bygTot int, flagga geometry
+		unique (fastighet,Fastighet_tillstand,Diarienummer,Beslut_datum,utförddatum,Byggnadstyp,fstatus,bygTot)
+		with (ignore_dup_key = on)
+	)
 ;
 	with
 	    fastigheterx as (select * from #FastighetsYtor)
@@ -351,19 +377,18 @@ IF OBJECT_ID(N'tempdb..#Röd') is null
 	  , egetOmhandertagande as (select fastighet, LocaltOmH,shape from #egetOmhändertagande)
 	  , anlaggningar        as (select diarienummer, Fastighet, Fastighet_tillstand, Beslut_datum, utförddatum, Anteckning,fstatus, anlaggningspunkt
 				    from #Socken_tillstånd)
-	  , joinedInOne        as (
-				    select fastigheterX.socken,
-					   coalesce(byggNader.FAStighet, anlaggningar.FAStighet, egetOmh.fastighet, va.fastighet, fastigheterX.fastighet)
-						   fastighet
-					 ,Fastighet_tillstand,
-					   Diarienummer, Beslut_datum, utförddatum, Anteckning, Byggnadstyp
-					 , vatyp vaPlan
-					 , anlaggningar.fstatus fstatus
-					 , LocaltOmH , ''                                                                         slam--(select top 1 datStoppdatum from slam where attUtsokaFran.fastighet = slam.strFastBeteckningHel)
-					 , byggnader.bygTot
-					 , coalesce(AnlaggningsPunkt, egetOmh.shape, byggnader.ByggShape).STPointN(1) flagga
-					from byggnader
-					    left outer join anlaggningar
+	  , toTeamVatten        as (
+	    select coalesce(byggNader.FAStighet, anlaggningar.FAStighet, egetOmh.fastighet, va.fastighet, fastigheterX.fastighet)
+	        	fastighet, socken
+	         , Fastighet_tillstand, Diarienummer, Beslut_datum, utförddatum, Anteckning, Byggnadstyp
+		 , vatyp                                                                       vaPlan
+		 , anlaggningar.fstatus                                                       fstatus
+	 	, LocaltOmH , '' slam--(select top 1 datStoppdatum from slam where attUtsokaFran.fastighet = slam.strFastBeteckningHel)
+		 , byggnader.bygTot
+		 , coalesce(AnlaggningsPunkt, egetOmh.shape, byggnader.ByggShape).STPointN(1) flagga
+
+	    from byggnader
+		full outer join anlaggningar
 						on anlaggningar.FAStighet = byggNader.FAStighet
 					    left outer join egetOmhandertagande egetOmh
 						on byggNader.FAStighet = egetOmh.FAStighet
@@ -386,29 +411,49 @@ IF OBJECT_ID(N'tempdb..#Röd') is null
 						      --else (case when null is not null then 'gem' else '?' end)
         					end end)
 					    else
-					        coalesce(fstatus,'?') end
-					   ) status
+					        coalesce(fstatus,'?') end ) Fstatus
 	         			, socken, fastighet,Diarienummer,Fastighet_tillstand,Beslut_datum,utförddatum
-	         			,Anteckning, LocaltOmH egetOmhändertagandeInfo, Byggnadstyp, VaPlan [Va-Spill], flagga, bygTot
-				   from joinedInOne)
-	select *
-	into #röd
+	         			,Anteckning, LocaltOmH -- egetOmhändertagandeInfo
+	         			 , Byggnadstyp, VaPlan
+	         			 --[Va-Spill]
+	         			 , flagga, bygTot
+	    				, slam
+				  from toTeamVatten)
+
+	insert into @rod (Fstatus, fastighet, Fastighet_tillstand, Beslut_datum, utförddatum, Anteckning, LocaltOmH, Byggnadstyp, VaPlan, flagga, slam, bygTot)
+	select Fstatus, fastighet, Fastighet_tillstand, left(Beslut_datum,40), left(utförddatum,40), Anteckning, LocaltOmH, Byggnadstyp, VaPlan, flagga, slam, bygTot
 	from flaggKorrigering
 
 	--INSERT INTO #statusTable (one, start) select one, start from @internalStatus
+	; select *into #röd from @rod;
+
+	select * from #röd
+		where fastighet like N'Hörsne%'
+order by Fstatus desc
 	INSERT INTO #statusTable select N'rebuilt#Röd', CURRENT_TIMESTAMP, @@ROWCOUNT
     end else INSERT INTO #statusTable select N'preloading#Röd', CURRENT_TIMESTAMP, @@ROWCOUNT;
 
-select * from #statusTable
-;
-with q as (select distinct status,'' handläggare,socken,fastighet, Diarienummer,Fastighet_tillstand,Beslut_datum,utförddatum,Anteckning,egetOmhändertagandeInfo egetOmhändertangandeInfo,[Va-Spill],Byggnadstyp,bygTot from #röd)
-    ,z as (select *,row_number() over (order by status,fastighet) rwnr from q)
+go
+if (select null)  is not null
+    begin
+    	repport:
+		select * from #statusTable
+		    ;
+with
+    q as (select distinct status
+			, ''                      handläggare
+			, socken, fastighet, Diarienummer, Fastighet_tillstand, Beslut_datum, utförddatum, Anteckning
+			, egetOmhändertagandeInfo egetOmhändertangandeInfo
+			, [Va-Spill], Byggnadstyp, bygTot
+	  from #röd)
+  , z as (select *, row_number() over (order by status,fastighet) rwnr from q)
 
-select top 4000 status, handläggare, socken, fastighet, Diarienummer, Fastighet_tillstand, Beslut_datum, utförddatum, Anteckning, egetOmhändertangandeInfo, [Va-Spill], Byggnadstyp, bygTot
+select top 4000 status
+	      , handläggare, socken, fastighet, Diarienummer, Fastighet_tillstand, Beslut_datum, utförddatum, Anteckning, egetOmhändertangandeInfo, [Va-Spill], Byggnadstyp, bygTot
 from z
-	where rwnr > 500
-	order by status desc
-
+where rwnr > 500
+order by status desc
+    end
 
 
 --select * from #röd where left(fastighet, len('Björke')) = 'Björke';
