@@ -1,5 +1,5 @@
-IF OBJECT_ID(N'tempdb..#egetOmh‰ndertagande') is null --OR (select top 1 RebuildStatus from #SettingTable) = 1
-    begin BEGIN TRY DROP TABLE #egetOmh‰ndertagande END TRY BEGIN CATCH select 1 END CATCH
+IF OBJECT_ID(N'tempdb..#egetOmh√§ndertagande') is null --OR (select top 1 RebuildStatus from #SettingTable) = 1
+    begin BEGIN TRY DROP TABLE #egetOmh√§ndertagande END TRY BEGIN CATCH select 1 END CATCH
     ; with
 fastighetsYtor as (select *
 	  from #FastighetsYtor)
@@ -15,19 +15,11 @@ fastighetsYtor as (select *
 	    	nullif(LOKALT_SLAM_P.Fastighet_,''),' ',
 		nullif(LOKALT_SLAM_P.Fastighe00,''))),'') fas
 
-           ,Fastighet_,Fastighe00,Lokalt_omh, Anteckning,Beslutsdat,Eget_omh‰n, shape
+           ,Fastighet_,Fastighe00,Lokalt_omh, Anteckning,Beslutsdat,Eget_omh√§n, shape
 		from sde_miljo_halsoskydd.gng.MoH_Slam_Lokalt_p_evw LOKALT_SLAM_P
               )
 
-           ,noShapeLikeMatch as (select Diarienr
-				   , fy.Fastighet
-				   , Fastighet_
-				   , Fastighe00
-				   , Lokalt_omh
-				   , Anteckning
-				   , Beslutsdat
-				   , Eget_omh‰n
-				   , fy.shape
+           ,noShapeLikeMatch as (select Diarienr, fy.Fastighet, Fastighet_, Fastighe00, Lokalt_omh, Anteckning, Beslutsdat, Eget_omh√§n, fy.shape
 			      from LOKALT_SLAM_P wf
 				  left outer join fastighetsYtor fY
 				  on wf.Fastighet like '%' + fy.FAStighet + '%')
@@ -35,22 +27,23 @@ fastighetsYtor as (select *
 	      select row_number() over (partition by Fastighet order by Beslutsdat) Nr,
 	             fastighet,shape,
 	      concat(nullif(ltrim(Diarienr)+' - ',' - '), nullif(ltrim(Fastighe00)+' - ',' - '),
-		       nullif(ltrim(Fastighet_)+' - ',' - '), nullif(ltrim(Eget_omh‰n)+' - ',' - '),
+		       nullif(ltrim(Fastighet_)+' - ',' - '), nullif(ltrim(Eget_omh√§n)+' - ',' - '),
 			nullif(ltrim(Lokalt_omh)+' - ',' - '), nullif(ltrim(Anteckning)+' - ',' - '),
-		       FORMAT(Beslutsdat,' yyyy-MM-dd')) egetOmh‰ndertangandeInfo
+		       FORMAT(Beslutsdat,' yyyy-MM-dd')) egetOmh√§ndertangandeInfo
 		       from noShapeLikeMatch  sYMfuf)
        ,egetOmhy as (
 	      select fastighet,shape, nr
 				      , STUFF((
-	    SELECT ', ' + CAST(egetOmh.egetOmh‰ndertangandeInfo AS VARCHAR(MAX))
+	    SELECT ', ' + CAST(egetOmh.egetOmh√§ndertangandeInfo AS VARCHAR(MAX))
 	    FROM egetOmh
 	    WHERE (egetOmh.FAStighet = r.FAStighet)
 	    FOR XML PATH(''),TYPE).value('(./text())[1]','VARCHAR(MAX)')
 	  ,1,2,'') AS  LocaltOmH from egetOmh r)
 
       select fastighet, shape, LocaltOmH
-      into #egetOmh‰ndertagande from egetOmhy where nr = 1  ;
+      into #egetOmh√§ndertagande from egetOmhy where nr = 1  ;
 
-    INSERT INTO #statusTable select N'rebuilt#egetOmh‰ndertagande',CURRENT_TIMESTAMP,@@ROWCOUNT END else
-        INSERT INTO #statusTable select N'preloading#egetOmh‰ndertagande',CURRENT_TIMESTAMP,@@ROWCOUNT
---goto TableInitiate */
+    INSERT INTO #statusTable select N'rebuilt#egetOmh√§ndertagande',CURRENT_TIMESTAMP,@@ROWCOUNT END else
+        INSERT INTO #statusTable select N'preloading#egetOmh√§ndertagande',CURRENT_TIMESTAMP,@@ROWCOUNT
+----goto TableInitiate */
+        go

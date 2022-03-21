@@ -1,53 +1,63 @@
-IF OBJECT_ID('tempdb..#statusTable') IS not null
-        drop table #statusTable;
-	create table #statusTable (one NVARCHAR(max),start datetime,rader integer);
-go
-
-IF OBJECT_ID('tempdb..#settingTable') IS not NULL
-    drop table #settingTable;
-   begin try
-    create Table #settingTable (
-    rodDatum datetime
-    ,RebuildStatus integer
-    );
-
-    insert into #settingTable (rodDatum, RebuildStatus)
-    select DATETIME2FROMPARTS(2006, 10, 1, 1, 1, 1, 1, 1),  1
--- dropTabels?
-	end try begin catch select '' end catch
-go
-
-IF OBJECT_ID('tempdb..#socknarOfInterest') IS not NULL
-    drop table #socknarOfInterest;
-
-    create table #socknarOfInterest (Socken nvarchar (100) not null , shape geometry);
-
-insert into #socknarOfInterest
-select coalesce(value,SOCKEN) SOCKEN,Shape
-    from STRING_SPLIT(N'Källunge,Stenkyrka,Bara,Hörsne,Stenkyrka,Vallstena,Norrlanda', ',') socknarOfIntresse
-          inner join
-              sde_regionstyrelsen.gng.nyko_socknar_y_evw
-                  on SOCKEN like '%' + value + '%'
-
-       INSERT INTO #statusTable
-        select '',CURRENT_TIMESTAMP,@@ROWCOUNT
-;
-go
+ --:C:/Users/crbk01/AppData/Roaming/JetBrains/DataGrip2021.1/consoles/db/a922a8bc-6602-44d4-8ab2-a4062fc64d99/Kv-FlaggGenerering/RunConfig/a1createStatusTable.sql
+begin try drop table #statusTable end try begin catch end catch create table #statusTable (one NVARCHAR(max), start datetime, rader integer);
 
 TableInitiate:
 -- dropTabels?
 
-if (select '') IS NULL BEGIN TRY Drop table #FastighetsYtor end try begin catch select '' end catch
-if (select null) IS NULL BEGIN TRY Drop table #ByggnadPåFastighetISocken end try begin catch select '' end catch
-if (select null) IS NULL BEGIN TRY Drop table #Socken_tillstånd end try begin catch select '' end catch
-if (select null) IS NULL BEGIN TRY Drop table #egetOmhändertagande end try begin catch select '' end catch
-if (select null) IS NULL BEGIN TRY Drop table #spillvatten end try begin catch select '' end catch
-if (select null) IS NULL BEGIN TRY Drop table #taxekod end try begin catch select '' end catch
-if (select null) IS NULL BEGIN TRY Drop table #röd end try begin catch select '' end catch
-;
-go
+declare @f as int;set @f = 0; begin try if OBJECT_ID('tempdb..#FastighetsYtor') IS not NULL set @f = (select count(*) from #FastighetsYtor)end try begin catch select '' end catch INSERT INTO #statusTable (one, start, rader) values('#FastighetsYtor', sysdatetime(),@f ) go
+declare @f as int;set @f = 0; begin try if OBJECT_ID('tempdb..#ByggnadPåFastighetISocken') IS not NULL set @f = (select count(*) from #ByggnadPåFastighetISocken)end try begin catch select '' end catch INSERT INTO #statusTable (one, start, rader) values(	'#ByggnadP', sysdatetime(),@f ) go
+declare @f as int;set @f = 0; begin try if OBJECT_ID('tempdb..#Socken_tillstånd 	') IS not NULL set @f = (select count(*) from #Socken_tillstånd )end try begin catch select '' end catch INSERT INTO #statusTable (one, start, rader) values(		'#Socken_tillstån', sysdatetime(),@f ) go
+declare @f as int;set @f = 0; begin try if OBJECT_ID('tempdb..#egetOmhändertagande ') IS not NULL set @f = (select count(*) from #egetOmhändertagande)end try begin catch select '' end catch INSERT INTO #statusTable (one, start, rader) values(		'#egetOmhändertagand', sysdatetime(),@f ) go
+declare @f as int;set @f = 0; begin try if OBJECT_ID('tempdb..#spillvatten') IS not NULL set @f = (select count(*) from #spillvatten )end try begin catch select '' end catch INSERT INTO #statusTable (one, start, rader) values(				'#spillvatten', sysdatetime(),@f ) go
+declare @f as int;set @f = 0; begin try if OBJECT_ID('tempdb..#taxekod') IS not NULL set @f = (select count(*) from #taxekod )end try begin catch select '' end catch INSERT INTO #statusTable (one, start, rader) values(					'#taxekod', sysdatetime(),@f ) go
+declare @f as int;set @f = 0; begin try if OBJECT_ID('tempdb..#röd') IS not NULL set @f = (select count(*) from #röd )end try begin catch select '' end catch INSERT INTO #statusTable (one, start, rader) values(						'#röd', sysdatetime(),@f ) go
 
- FastighetsYtor:
+select * from #statustable
+go
+ --:C:/Users/crbk01/AppData/Roaming/JetBrains/DataGrip2021.1/consoles/db/a922a8bc-6602-44d4-8ab2-a4062fc64d99/Kv-FlaggGenerering/RunConfig/a3SettingTable.sql
+begin try drop table #settingTable end try begin catch select '' end catch
+
+create Table #settingTable (
+rodDatum datetime
+,RebuildStatus integer
+,socknar nvarchar(300)
+)
+
+insert into #settingTable (rodDatum, RebuildStatus,socknar)
+select DATETIME2FROMPARTS(2006, 10, 1, 1, 1, 1, 1, 1),
+       0,
+	N'Björke,Dalhem,Fröjel,Ganthem,Halla,Klinte,Roma'
+
+
+go
+ --:C:/Users/crbk01/AppData/Roaming/JetBrains/DataGrip2021.1/consoles/db/a922a8bc-6602-44d4-8ab2-a4062fc64d99/Kv-FlaggGenerering/RunConfig/a2CleanUp.sql
+-- dropTabels?
+
+if (select null) IS NULL BEGIN TRY Drop table #FastighetsYtor end try begin catch select '' end catch
+
+if (select null) IS NULL BEGIN TRY Drop table #ByggnadPåFastighetISocken end try begin catch select '' end catch
+
+if (select null) IS NULL BEGIN TRY Drop table #Socken_tillstånd end try begin catch select '' end catch
+
+if (select null) IS NULL BEGIN TRY Drop table #egetOmhändertagande end try begin catch select '' end catch
+
+if (select null) IS NULL BEGIN TRY Drop table #spillvatten end try begin catch select '' end catch
+
+if (select null) IS NULL BEGIN TRY Drop table #taxekod end try begin catch select '' end catch
+
+if (select null) IS NULL BEGIN TRY Drop table #röd end try begin catch select '' end catch
+go
+ --:C:/Users/crbk01/AppData/Roaming/JetBrains/DataGrip2021.1/consoles/db/a922a8bc-6602-44d4-8ab2-a4062fc64d99/Kv-FlaggGenerering/RunConfig/bCreateSockenTable.sql
+create table #socknarOfInterest (Socken nvarchar (100) not null , shape geometry)
+insert into #socknarOfInterest
+select SOCKEN,Shape from
+          STRING_SPLIT((select socknar from #settingtable), ',')
+	   socknarOfIntresse
+          inner join
+              sde_regionstyrelsen.gng.nyko_socknar_y_evw
+                  on SOCKEN = value
+go
+ --:C:/Users/crbk01/AppData/Roaming/JetBrains/DataGrip2021.1/consoles/db/a922a8bc-6602-44d4-8ab2-a4062fc64d99/Kv-FlaggGenerering/RunConfig/cFastighetsYtor.sql
 IF OBJECT_ID('tempdb..#FastighetsYtor') IS NULL
        OR (select top 1 RebuildStatus from #settingTable) = 1
     Begin BEGIN TRY DROP TABLE #FastighetsYtor END TRY BEGIN CATCH select 1 END CATCH;
@@ -69,7 +79,7 @@ IF OBJECT_ID('tempdb..#FastighetsYtor') IS NULL
     else INSERT INTO #statusTable select 'preloading#FastighetsYtor',CURRENT_TIMESTAMP,@@ROWCOUNT
 ----goto TableInitiate;
  go
-ByggnadPåFastighetISocken:
+ --:C:/Users/crbk01/AppData/Roaming/JetBrains/DataGrip2021.1/consoles/db/a922a8bc-6602-44d4-8ab2-a4062fc64d99/Kv-FlaggGenerering/RunConfig/dByggnader.sql
 IF OBJECT_ID(N'tempdb..#ByggnadPåFastighetISocken') is null
        OR (select top 1 RebuildStatus from #SettingTable) = 1
        --ByggBeslut as (select Ärendenummer,                         Byggnadstyp,                    Fastighetsbeteckning,  concat(Inkommande_datum,Registereringsdatum,År,Beslutsdatum,Status,Planbedömning,Beslutsnivå,Ärendetyp) rest,   GDB_GEOMATTR_DATA,  Shape, OBJECTID  from sde_bygglov.gng.BYGGLOVSPUNKTER union all select concat(DIARIENR,ANSÖKAN),   ÄNDAMÅL,                     Beteckning,               concat(DATUM,BESLUT,ANTAL,concat(URSPRUNG,id, Kod),AVSER,ANVÄNDNING),                                   GDB_GEOMATTR_DATA,  Shape, OBJECTID  from sde_bygglov.gng.BYGGLOVREG_ALDRE_P union all select concat(DIARIENR,ANSÖKAN),   concat(BYGGNADSTY,ÄNDAMÅL),     AVSER,                 concat(DATUM,BESLUT,År,ANTAL,ANMÄRKNIN,ANM,ANSÖKAN_A),                                            GDB_GEOMATTR_DATA,  Shape, OBJECTID  from sde_bygglov.gng.BYGGLOVSREG_2007_2019_P union all select DIARIENR,                   BYGGNADSTY,                     ANSÖKAN_AV,            concat(ANM,BESLUT),                                                                      GDB_GEOMATTR_DATA,  Shape, OBJECTID  from sde_bygglov.gng.BYGGLOVSREGISTRERING_CA_1999_2007_P),
@@ -107,7 +117,7 @@ IF OBJECT_ID(N'tempdb..#ByggnadPåFastighetISocken') is null
 
 ----goto TableInitiate
 go
-;Socken_tillstånd:
+ --:C:/Users/crbk01/AppData/Roaming/JetBrains/DataGrip2021.1/consoles/db/a922a8bc-6602-44d4-8ab2-a4062fc64d99/Kv-FlaggGenerering/RunConfig/eAnlaggningar.sql
 	IF (OBJECT_ID(N'tempdb..#Socken_tillstånd') IS NULL) OR (select top 1 RebuildStatus from #SettingTable) = 1
 	begin
 	    begin try drop table #Socken_tillstånd end try begin catch select '' end catch;
@@ -255,7 +265,7 @@ else
         INSERT INTO #statusTable select N'preloading#Socken_tillstånd',CURRENT_TIMESTAMP,@@ROWCOUNT
 ----goto TableInitiate
 go
-;egetOmhändertagande:
+ --:C:/Users/crbk01/AppData/Roaming/JetBrains/DataGrip2021.1/consoles/db/a922a8bc-6602-44d4-8ab2-a4062fc64d99/Kv-FlaggGenerering/RunConfig/fegetOmhandertagande.sql
 IF OBJECT_ID(N'tempdb..#egetOmhändertagande') is null --OR (select top 1 RebuildStatus from #SettingTable) = 1
     begin BEGIN TRY DROP TABLE #egetOmhändertagande END TRY BEGIN CATCH select 1 END CATCH
     ; with
@@ -305,7 +315,7 @@ fastighetsYtor as (select *
         INSERT INTO #statusTable select N'preloading#egetOmhändertagande',CURRENT_TIMESTAMP,@@ROWCOUNT
 ----goto TableInitiate */
         go
-;spillvatten:
+ --:C:/Users/crbk01/AppData/Roaming/JetBrains/DataGrip2021.1/consoles/db/a922a8bc-6602-44d4-8ab2-a4062fc64d99/Kv-FlaggGenerering/RunConfig/gVa.sql
 IF OBJECT_ID('tempdb..#spillvatten')is null OR (select top 1 RebuildStatus from #settingtable) = 1-- OR @rebuiltStatus1 = 1
     begin BEGIN TRY DROP TABLE #spillvatten END TRY BEGIN CATCH select 1 END CATCH
 
@@ -339,24 +349,24 @@ IF OBJECT_ID('tempdb..#spillvatten')is null OR (select top 1 RebuildStatus from 
     WHERE (vax.FAStighet = r.FAStighet)
     FOR XML PATH(''),TYPE).value('(./text())[1]','VARCHAR(MAX)')
   ,1,2,'') AS vaTyp			 from vax r)
-
      select left(fastighet,100) fastighet, left(vaTyp,273) vaTyp
    	into #spillvatten
       from va where nr = 1
-
+    -- döoom vaPlan till komVa
+-- dela upp till separat column om gemensam anläggning, gemensamhetsanläggning
     INSERT INTO #statusTable select 'rebuilt#spillvatten',CURRENT_TIMESTAMP,@@ROWCOUNT END
     else INSERT INTO #statusTable select 'preloading#spillvatten',
            CURRENT_TIMESTAMP,@@ROWCOUNT
 ----goto TableInitiate
     go
 
-;taxekod:
+ --:C:/Users/crbk01/AppData/Roaming/JetBrains/DataGrip2021.1/consoles/db/a922a8bc-6602-44d4-8ab2-a4062fc64d99/Kv-FlaggGenerering/RunConfig/hTaxeKod.sql
 IF OBJECT_ID(N'tempdb..#Taxekod')  is null and (select null) is not null
     begin BEGIN TRY DROP TABLE #Taxekod END TRY BEGIN CATCH select 1 END CATCH;
 select '' status into #taxekod
 end
     go;
-röd:
+ --:C:/Users/crbk01/AppData/Roaming/JetBrains/DataGrip2021.1/consoles/db/a922a8bc-6602-44d4-8ab2-a4062fc64d99/Kv-FlaggGenerering/RunConfig/iRod.sql
 IF OBJECT_ID(N'tempdb..#Röd') is null
     begin
 	BEGIN TRY DROP TABLE #Röd END TRY BEGIN CATCH select 1 END CATCH
@@ -389,15 +399,14 @@ IF OBJECT_ID(N'tempdb..#Röd') is null
 
 	    from byggnader
 		full outer join anlaggningar
-						on anlaggningar.FAStighet = byggNader.FAStighet
-					    left outer join egetOmhandertagande egetOmh
-						on byggNader.FAStighet = egetOmh.FAStighet
-					    left outer join vaPlan va
-						on byggNader.FAStighet = va.FAStighet
-    					    inner join fastigheterX
-						on byggNader.FAStighet = fastigheterX.fastighet
-				    )
-
+			    on anlaggningar.FAStighet = byggNader.FAStighet
+			left outer join egetOmhandertagande egetOmh
+			    on byggNader.FAStighet = egetOmh.FAStighet
+			left outer join vaPlan va
+			    on byggNader.FAStighet = va.FAStighet
+			inner join fastigheterX
+			    on byggNader.FAStighet = fastigheterX.fastighet
+		)
 	    , flaggKorrigering as (select
 	           			(case when fstatus = N'röd' or FSTATUS is null
 						then
@@ -411,7 +420,8 @@ IF OBJECT_ID(N'tempdb..#Röd') is null
 						      --else (case when null is not null then 'gem' else '?' end)
         					end end)
 					    else
-					        coalesce(fstatus,'?') end ) Fstatus
+					        case when fstatus = 'ok' then 'grön' else
+					        coalesce(fstatus,'?') end end ) Fstatus
 	         			, socken, fastighet,Diarienummer,Fastighet_tillstand,Beslut_datum,utförddatum
 	         			,Anteckning, LocaltOmH -- egetOmhändertagandeInfo
 	         			 , Byggnadstyp, VaPlan
@@ -428,19 +438,20 @@ IF OBJECT_ID(N'tempdb..#Röd') is null
 	; select *into #röd from @rod;
 
 	select * from #röd
-		where fastighet like N'Hörsne%'
+		--where fastighet like N'Hörsne%'
+		where fstatus !='grön'
 order by Fstatus desc
 	INSERT INTO #statusTable select N'rebuilt#Röd', CURRENT_TIMESTAMP, @@ROWCOUNT
     end else INSERT INTO #statusTable select N'preloading#Röd', CURRENT_TIMESTAMP, @@ROWCOUNT;
 
 go
-if (select null)  is not null
+if (select '')  is not null
     begin
     	repport:
 		select * from #statusTable
 		    ;
 with
-    q as (select distinct status
+    q as (select distinct Fstatus
 			, ''                      handläggare
 			, socken, fastighet, Diarienummer, Fastighet_tillstand, Beslut_datum, utförddatum, Anteckning
 			, egetOmhändertagandeInfo egetOmhändertangandeInfo
