@@ -1,6 +1,8 @@
-IF OBJECT_ID('tempdb..#FastighetsYtor') IS NULL
-       OR (select top 1 RebuildStatus from #settingTable) = 1
-    Begin BEGIN TRY DROP TABLE #FastighetsYtor END TRY BEGIN CATCH select 1 END CATCH;
+IF OBJECT_ID('tempdb..#FastighetsYtor') IS not null OR (select top 1 RebuildStatus from #settingTable) = 1
+    BEGIN TRY DROP TABLE #FastighetsYtor END TRY BEGIN CATCH select 'could not drop FastighetsYtor' END CATCH;
+go;
+IF OBJECT_ID('tempdb..#FastighetsYtor') IS null
+    Begin
 
     with 
        fasWithShape as (select fa.FNR,fa.BETECKNING , fa.TRAKT, yt.Shape from sde_geofir_gotland.gng.FA_FASTIGHET fa inner join sde_gsd.gng.REGISTERENHET_YTA yt on fa.FNR = yt.FNR_FDS)
@@ -17,5 +19,7 @@ IF OBJECT_ID('tempdb..#FastighetsYtor') IS NULL
     --set @rebuiltStatus1 = 1
         end
     else INSERT INTO #statusTable select 'preloading#FastighetsYtor',CURRENT_TIMESTAMP,@@ROWCOUNT
+
+
 ----goto TableInitiate;
  go

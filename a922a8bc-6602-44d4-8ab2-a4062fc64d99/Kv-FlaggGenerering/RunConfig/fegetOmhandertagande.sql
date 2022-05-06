@@ -1,5 +1,8 @@
-IF OBJECT_ID(N'tempdb..#egetOmhändertagande') is null --OR (select top 1 RebuildStatus from #SettingTable) = 1
-    begin BEGIN TRY DROP TABLE #egetOmhändertagande END TRY BEGIN CATCH select 1 END CATCH
+IF OBJECT_ID(N'tempdb..#egetOmhändertagande') is not null OR (select top 1 RebuildStatus from #SettingTable) = 1
+     BEGIN TRY DROP TABLE #egetOmhändertagande END TRY BEGIN CATCH select 'error DROP TABLE #egetOmhändertagande' END CATCH
+go;
+IF OBJECT_ID(N'tempdb..#egetOmhändertagande') is null
+ begin
     ; with
 fastighetsYtor as (select *
 	  from #FastighetsYtor)
@@ -46,4 +49,4 @@ fastighetsYtor as (select *
     INSERT INTO #statusTable select N'rebuilt#egetOmhändertagande',CURRENT_TIMESTAMP,@@ROWCOUNT END else
         INSERT INTO #statusTable select N'preloading#egetOmhändertagande',CURRENT_TIMESTAMP,@@ROWCOUNT
 ----goto TableInitiate */
-        go
+go

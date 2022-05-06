@@ -1,6 +1,8 @@
-IF OBJECT_ID('tempdb..#spillvatten')is null OR (select top 1 RebuildStatus from #settingtable) = 1-- OR @rebuiltStatus1 = 1
-    begin BEGIN TRY DROP TABLE #spillvatten END TRY BEGIN CATCH select 1 END CATCH
-
+ IF OBJECT_ID('tempdb..#spillvatten') is not null OR (select top 1 RebuildStatus from #settingtable) = 1-- OR @rebuiltStatus1 = 1
+     BEGIN TRY DROP TABLE #spillvatten END TRY BEGIN CATCH select 'error DROP TABLE #spillvatten' END CATCH
+go;
+IF OBJECT_ID('tempdb..#spillvatten') is null
+    begin
      ;with
         fastighetsYtor as (select socken SockenX, FAStighet, Shape from #FastighetsYtor)
     	,planOmr as   (select shape,dp_i_omr,planprog,planansokn from sde_VA.gng.Va_planomraden_171016),
@@ -40,5 +42,4 @@ IF OBJECT_ID('tempdb..#spillvatten')is null OR (select top 1 RebuildStatus from 
     else INSERT INTO #statusTable select 'preloading#spillvatten',
            CURRENT_TIMESTAMP,@@ROWCOUNT
 ----goto TableInitiate
-    go
-
+go

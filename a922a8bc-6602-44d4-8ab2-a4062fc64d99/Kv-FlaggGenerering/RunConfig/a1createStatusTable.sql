@@ -1,8 +1,5 @@
 begin try drop table #statusTable end try begin catch end catch create table #statusTable (one NVARCHAR(max), start datetime, rader integer);
 
-TableInitiate:
--- dropTabels?
-
 declare @f as int;set @f = 0; begin try if OBJECT_ID('tempdb..#FastighetsYtor') IS not NULL set @f = (select count(*) from #FastighetsYtor)end try begin catch select '' end catch INSERT INTO #statusTable (one, start, rader) values('#FastighetsYtor', sysdatetime(),@f ) go
 declare @f as int;set @f = 0; begin try if OBJECT_ID('tempdb..#ByggnadPåFastighetISocken') IS not NULL set @f = (select count(*) from #ByggnadPåFastighetISocken)end try begin catch select '' end catch INSERT INTO #statusTable (one, start, rader) values(	'#ByggnadP', sysdatetime(),@f ) go
 declare @f as int;set @f = 0; begin try if OBJECT_ID('tempdb..#Socken_tillstånd 	') IS not NULL set @f = (select count(*) from #Socken_tillstånd )end try begin catch select '' end catch INSERT INTO #statusTable (one, start, rader) values(		'#Socken_tillstån', sysdatetime(),@f ) go

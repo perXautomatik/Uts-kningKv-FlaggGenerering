@@ -1,4 +1,4 @@
-begin try drop table #settingTable end try begin catch select '' end catch
+begin try drop table #settingTable end try begin catch select 'failed to drop setting table' end catch
 
 create Table #settingTable (
 rodDatum datetime
@@ -9,7 +9,6 @@ rodDatum datetime
 insert into #settingTable (rodDatum, RebuildStatus,socknar)
 select DATETIME2FROMPARTS(2006, 10, 1, 1, 1, 1, 1, 1),
        0,
-	N'Björke,Dalhem,Fröjel,Ganthem,Halla,Klinte,Roma'
-
-
+	N'Bara,Hörsne,Källunge,Norrlanda,Stenkyrka,Vallsten'
 go
+
