@@ -1,0 +1,17 @@
+<component name="ProjectRunConfigurationManager">
+  <configuration default="false" name="runScript" type="DatabaseScript">
+    <script-file value="$PROJECT_DIR$/TillMinaMedelanden/synonyms.sql" />
+    <script-file value="$PROJECT_DIR$/TillMinaMedelanden/dropTemp.sql" />
+    <script-file value="$PROJECT_DIR$/TillMinaMedelanden/createRefTable.sql" />
+    <script-file value="$PROJECT_DIR$/TillMinaMedelanden/createExcludeTable.sql" />
+    <script-file value="$PROJECT_DIR$/TillMinaMedelanden/createSockenList.sql" />
+    <script-file value="$PROJECT_DIR$/TillMinaMedelanden/RunToInsert.sql" />
+    <script-file value="$PROJECT_DIR$/TillMinaMedelanden/GenerateKalla.sql" />
+    <script-file value="$PROJECT_DIR$/TillMinaMedelanden/CreateFulaOchKorrigerande.sql" />
+    <script-file value="$PROJECT_DIR$/TillMinaMedelanden/GenerateFordiga.sql" />
+    <script-file value="$PROJECT_DIR$/TillMinaMedelanden/TillMinaMedelanden.sql" />
+    <script-mode>FILE</script-mode>
+    <data-source id="2ca40bb3-aca4-412d-a610-84b4e5da6dbe" namespace="database/&quot;tempExcel&quot;" />
+    <method v="2" />
+  </configuration>
+</component>
