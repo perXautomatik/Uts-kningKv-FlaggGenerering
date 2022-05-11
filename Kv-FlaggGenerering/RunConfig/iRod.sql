@@ -1,7 +1,7 @@
-IF OBJECT_ID(N'tempdb..#Röd') is not null OR (select top 1 RebuildStatus from #settingtable) = 1
-        BEGIN TRY DROP TABLE #Röd END TRY BEGIN CATCH select 'failed to drop #röd' END CATCH
+IF OBJECT_ID(N'tempdb..#enatSkikt') is not null OR (select top 1 RebuildStatus from #settingtable) = 1
+        BEGIN TRY DROP TABLE #enatSkikt END TRY BEGIN CATCH select 'failed to drop #enatSkikt' END CATCH
 go;
-IF OBJECT_ID(N'tempdb..#Röd') is null
+IF OBJECT_ID(N'tempdb..#enatSkikt') is null
     begin
         declare @rod table
 	(
@@ -56,17 +56,18 @@ IF OBJECT_ID(N'tempdb..#Röd') is null
 	select 		  Fstatus, fastighet, Fastighet_tillstand, left(Beslut_datum,40), left(utförddatum,40), Anteckning, LocaltOmH, Byggnadstyp, VaPlan, flagga, '', bygTot
 	from flaggKorrigering
 
-	; select *into #röd from @rod;	select * from #röd
+	; select *into #enatSkikt from @rod;	select * from #enatSkikt
 			--where fastighet like N'Hörsne%'
 		--where fstatus !='grön'
 	order by Fstatus desc
 	;
 ;
+        select * from #enatSkikt
         --gul from fastighets_Anslutningar_Gemensamhetanläggningar) , gul                 as (select null "fstat")
 	    --slam (select top 1 datStoppdatum from slam where attUtsokaFran.fastighet = slam.strFastBeteckningHel)
 	    --gem else (case when null is not null then 'gem' else '?' end)
 	    --aliases: [Va-Spill] -- egetOmhändertagandeInfo
 --INSERT INTO #statusTable (one, start) select one, start from @internalStatus
-INSERT INTO #statusTable select N'rebuilt#Röd', CURRENT_TIMESTAMP, @@ROWCOUNT end else INSERT INTO #statusTable select N'preloading#Röd', CURRENT_TIMESTAMP, @@ROWCOUNT;
+INSERT INTO #statusTable select N'rebuilt#enatSkikt', CURRENT_TIMESTAMP, @@ROWCOUNT end else INSERT INTO #statusTable select N'preloading#enatSkikt', CURRENT_TIMESTAMP, @@ROWCOUNT;
 
 go

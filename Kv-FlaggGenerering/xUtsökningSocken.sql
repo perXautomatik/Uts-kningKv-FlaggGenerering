@@ -8,7 +8,7 @@ declare @f as int;set @f = 0; begin try if OBJECT_ID('tempdb..#Socken_tillstånd
 declare @f as int;set @f = 0; begin try if OBJECT_ID('tempdb..#egetOmhändertagande ') IS not NULL set @f = (select count(*) from #egetOmhändertagande)end try begin catch select '' end catch INSERT INTO #statusTable (one, start, rader) values(		'#egetOmhändertagand', sysdatetime(),@f ) go
 declare @f as int;set @f = 0; begin try if OBJECT_ID('tempdb..#spillvatten') IS not NULL set @f = (select count(*) from #spillvatten )end try begin catch select '' end catch INSERT INTO #statusTable (one, start, rader) values(				'#spillvatten', sysdatetime(),@f ) go
 declare @f as int;set @f = 0; begin try if OBJECT_ID('tempdb..#taxekod') IS not NULL set @f = (select count(*) from #taxekod )end try begin catch select '' end catch INSERT INTO #statusTable (one, start, rader) values(					'#taxekod', sysdatetime(),@f ) go
-declare @f as int;set @f = 0; begin try if OBJECT_ID('tempdb..#röd') IS not NULL set @f = (select count(*) from #röd )end try begin catch select '' end catch INSERT INTO #statusTable (one, start, rader) values(						'#röd', sysdatetime(),@f ) go
+declare @f as int;set @f = 0; begin try if OBJECT_ID('tempdb..#enatSkikt') IS not NULL set @f = (select count(*) from #enatSkikt )end try begin catch select '' end catch INSERT INTO #statusTable (one, start, rader) values(						'#enatSkikt', sysdatetime(),@f ) go
 
 select * from #statustable
 go
@@ -38,7 +38,7 @@ if (select null) IS NULL BEGIN TRY Drop table #Socken_tillstånd end try begin c
 if (select null) IS NULL BEGIN TRY Drop table #egetOmhändertagande end try begin catch select 'error Drop table #egetOmhändertagande ' end catch
 if (select null) IS NULL BEGIN TRY Drop table #spillvatten end try begin catch select 'error Drop table #spillvatten' end catch
 if (select null) IS NULL BEGIN TRY Drop table #taxekod end try begin catch select 'error Drop table #taxekod ' end catch
-if (select null) IS NULL BEGIN TRY Drop table #röd end try begin catch select 'error Drop table #röd' end catch
+if (select null) IS NULL BEGIN TRY Drop table #enatSkikt end try begin catch select 'error Drop table #enatSkikt' end catch
 if (select null) IS NULL BEGIN TRY Drop table #FiltreraMotFlaggskiktet  end try begin catch select 'error Drop table #FiltreraMotFlaggskiktet' end catch
 go
 
@@ -48,14 +48,14 @@ IF OBJECT_ID('tempdb..#socknarOfInterest') IS not null OR (select top 1 RebuildS
 go;
 IF OBJECT_ID('tempdb..#socknarOfInterest') IS null
 begin
-create table #socknarOfInterest (Socken nvarchar (100) not null , shape geometry)
+create table #socknarOfInterest (Socken nvarchar (100) not null,SokedSocken nvarchar (100) not null, shape geometry)
 insert into #socknarOfInterest
-select SOCKEN,Shape from
-          STRING_SPLIT((select socknar from #settingtable), ',')
-	   socknarOfIntresse
+select SOCKEN,value,Shape from
+          STRING_SPLIT((select socknar from #settingtable), ',') socknarOfIntresse
           inner join
-              sde_regionstyrelsen.gng.nyko_socknar_y_evw
-                  on SOCKEN = value
+              sde_regionstyrelsen.gng.nyko_socknar_y_evw q
+                  on q.socken like iif(q.socken = 'bro',socknarOfIntresse.value,concat('%', socknarOfIntresse.value, '%'))
+    		--on IIF(q.socken != 'bro', q.socken like concat('%', socknarOfIntresse.value, '%'), q.SOCKEN = socknarOfIntresse.value )
 end
 go
 
@@ -68,21 +68,26 @@ IF OBJECT_ID('tempdb..#FastighetsYtor') IS null
 
     with 
        fasWithShape as (select fa.FNR,fa.BETECKNING , fa.TRAKT, yt.Shape from sde_geofir_gotland.gng.FA_FASTIGHET fa inner join sde_gsd.gng.REGISTERENHET_YTA yt on fa.FNR = yt.FNR_FDS)
-     ,fasInnomSocken as (
-    	    	SELECT BETECKNING FAStighet, x.Shape,so.socken, fnr Fnr_FDS
-    		from  fasWithShape x
-             inner join #socknarOfInterest so on left(x.BETECKNING,len(Socken)) = socken
-	)
-    select *
-    INTO #FastighetsYtor
-	from fasInnomSocken
+      	,socknarOfinterest as (select socken,sokedSocken,shape sockenShape from #socknarOfInterest)
+
+
+    select FNR fnr_fds, BETECKNING fastighet, Shape, coalesce(sokedSocken,socken) socken
+	 INTO #FastighetsYtor
+    from fasWithShape x
+	inner join socknarOfinterest so
+	on (left(x.BETECKNING, len(so.socken)) = so.socken
+		OR
+	    left(x.BETECKNING, len(so.sokedSocken)) = so.sokedSocken)
 
     INSERT INTO #statusTable select 'rebuilt#FastighetsYtor',CURRENT_TIMESTAMP,@@ROWCOUNT
     --set @rebuiltStatus1 = 1
         end
     else INSERT INTO #statusTable select 'preloading#FastighetsYtor',CURRENT_TIMESTAMP,@@ROWCOUNT
-
-
+/*
+exsists in fastighetsyta
+källunge burs 1:44
+källunge burs 1:47
+*/
 ----goto TableInitiate;
  go
  --:C:/Users/crbk01/AppData/Roaming/JetBrains/DataGrip2021.1/consoles/db/a922a8bc-6602-44d4-8ab2-a4062fc64d99/Kv-FlaggGenerering/RunConfig/dByggnader.sql
@@ -375,10 +380,10 @@ select '' status into #taxekod
 end
     go;
  --:C:/Users/crbk01/AppData/Roaming/JetBrains/DataGrip2021.1/consoles/db/a922a8bc-6602-44d4-8ab2-a4062fc64d99/Kv-FlaggGenerering/RunConfig/iRod.sql
-IF OBJECT_ID(N'tempdb..#Röd') is not null OR (select top 1 RebuildStatus from #settingtable) = 1
-        BEGIN TRY DROP TABLE #Röd END TRY BEGIN CATCH select 'failed to drop #röd' END CATCH
+IF OBJECT_ID(N'tempdb..#enatSkikt') is not null OR (select top 1 RebuildStatus from #settingtable) = 1
+        BEGIN TRY DROP TABLE #enatSkikt END TRY BEGIN CATCH select 'failed to drop #enatSkikt' END CATCH
 go;
-IF OBJECT_ID(N'tempdb..#Röd') is null
+IF OBJECT_ID(N'tempdb..#enatSkikt') is null
     begin
         declare @rod table
 	(
@@ -433,41 +438,49 @@ IF OBJECT_ID(N'tempdb..#Röd') is null
 	select 		  Fstatus, fastighet, Fastighet_tillstand, left(Beslut_datum,40), left(utförddatum,40), Anteckning, LocaltOmH, Byggnadstyp, VaPlan, flagga, '', bygTot
 	from flaggKorrigering
 
-	; select *into #röd from @rod;	select * from #röd
+	; select *into #enatSkikt from @rod;	select * from #enatSkikt
 			--where fastighet like N'Hörsne%'
 		--where fstatus !='grön'
 	order by Fstatus desc
 	;
 ;
+        select * from #enatSkikt
         --gul from fastighets_Anslutningar_Gemensamhetanläggningar) , gul                 as (select null "fstat")
 	    --slam (select top 1 datStoppdatum from slam where attUtsokaFran.fastighet = slam.strFastBeteckningHel)
 	    --gem else (case when null is not null then 'gem' else '?' end)
 	    --aliases: [Va-Spill] -- egetOmhändertagandeInfo
 --INSERT INTO #statusTable (one, start) select one, start from @internalStatus
-INSERT INTO #statusTable select N'rebuilt#Röd', CURRENT_TIMESTAMP, @@ROWCOUNT end else INSERT INTO #statusTable select N'preloading#Röd', CURRENT_TIMESTAMP, @@ROWCOUNT;
+INSERT INTO #statusTable select N'rebuilt#enatSkikt', CURRENT_TIMESTAMP, @@ROWCOUNT end else INSERT INTO #statusTable select N'preloading#enatSkikt', CURRENT_TIMESTAMP, @@ROWCOUNT;
 
 go
  --:C:/Users/crbk01/AppData/Roaming/JetBrains/DataGrip2021.1/consoles/db/a922a8bc-6602-44d4-8ab2-a4062fc64d99/Kv-FlaggGenerering/RunConfig/motFlaggskikt.sql
 ;
 with
 	-- fastighetsytor inclusive shiften
-    	fs as (Select q.FAStighet, Status from sde_miljo_halsoskydd.gng.FLAGGSKIKTET_P flaggor inner join (select * from  #fastighetsYtor) q on flaggor.Shape.STWithin(q.shape) = 1 or q.fastighet = isnull(flaggor.FASTIGHET,'') )
+    	fs as (Select q.FAStighet, Status,flaggor.shape from sde_miljo_halsoskydd.gng.FLAGGSKIKTET_P flaggor inner join (select * from  #fastighetsYtor) q on flaggor.Shape.STWithin(q.shape) = 1 or q.fastighet = isnull(flaggor.FASTIGHET,'') )
     ,	FiltreraMotFlaggskiktet as(
 	select
+	    ttv.*,fs.Status, fs.shape
+	    from
+		 #enatSkikt ttv left outer join
+		     fs on fs.FASTIGHET = ttv.fastighet
+)
+select * into #FiltreraMotFlaggskiktet
+from FiltreraMotFlaggskiktet
+go
+;
+ --:C:/Users/crbk01/AppData/Roaming/JetBrains/DataGrip2021.1/consoles/db/a922a8bc-6602-44d4-8ab2-a4062fc64d99/Kv-FlaggGenerering/RunConfig/motFlaggskiktErrorCheck.sql
 	  /* case when (fstatus = 'röd' OR (fstatus is null AND  harbyggtypInteIVa  = 'true' ))
 	    then 'x' end IrodUtsokning,
-	   case when (fs.fastighet not in(select fastighet from #röd toTeamVatten where fstatus = 'röd') and  harbyggtypInteIVa  = 'true' )
+	   case when (fs.fastighet not in(select fastighet from #enatSkikt toTeamVatten where fstatus = 'röd') and  harbyggtypInteIVa  = 'true' )
 		then 'x' end IgronUtsokning
 	    ,case when isnull(harbyggtypInteIVa,'nej') = 'true' then 'nej' else 'ja' end bla*/
-	    ttv.*
-	    from
-		 #röd ttv left outer join
-		     fs on fs.FASTIGHET = ttv.fastighet
-	    where fs.Status is null and fstatus is not null
-)
+
+SELECT *,shape.STX flaggax,shape.STY flaggay,flagga.STX flaggax,flagga.STY flaggay FROM FiltreraMotFlaggskiktet where fastighet like 'källunge burs 1:4%'
 select * into #FiltreraMotFlaggskiktet -- fastighet, fstatus,Status, flagga --, concat('röd:',isnull(IrodUtsokning,'inteRöd'),',Va:',bla)
-from FiltreraMotFlaggskiktet
-;
+from FiltreraMotFlaggskiktet -- fastighet, fstatus,Status, flagga --, concat('röd:',isnull(IrodUtsokning,'inteRöd'),',Va:',bla)
+	    where fs.Status is null and fstatus is not null
+
 /*
 select distinct count(*) over ( partition by IrodUtsokning,IgronUtsokning,bla) c,IrodUtsokning,IgronUtsokning,bla
 from FiltreraMotFlaggskiktet
@@ -479,7 +492,7 @@ order by bla,IgronUtsokning,IrodUtsokning,fstatus,Byggnadstyp, coalesce(fstatus,
 --select count(*) c, 'slam' a from @slamz union select count(*) c, 'egetomh' a  from @egetomh union select count(*) c, 'va' a  from @va union select count(*) c, 'byggs' a  from @byggs
 --drop table #FiltreraMotFlaggskiktet
 select * from #FiltreraMotFlaggskiktet
-go
+
  --:C:/Users/crbk01/AppData/Roaming/JetBrains/DataGrip2021.1/consoles/db/a922a8bc-6602-44d4-8ab2-a4062fc64d99/Kv-FlaggGenerering/RunConfig/toTemplate.sql
  IF OBJECT_ID(N'tempdb..#rodaForFlaggskikt') is not null OR (select top 1 RebuildStatus from #settingtable) = 1
         BEGIN TRY DROP TABLE #rodaForFlaggskikt END TRY BEGIN CATCH select 'failed to drop #rodaForFlaggskikt' END CATCH
