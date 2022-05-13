@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 /*-- auto-generated definition
 create table #utskickSOCKENkartamförbud (AKEBÄCK               varchar(max),
 					[34]                  int,
@@ -104,23 +105,12 @@ INSERT INTO #utskickSOCKENkartamförbud  VALUES
 ,(N'ÖJA', 89, N'ej utskick', 0, null)
 ,(N'ÖSTERGARN', 47, N'genomgångna socknar', 12, 20150528)
 */
+
+
 select * from (
 select socken,flaggor,[genomgångna socknar] utskick,[20160915] urtskickdat from
 (
-select socken,count(*) flaggor from
-     (Select left(coalesce(s.FASTIGHET,f.fastighet) ,charindex(' ',coalesce(s.FASTIGHET,f.fastighet))) socken
-     	,f.fastighet ffast
-     	,s.FASTIGHET SFAST
-		from
-     (select case when left(fastighet, charindex('', fastighet)) not in (
-		'ARDRE ', 'Dalhem, ', N'Dalhäm ', N'Fröjels ', 'GAMMELGARNS ', 'GANTHEMS ', 'GERUMS ', 'HALHEM ', 'HALLS ', 'Havdem ', N'Hörne ', N'Käälunge ', 'LUMMELINDA ', 'Norlanda ', 'Stenkyka ', 'Stenstugu ', 'STORA ')
-		then
-            nullif(fastighet,'') end
-
-                fastighet,shape from
-     sde_miljo_halsoskydd.gng.FLAGGSKIKTET_P) f
-
- left outer join
+     left outer join
 (SELECT FASTIGHET, SHAPE
 		       FROM SDE_GSD.GNG.AY_0980) s on f.Shape.STWithin(s.shape) = 1
 
@@ -130,3 +120,29 @@ inner join #utskickSOCKENkartamförbud u on u.[AKEBÄCK] = left(socken,len(u.[AKEB
 where not(flaggor > 20 and [20160915] is not null) and not(flaggor < 20 and [20160915] is not null)
     ) q
 where flaggor > 5 and utskick = 'ej utskick'
+=======
+
+
+/*AK förväntas ha alla fastigheter i frågan
+KontaktUpgTableType är också den returnerade typen
+det är viktig att denna också inkluderar personnr
+då vision inte ger ifrån sig personnr kan det vara nödvändigt attinkludera secundär kontakt.
+då en fastighet kan ha många kontakter är det skäligt att ge var ny kontkat en ny rad om facktiskt ny.
+ak's rows is expected to be unique
+*/
+--Create Function dbo.LatestKontaktMethodElseFir(@AK KontaktUpgTableType READONLY,@HK KontaktUpgTableType READONLY) Returns Table as select * from @ak go
+
+CREATE Function #usp_FilterByHasArende(@TVP HandelseTableType READONLY)
+RETURNS table AS
+      return select tv.* from @tvp tv left outer join (select Diarienummer from @TVP
+	  where  (Riktning = 'Inkommande' OR Riktning = 'Utgående')
+	  AND (Rubrik like N'Ansökan%'
+	  OR Rubrik like N'ansökan%'
+	  OR Rubrik like N'Anmälan%'
+	  OR Rubrik like N'anmälan%'
+	  OR Rubrik like N'%Utförandeintyg'
+	  OR Rubrik like N'%utförandeintyg'
+	  OR Rubrik like 'beslut%' ))
+	  has on has.Diarienummer = tv.Diarienummer where has.Diarienummer is null
+GO
+>>>>>>> remotes/kvflagggen/master
