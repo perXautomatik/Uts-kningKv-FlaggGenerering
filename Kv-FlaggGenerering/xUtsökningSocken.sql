@@ -454,7 +454,11 @@ INSERT INTO #statusTable select N'rebuilt#enatSkikt', CURRENT_TIMESTAMP, @@ROWCO
 
 go
  --:C:/Users/crbk01/AppData/Roaming/JetBrains/DataGrip2021.1/consoles/db/a922a8bc-6602-44d4-8ab2-a4062fc64d99/Kv-FlaggGenerering/RunConfig/motFlaggskikt.sql
-;
+ IF OBJECT_ID(N'tempdb..#FiltreraMotFlaggskiktet') is not null OR (select top 1 RebuildStatus from #settingtable) = 1
+        BEGIN TRY DROP TABLE #FiltreraMotFlaggskiktet END TRY BEGIN CATCH select 'failed to drop #FiltreraMotFlaggskiktet' END CATCH
+go;
+IF OBJECT_ID(N'tempdb..#FiltreraMotFlaggskiktet') is null
+    begin
 with
 	-- fastighetsytor inclusive shiften
     	fs as (Select q.FAStighet, Status,flaggor.shape from sde_miljo_halsoskydd.gng.FLAGGSKIKTET_P flaggor inner join (select * from  #fastighetsYtor) q on flaggor.Shape.STWithin(q.shape) = 1 or q.fastighet = isnull(flaggor.FASTIGHET,'') )
@@ -466,33 +470,13 @@ with
 		     fs on fs.FASTIGHET = ttv.fastighet
 )
 select * into #FiltreraMotFlaggskiktet
-from FiltreraMotFlaggskiktet
+from FiltreraMotFlaggskiktet where Status is null
+
+INSERT INTO #statusTable select N'rebuilt#FiltreraMotFlaggskiktet', CURRENT_TIMESTAMP, @@ROWCOUNT end
+    else INSERT INTO #statusTable select N'preloading#FiltreraMotFlaggskiktet', CURRENT_TIMESTAMP, @@ROWCOUNT;
+
 go
 ;
- --:C:/Users/crbk01/AppData/Roaming/JetBrains/DataGrip2021.1/consoles/db/a922a8bc-6602-44d4-8ab2-a4062fc64d99/Kv-FlaggGenerering/RunConfig/motFlaggskiktErrorCheck.sql
-	  /* case when (fstatus = 'röd' OR (fstatus is null AND  harbyggtypInteIVa  = 'true' ))
-	    then 'x' end IrodUtsokning,
-	   case when (fs.fastighet not in(select fastighet from #enatSkikt toTeamVatten where fstatus = 'röd') and  harbyggtypInteIVa  = 'true' )
-		then 'x' end IgronUtsokning
-	    ,case when isnull(harbyggtypInteIVa,'nej') = 'true' then 'nej' else 'ja' end bla*/
-
-SELECT *,shape.STX flaggax,shape.STY flaggay,flagga.STX flaggax,flagga.STY flaggay FROM FiltreraMotFlaggskiktet where fastighet like 'källunge burs 1:4%'
-select * into #FiltreraMotFlaggskiktet -- fastighet, fstatus,Status, flagga --, concat('röd:',isnull(IrodUtsokning,'inteRöd'),',Va:',bla)
-from FiltreraMotFlaggskiktet -- fastighet, fstatus,Status, flagga --, concat('röd:',isnull(IrodUtsokning,'inteRöd'),',Va:',bla)
-	    where fs.Status is null and fstatus is not null
-
-/*
-select distinct count(*) over ( partition by IrodUtsokning,IgronUtsokning,bla) c,IrodUtsokning,IgronUtsokning,bla
-from FiltreraMotFlaggskiktet
-order by bla,IgronUtsokning,IrodUtsokning,fstatus,Byggnadstyp, coalesce(fstatus, Diarienummer, Fastighet_tillstand, try_cast(Beslut_datum as varchar), try_cast(utförddatum as varchar),
-    Anteckning, egetOmhändertangandeInfo, VAantek, typ, Byggnadstyp, try_cast( bygTot as varchar)
-)*/
---order by fstatus desc,fastighet,typ,egetOmhändertangandeInfo
---;
---select count(*) c, 'slam' a from @slamz union select count(*) c, 'egetomh' a  from @egetomh union select count(*) c, 'va' a  from @va union select count(*) c, 'byggs' a  from @byggs
---drop table #FiltreraMotFlaggskiktet
-select * from #FiltreraMotFlaggskiktet
-
  --:C:/Users/crbk01/AppData/Roaming/JetBrains/DataGrip2021.1/consoles/db/a922a8bc-6602-44d4-8ab2-a4062fc64d99/Kv-FlaggGenerering/RunConfig/toTemplate.sql
  IF OBJECT_ID(N'tempdb..#rodaForFlaggskikt') is not null OR (select top 1 RebuildStatus from #settingtable) = 1
         BEGIN TRY DROP TABLE #rodaForFlaggskikt END TRY BEGIN CATCH select 'failed to drop #rodaForFlaggskikt' END CATCH
@@ -509,9 +493,11 @@ declare @rödaFörFlaggskikt  table (
 				 Anteckning                                    nvarchar(254),
 				 Utforddatum                                   datetime2,
 				 Slamhamtning                                  nvarchar(100),
-				 Antal_byggnader                               numeric(38, 8),
-				 x						bigint		,
-                                y						bigint
+				 Antal_byggnader                               int,
+				 x						float		,
+                                y						float
+                                unique (FASTIGHET)
+                                with (ignore_dup_key = on)
 )
 
 ;
@@ -523,16 +509,21 @@ select
     left(fastighet,150),
     left(Fastighet_tillstand,150),
     left(Diarienummer,50),
-     Beslut_datum,
-     left(iif(fstatus='ok','grön',fstatus),50), --SockenX,
-       null,
-       left(CASE WHEN len(Anteckning) != 1 THEN anteckning END, 254),
-     utförddatum
-     ,left(concat( LocaltOmH,nullif(concat(' va: ',VaPlan),' va: '), nullif(concat(' bygtyp: ' , Byggnadstyp),' bygtyp: ')),100) VAantek
-     , bygTot,flagga.STX flaggax,flagga.STY flaggay
+    Beslut_datum,
+    left(iif(fstatus='ok','grön',fstatus),50), --SockenX,
+    null,
+    left(CASE WHEN len(Anteckning) != 1 THEN anteckning END, 254),
+    utförddatum
+    ,left(concat( LocaltOmH,nullif(concat(' va: ',VaPlan),' va: '), nullif(concat(' bygtyp: ' , Byggnadstyp),' bygtyp: ')),100) VAantek
+    , bygTot,flagga.STX flaggax,flagga.STY flaggay
 from alias
 select * into #rodaForFlaggskikt from @rödaFörFlaggskikt
-end
+
+INSERT INTO #statusTable select N'rebuilt#rodaForFlaggskikt', CURRENT_TIMESTAMP, @@ROWCOUNT end
+    else INSERT INTO #statusTable select N'preloading#rodaForFlaggskikt', CURRENT_TIMESTAMP, @@ROWCOUNT;
+
+go
+
 ;
  IF OBJECT_ID(N'tempdb..#gronaForFlaggskikt') is not null OR (select top 1 RebuildStatus from #settingtable) = 1
         BEGIN TRY DROP TABLE #gronaForFlaggskikt END TRY BEGIN CATCH select 'failed to drop #gronaForFlaggskikt' END CATCH
@@ -549,9 +540,9 @@ IF OBJECT_ID(N'tempdb..#gronaForFlaggskikt') is null
 				 Anteckning                                    nvarchar(254),
 				 Utforddatum                                   datetime2,
 				 Slamhamtning                                  nvarchar(100),
-				 Antal_byggnader                               numeric(38, 8),
-				 x						bigint		,
-                                y						bigint
+				Antal_byggnader                               	int,
+				x						float,
+                                y						float
                                 unique (FASTIGHET)
                                 with (ignore_dup_key = on)
 )
@@ -569,11 +560,22 @@ select
        left(CASE WHEN len(Anteckning) != 1 THEN anteckning END, 254),
      utförddatum
      ,left(concat( LocaltOmH,nullif(concat(' va: ',VaPlan),' va: '), nullif(concat(' bygtyp: ' , Byggnadstyp),' bygtyp: ')),100) VAantek
-     , bygTot,flagga.STX flaggax,flagga.STY flaggay
+     , bygTot,
+       flagga.STX flaggax,flagga.STY flaggay
 from alias
 	where fastighet not in(select fastighet from alias where fstatus = 'röd') and  Byggnadstyp is not null
 	      and (isnull(VaPlan,'') <> 'Spillvatten:Antaget(spill)' AND isnull(VaPlan,'') <> 'Avlopp:Antaget(spill)')
 select * into #gronaForFlaggskikt from @grönaFörFlaggskikt
-end
+
+INSERT INTO #statusTable select N'rebuilt#gronaForFlaggskikt', CURRENT_TIMESTAMP, @@ROWCOUNT end
+    else INSERT INTO #statusTable select N'preloading#gronaForFlaggskikt', CURRENT_TIMESTAMP, @@ROWCOUNT;
+
 go
+;
+select * from #rodaForFlaggskikt
+;
+select * from #gronaForFlaggskikt
+;
 select * from #statusTable
+
+;
