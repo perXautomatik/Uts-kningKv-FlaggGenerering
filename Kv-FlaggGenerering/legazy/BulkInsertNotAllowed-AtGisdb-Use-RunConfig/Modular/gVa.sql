@@ -1,5 +1,5 @@
 with
-    fastighetsfilter  as (select * FROM #fastighetsfilter)
+    fastighetsfilter          as (select * FROM #fastighetsfilter)
   , socknarOfIntresse         as (SELECT fastighetsFilter.socken             SockenX
 				       , concat(Trakt, SPACE(1), Blockenhet) FAStighet
 				       , Shape

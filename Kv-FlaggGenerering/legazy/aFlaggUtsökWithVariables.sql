@@ -22,17 +22,22 @@ declare @slamz table (statusx nvarchar(30), FAStighet nvarchar(100), Diarienumme
 declare @egetomh table (fastighet nvarchar(100), egetOmhändertangandeInfo nvarchar(4000));
 declare @va table (fastighet nvarchar(100), typ nvarchar(273));
 
-insert into @fastighetsYtor select * from (SELECT socken SockenX,BETECKNING FAStighet, Shape from (select fa.FNR,fa.BETECKNING , fa.TRAKT, yt.Shape from sde_geofir_gotland.gng.FA_FASTIGHET fa inner join sde_gsd.gng.REGISTERENHET_YTA yt on fa.FNR = yt.FNR_FDS) x inner join
+with
+fasinnomSocken as (SELECT socken SockenX,BETECKNING FAStighet, Shape from (select fa.FNR,fa.BETECKNING , fa.TRAKT, yt.Shape from sde_geofir_gotland.gng.FA_FASTIGHET fa inner join sde_gsd.gng.REGISTERENHET_YTA yt on fa.FNR = yt.FNR_FDS) x inner join
      @socknar socknarOfIntresse  on left(x.TRAKT, len(socknarOfIntresse.socken)) = socknarOfIntresse.socken ) qtz
+
+insert into @fastighetsYtor select * from fasInnomSocken
 ;
 --byggs
 with fastighetsYtor as (select * from  @fastighetsYtor)
  ,byggnad_yta as (select andamal1 Byggnadstyp, Shape from sde_gsd.gng.BYGGNAD),
         q as (Select Byggnadstyp, fastighetsYtor.fastighet Fastighetsbeteckning, byggnad_yta.SHAPE from byggnad_yta
             inner join fastighetsYtor on byggnad_yta.Shape.STWithin(fastighetsYtor.shape) = 1)
-,byggs as (        select Fastighetsbeteckning, Byggnadstyp,bygTot,shape
-	from (select *, count(shape) over (partition by Fastighetsbeteckning) bygTot, row_number() over (partition by Fastighetsbeteckning order by Byggnadstyp ) orderz from q) z     where orderz = 1 )
-insert into @byggs select * from byggs
+,withRownr as (select *, count(shape) over (partition by Fastighetsbeteckning) bygTot, row_number() over (partition by Fastighetsbeteckning order by Byggnadstyp ) orderz from q)
+,byggs 
+	as (        select Fastighetsbeteckning, Byggnadstyp,bygTot,shape from withRownr where orderz = 1 )
+insert into @byggs select * from 
+				byggs
 
 ;
 with      fastighetsYtor    as (select * from  @fastighetsYtor)
@@ -50,7 +55,8 @@ with      fastighetsYtor    as (select * from  @fastighetsYtor)
 	  FAStighet,Diarienummer,Fastighet_tillstand,Beslut_datum,Utford_datum "utförddatum",Anteckning,anlShape AnlaggningsPunkt from SammanSlagna)
 
 
-insert into @slamz select *from slamz
+insert into @slamz
+ select *from slamz
 ;
 --select * from @slamz where FAStighet = N'Hörsne nybjärs 1:20'
 ;
@@ -92,7 +98,6 @@ insert into @slamz select *from slamz
     WHERE (egetOmhx.FAStighet = r.FAStighet)
     FOR XML PATH(''),TYPE).value('(./text())[1]','VARCHAR(MAX)')
   ,1,2,'') AS vaTyp
-
 			 from egetOmhx r)
 
 
@@ -121,7 +126,6 @@ select * from egetOmhy
     WHERE (vax.FAStighet = r.FAStighet)
     FOR XML PATH(''),TYPE).value('(./text())[1]','VARCHAR(MAX)')
   ,1,2,'') AS vaTyp
-
 			 from vax r)
 
 insert into @va

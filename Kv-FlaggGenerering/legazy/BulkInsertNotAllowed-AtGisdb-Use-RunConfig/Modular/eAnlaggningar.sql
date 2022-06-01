@@ -1,5 +1,5 @@
 with
-    fastighetsfilter  as (select * FROM #fastighetsfilter)
+    fastighetsfilter   as (select * FROM #fastighetsfilter)
   , socknarOfIntresse  as (SELECT fastighetsFilter.socken SockenX, concat(Trakt, SPACE(1), Blockenhet) FAStighet, Shape
 			   from sde_gsd.gng.AY_0980 x
 			       inner join fastighetsFilter
@@ -10,7 +10,9 @@ with
 							    end - 1) socken
 				, Diarienummer
 				, Fastighet_tillstand                z
-				, Beslut_datum, Utford_datum, Anteckning
+				, Beslut_datum
+				, Utford_datum
+				, Anteckning
 				, Shape                              anlShape
 			   from sde_miljo_halsoskydd.gng.ENSKILT_AVLOPP_sodra_P)
   , AnNoMedSocken      as (select left(Fastighet_tillstand, case when charindex(SPACE(1), Fastighet_tillstand) = 0
@@ -19,7 +21,9 @@ with
 							    end - 1) socken
 				, Diarienummer
 				, Fastighet_tillstand                z
-				, Beslut_datum, Utford_datum, Anteckning
+				, Beslut_datum
+				, Utford_datum
+				, Anteckning
 				, Shape                              anlShape
 			   from sde_miljo_halsoskydd.gng.ENSKILT_AVLOPP_Norra_P)
   , AnMeMedSocken      as (select left(Fastighet_tilstand, case when charindex(SPACE(1), Fastighet_tilstand) = 0
@@ -28,12 +32,18 @@ with
 							   end - 1) socken
 				, Diarienummer
 				, Fastighet_tilstand                z
-				, Beslut_datum, Utford_datum, Anteckning
+				, Beslut_datum
+				, Utford_datum
+				, Anteckning
 				, Shape                             anlShape
 			   from sde_miljo_halsoskydd.gng.ENSKILT_AVLOPP_MELLERSTA_P)
   , SodraFiltrerad     as (select Diarienummer
 				, z q
-				, Beslut_datum, Utford_datum, Anteckning, AllaAvlopp.anlShape, FAStighet
+				, Beslut_datum
+				, Utford_datum
+				, Anteckning
+				, AllaAvlopp.anlShape
+				, FAStighet
 			   from AnSoMedSocken AllaAvlopp
 			       inner join(select FiltreradeFast.*
 					  from socknarOfIntresse FiltreradeFast
@@ -42,7 +52,11 @@ with
 				  AllaAvlopp.anlShape.STIntersects(FFast.Shape) = 1)
   , NorraFiltrerad     as (select Diarienummer
 				, z q
-				, Beslut_datum, Utford_datum, Anteckning, AllaAvlopp.anlShape, FAStighet
+				, Beslut_datum
+				, Utford_datum
+				, Anteckning
+				, AllaAvlopp.anlShape
+				, FAStighet
 			   from AnNoMedSocken AllaAvlopp
 			       inner join(select FiltreradeFast.*
 					  from socknarOfIntresse FiltreradeFast
@@ -51,7 +65,11 @@ with
 				  AllaAvlopp.anlShape.STIntersects(FFast.Shape) = 1)
   , MellerstaFiltrerad as (select Diarienummer
 				, z q
-				, Beslut_datum, Utford_datum, Anteckning, AllaAvlopp.anlShape, FAStighet
+				, Beslut_datum
+				, Utford_datum
+				, Anteckning
+				, AllaAvlopp.anlShape
+				, FAStighet
 			   from AnMeMedSocken AllaAvlopp
 			       inner join(select FiltreradeFast.*
 					  from socknarOfIntresse FiltreradeFast

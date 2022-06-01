@@ -1,4 +1,5 @@
-declare @rodDatum datetime = DATETIME2FROMPARTS(2006, 10, 1, 1, 1, 1, 1, 1);declare @socknar table (socken nvarchar(70))
+declare @rodDatum datetime = DATETIME2FROMPARTS(2006, 10, 1, 1, 1, 1, 1, 1);
+declare @socknar table (socken nvarchar(70))
 ;insert into @socknar select * from (Select N'Källunge' "socken"
      Union
      Select 'Vallstena' as alias2
@@ -11,7 +12,8 @@ declare @rodDatum datetime = DATETIME2FROMPARTS(2006, 10, 1, 1, 1, 1, 1, 1);decl
      Union
      Select 'Stenkyrka' as alias2345
      )asdasd
-;declare @fastighetsYtor table (SockenX nvarchar(70), FAStighet nvarchar(100), Shape geometry); declare @byggs table (Fastighetsbeteckning nvarchar(100), Byggnadstyp nvarchar(100), bygTot int,flagga geometry); declare @slamz table (statusx nvarchar(30), FAStighet nvarchar(100), Diarienummer nvarchar(100), Fastighet_tillstand nvarchar(150), Beslut_datum datetime, utförddatum datetime, Anteckning nvarchar(254), AnlaggningsPunkt geometry); declare @egetomh table (fastighet nvarchar(100), egetOmhändertangandeInfo nvarchar(4000)); declare @va table (fastighet nvarchar(100), typ nvarchar(273))
+;declare @fastighetsYtor table (SockenX nvarchar(70), FAStighet nvarchar(100), Shape geometry); 
+declare @byggs table (Fastighetsbeteckning nvarchar(100), Byggnadstyp nvarchar(100), bygTot int,flagga geometry); declare @slamz table (statusx nvarchar(30), FAStighet nvarchar(100), Diarienummer nvarchar(100), Fastighet_tillstand nvarchar(150), Beslut_datum datetime, utförddatum datetime, Anteckning nvarchar(254), AnlaggningsPunkt geometry); declare @egetomh table (fastighet nvarchar(100), egetOmhändertangandeInfo nvarchar(4000)); declare @va table (fastighet nvarchar(100), typ nvarchar(273))
 ;with fasWithShape as
 	(select fa.FNR,fa.BETECKNING , fa.TRAKT, yt.Shape from sde_geofir_gotland.gng.FA_FASTIGHET fa
 	inner join sde_gsd.gng.REGISTERENHET_YTA yt on fa.FNR = yt.FNR_FDS)
@@ -20,16 +22,18 @@ declare @rodDatum datetime = DATETIME2FROMPARTS(2006, 10, 1, 1, 1, 1, 1, 1);decl
 	 @socknar socknarOfIntresse
 	     on left(fasWithShape.TRAKT, len(socknarOfIntresse.socken)) = socknarOfIntresse.socken )
 
-insert into @fastighetsYtor select * from fasInnomSocken;
+insert into @fastighetsYtor select * from 
+fasInnomSocken;
 --byggs
 ;with fastighetsYtor      as (select * from  @fastighetsYtor)
  ,   byggnad_yta         as (select andamal1 Byggnadstyp, Shape from sde_gsd.gng.BYGGNAD),
      q                   as (Select Byggnadstyp, fastighetsYtor.fastighet Fastighetsbeteckning, byggnad_yta.SHAPE from byggnad_yta
             inner join fastighetsYtor on byggnad_yta.Shape.STWithin(fastighetsYtor.shape) = 1)
 ,    withRownr           as (select *, count(shape) over (partition by Fastighetsbeteckning) bygTot, row_number() over (partition by Fastighetsbeteckning order by Byggnadstyp ) orderz from q)
-   , OnlyOnePerFastighet as (        select Fastighetsbeteckning, Byggnadstyp,bygTot,shape
-	from  withRownr     where orderz = 1 )
-insert into @byggs select * from OnlyOnePerFastighet
+   , OnlyOnePerFastighet 
+   as (        select Fastighetsbeteckning, Byggnadstyp,bygTot,shape	from  withRownr     	where orderz = 1 )
+insert into @byggs select * from 
+				OnlyOnePerFastighet
 --select * from @byggs
 ;with      fastighetsYtor    as (select * from  @fastighetsYtor)
 	, socknarOfIntresse as (select * from @socknar)
@@ -86,7 +90,8 @@ select * from OnePerFastighet --this should be one per fastighet, but what about
     FROM egetOmhx
     WHERE (egetOmhx.FAStighet = r.FAStighet)
     FOR XML PATH(''),TYPE).value('(./text())[1]','VARCHAR(MAX)')
-  ,1,2,'') AS vaTyp from egetOmhx r)
+  ,1,2,'') AS vaTyp 
+  from egetOmhx r)
    insert into @egetomh
 select * from egetOmhy
 --where FAStighet = 'DALHEM GANDARVE 1:2'
@@ -109,7 +114,8 @@ select * from egetOmhy
     FROM vax
     WHERE (vax.FAStighet = r.FAStighet)
     FOR XML PATH(''),TYPE).value('(./text())[1]','VARCHAR(MAX)')
-  ,1,2,'') AS vaTyp			 from vax r)
+  ,1,2,'') AS vaTyp
+  			 from vax r)
 insert into @va
    select * from va
    --where FAStighet = 'DALHEM GANDARVE 1:2'
