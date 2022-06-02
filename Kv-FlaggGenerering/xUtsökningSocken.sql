@@ -24,7 +24,7 @@ rodDatum datetime
 insert into #settingTable (rodDatum, RebuildStatus,socknar)
 select DATETIME2FROMPARTS(2006, 10, 1, 1, 1, 1, 1, 1),
        0,
-	N'Bara,Hörsne,Källunge,Norrlanda,Stenkyrka,Vallsten'
+	N'GRÖTLINGBO,HAVDHEM,HABLINGBO,ARDRE,FIDE,ÖJA,HEMSE'
 go
 
  --:C:/Users/crbk01/AppData/Roaming/JetBrains/DataGrip2021.1/consoles/db/a922a8bc-6602-44d4-8ab2-a4062fc64d99/Kv-FlaggGenerering/RunConfig/a2CleanUp.sql
@@ -559,7 +559,7 @@ select
        null,
        left(CASE WHEN len(Anteckning) != 1 THEN anteckning END, 254),
      utförddatum
-     ,left(concat( LocaltOmH,nullif(concat(' va: ',VaPlan),' va: '), nullif(concat(' bygtyp: ' , Byggnadstyp),' bygtyp: ')),100) VAantek
+     ,ltrim(left(concat( LocaltOmH,nullif(concat(' va: ',VaPlan),' va: '), nullif(concat(' bygtyp: ' , Byggnadstyp),' bygtyp: ')),100)) VAantek
      , bygTot,
        flagga.STX flaggax,flagga.STY flaggay
 from alias

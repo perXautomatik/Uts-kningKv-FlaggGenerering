@@ -1,12 +1,13 @@
 with
-    fastighetsfilter          as (select * FROM #fastighetsfilter)
+    fastighetsfilter  as (select * FROM #fastighetsfilter)
   , socknarOfIntresse         as (SELECT fastighetsFilter.socken             SockenX
 				       , concat(Trakt, SPACE(1), Blockenhet) FAStighet
 				       , Shape
 				  from sde_gsd.gng.AY_0980 x
 				      inner join fastighetsFilter
 				      on left(x.TRAKT, len(fastighetsFilter.socken)) = fastighetsFilter.socken)
-  , Va_planomraden_171016_evw as (select shape, dp_i_omr, planprog, planansokn from sde_pipe.gng.Va_planomraden_171016_evw)
+  , Va_planomraden_171016_evw as (select shape, dp_i_omr, planprog, planansokn
+				  from sde_pipe.gng.Va_planomraden_171016_evw)
   , q                         as (select shape, concat(typkod, ':', status, '(spill)') typ
 				  from sde_pipe.gng.VO_Spillvatten_evw VO_Spillvatten_evw
 				  union all
